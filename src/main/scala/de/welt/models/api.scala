@@ -83,6 +83,8 @@ object api {
     def unwrappedRelations = relations.getOrElse(Nil)
 
     def unwrappedAssets = assets.getOrElse(Nil)
+
+    def metadataAsset = unwrappedAssets.find(_.`type` == "metadata")
   }
 
   case class ApiAsset(`type`: String,
