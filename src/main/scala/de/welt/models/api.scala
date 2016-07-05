@@ -25,7 +25,9 @@ object api {
                         roles: Option[List[String]] = None,
                         id: Option[String] = None,
                         sections: Option[ApiSectionData] = None,
-                        tags: Option[List[ApiTag]] = None) {
+                        tags: Option[List[ApiTag]] = None,
+                        onward: Option[List[ApiOnward]] = None) {
+
     def unwrappedAuthors = authors.getOrElse(Nil)
 
     def unwrappedTags = tags.getOrElse(Nil)
@@ -36,9 +38,12 @@ object api {
 
     def unwrappedRoles = roles.getOrElse(Nil)
 
-      def fieldsContainEntry(entry: (String,String)) = unwrappedFields.exists(_ == entry)
+    def fieldsContainEntry(entry: (String, String)) = unwrappedFields.exists(_ == entry)
 
     def getMandatoryFieldEntry(key: String) = unwrappedFields.getOrElse(key, throw new IllegalStateException(s"Mandatory field '$key' not found. Content is not valid. Check PACT or BACKEND."))
+
+    def unwrappedOnward = onward.getOrElse(List.empty)
+
   }
 
   object ApiContent {
@@ -52,6 +57,8 @@ object api {
       elements = None
     )
   }
+
+  case class ApiOnward(id: String, roles: Seq[String])
 
   case class ApiLists(lists: Option[List[ApiSection]] = None) {
     def unwrappedLists = lists.getOrElse(Nil)
@@ -107,6 +114,7 @@ object api {
     */
   object ApiReads {
 
+    implicit lazy val apiOnwardReads = Json.reads[ApiOnward]
     implicit lazy val apiSectionDataReads = Json.reads[ApiSectionData]
     implicit lazy val apiAssetReads = Json.reads[ApiAsset]
     implicit lazy val apiElementReads = Json.reads[ApiElement]
@@ -122,6 +130,7 @@ object api {
 
   object ApiWrites {
 
+    implicit lazy val apiOnwardWrites = Json.writes[ApiOnward]
     implicit lazy val apiAssetWrites = Json.writes[ApiAsset]
     implicit lazy val apiSectionDataWrites = Json.writes[ApiSectionData]
     implicit lazy val apiElementWrites = Json.writes[ApiElement]
