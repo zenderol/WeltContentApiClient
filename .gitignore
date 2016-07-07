@@ -5,3 +5,5 @@
 /project/target/
 /target/
 /.idea/
+/core/target/
+/client/target/
