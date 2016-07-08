@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 
 case class Channel(id: ChannelId,
                    var data: ChannelData,
-                   var stages: Seq[Stage] = Seq.empty,
+                   var stages: Option[Seq[Stage]] = None,
                    var parent: Option[Channel] = None,
                    var children: Seq[Channel] = Seq.empty,
                    var hasChildren: Boolean = false,

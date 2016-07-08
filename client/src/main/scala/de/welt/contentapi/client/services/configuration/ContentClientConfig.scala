@@ -10,11 +10,10 @@ case class ServiceConfiguration(serviceName: String, host: String, endpoint: Str
 object ServiceConfiguration {
   def fromConfig(serviceName: String, config: Configuration): Option[ServiceConfiguration] =
     for {
-      host <- config.getString("host")
-      endpoint <- config.getString("endpoint")
-      username <- config.getString("credentials.username")
-      password <- config.getString("credentials.password")
-
+      host ← config.getString("host")
+      endpoint ← config.getString("endpoint")
+      username ← config.getString("credentials.username")
+      password ← config.getString("credentials.password")
     } yield ServiceConfiguration(serviceName, host, endpoint, username, password)
 }
 
@@ -40,7 +39,6 @@ sealed trait ContentClientConfig {
         lazy val bucket = s3Config.flatMap(_.getString("sectionMetadata.bucket"))
         lazy val file = s3Config.flatMap(_.getString("sectionMetadata.file"))
       }
-
     }
   }
 
@@ -50,6 +48,5 @@ sealed trait ContentClientConfig {
 }
 
 @Singleton
-class ContentClientConfigImpl @Inject()(override val configuration: Configuration) extends ContentClientConfig {
-
-}
+class ContentClientConfigImpl @Inject()(override val configuration: Configuration)
+  extends ContentClientConfig

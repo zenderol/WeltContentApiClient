@@ -2,6 +2,7 @@ package de.welt.contentapi.core.models
 
 import java.time.Instant
 
+import de.welt.contentapi.admin.models.SdpSectionData
 import org.scalatestplus.play.PlaySpec
 
 class SdpSectionDataTest extends PlaySpec {
@@ -24,14 +25,14 @@ class SdpSectionDataTest extends PlaySpec {
     "set the type to non-virtual" in new Fixture {
       val channel = root.toChannel
 
-      channel.id.isVirtual must be (false)
+      channel.id.isVirtual must be(false)
     }
 
     "lastMod will be copied if present" in {
       val now = Instant.now
       val channel = SdpSectionData("/", "", Some(now.toEpochMilli.toString), Seq.empty).toChannel
 
-      channel.lastModifiedDate must be (now.toEpochMilli)
+      channel.lastModifiedDate must be(now.toEpochMilli)
     }
 
     "lastMod will be created if missing" in {
@@ -47,22 +48,22 @@ class SdpSectionDataTest extends PlaySpec {
       channel.hasChildren must be(true)
 
       val child = channel.children.head
-      child.id.path must be ("/child/")
+      child.id.path must be("/child/")
     }
 
     "define ad-tags for depth 0 to 1" in new Fixture {
-       val channel = root.toChannel
+      val channel = root.toChannel
 
-       channel.data.adData.definesAdTag must be (true)
-       channel.children.map(_.data.adData.definesAdTag) must contain (true)
-     }
+      channel.data.adData.definesAdTag must be(true)
+      channel.children.map(_.data.adData.definesAdTag) must contain(true)
+    }
 
-     "have not ad-tags for depth 2" in new Fixture {
-       val channel = root.toChannel
+    "have not ad-tags for depth 2" in new Fixture {
+      val channel = root.toChannel
 
-       val secondChild = channel.children.flatMap(_.children)
-       secondChild.map(_.data.adData.definesAdTag) must contain (false)
-     }
+      val secondChild = channel.children.flatMap(_.children)
+      secondChild.map(_.data.adData.definesAdTag) must contain(false)
+    }
   }
 
 }

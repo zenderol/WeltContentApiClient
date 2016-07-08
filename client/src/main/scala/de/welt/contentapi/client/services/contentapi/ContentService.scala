@@ -2,8 +2,8 @@ package de.welt.contentapi.client.services.contentapi
 
 import javax.inject.{Inject, Singleton}
 
-import de.welt.contentapi.core.models.api.{ApiContent, ApiReads}
 import de.welt.contentapi.client.services.configuration.{ContentClientConfig, ServiceConfiguration}
+import de.welt.contentapi.core.models.{ApiContent, ApiReads}
 import de.welt.contentapi.core.traits.Loggable
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient

@@ -1,8 +1,7 @@
 package de.welt.contentapi.core.models
 
-import de.welt.contentapi.core.models._
-import de.welt.contentapi.core.models.Query._
 import de.welt.contentapi.core.models.Datasource._
+import de.welt.contentapi.core.models.Query._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -33,7 +32,7 @@ object reads {
     implicit lazy val channelReads: Reads[Channel] = (
       (__ \ "id").read[ChannelId] and
         (__ \ "data").read[ChannelData] and
-        (__ \ "stages").read[Seq[Stage]] and
+        (__ \ "stages").readNullable[Seq[Stage]] and
         (__ \ "parent").lazyRead(Reads.optionWithNull(channelReads)) and
         (__ \ "children").lazyRead(Reads.seq[Channel](channelReads)) and
         (__ \ "hasChildren").read[Boolean] and
@@ -58,9 +57,7 @@ object reads {
         case err@_ ⇒ JsError(s"expected js-object, but was $err")
       }
     }
-
   }
-
 }
 
 object writes {
@@ -74,7 +71,7 @@ object writes {
     implicit lazy val channelWrites: Writes[Channel] = (
       (__ \ "id").write[ChannelId] and
         (__ \ "data").write[ChannelData] and
-        (__ \ "stages").write[Seq[Stage]] and
+        (__ \ "stages").writeNullable[Seq[Stage]] and
         (__ \ "parent").lazyWrite(Writes.optionWithNull(PartialChannelWrites.writeChannelAsNull)) and // avoid loops
         (__ \ "children").lazyWrite(Writes.seq[Channel](channelWrites)) and
         (__ \ "hasChildren").write[Boolean] and
@@ -102,7 +99,7 @@ object writes {
     implicit lazy val oneLevelOfChildren: Writes[Channel] = (
       (__ \ "id").write[ChannelId] and
         (__ \ "data").write[ChannelData] and
-        (__ \ "stages").write[Seq[Stage]] and
+        (__ \ "stages").writeNullable[Seq[Stage]] and
         (__ \ "parent").lazyWrite(Writes.optionWithNull(noChildrenWrites)) and
         (__ \ "children").lazyWrite(Writes.seq[Channel](noChildrenWrites)) and
         (__ \ "hasChildren").write[Boolean] and
@@ -114,9 +111,7 @@ object writes {
       override def writes(o: Channel): JsValue = JsNull
     }
   }
-
 }
-
 
 object SimpleFormats {
   implicit lazy val idFormat: Format[ChannelId] = Json.format[ChannelId]

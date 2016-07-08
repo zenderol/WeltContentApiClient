@@ -1,6 +1,8 @@
-package de.welt.contentapi.core.models
+package de.welt.contentapi.admin.models
 
 import java.time.Instant
+
+import de.welt.contentapi.core.models.{Channel, ChannelData, ChannelId}
 
 case class SdpSectionData(url: String,
                           displayName: String,
@@ -23,14 +25,13 @@ case class SdpSectionData(url: String,
   private def transform: Channel = Channel(
     id = ChannelId(url),
     data = ChannelData(displayName),
-    children = children.map(_.toChannel),
+    children = children.map(_.transform),
     lastModifiedDate = lastModifiedDate match {
       case Some("") ⇒ Instant.now.toEpochMilli
       case Some(s) ⇒ s.toLong
       case _ ⇒ Instant.now.toEpochMilli
     }
   )
-
 }
 
 object SdpSectionDataReads {
@@ -38,8 +39,6 @@ object SdpSectionDataReads {
   import play.api.libs.functional.syntax._
   import play.api.libs.json.Reads._
   import play.api.libs.json._
-
-  // Combinator syntax
 
   implicit lazy val s3SectionDataReads: Reads[SdpSectionData] = (
     (JsPath \ "url").read[String] and

@@ -37,7 +37,7 @@ class StageModelTest extends PlaySpec {
       val politicsChannel: Channel = Channel(
         id = curatedStage.channelId,
         data = ChannelData("channel-label", ChannelAdData(false), ChannelMetadata()),
-        stages = Seq(curatedStage),
+        stages = Some(Seq(curatedStage)),
         parent = None,
         children = Seq.empty,
         hasChildren = false,
@@ -78,13 +78,11 @@ class StageModelTest extends PlaySpec {
       val politikChannel: Channel = Channel(
         id = searchStage.channelId,
         data = ChannelData("channel-label", ChannelAdData(false), ChannelMetadata()),
-        stages = Seq(searchStage),
+        stages = Some(Seq(searchStage)),
         parent = None,
         children = Seq.empty,
         hasChildren = false,
         lastModifiedDate = Instant.now.toEpochMilli)
-
-
 
 
       import de.welt.contentapi.core.models.writes._

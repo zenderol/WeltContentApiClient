@@ -1,5 +1,6 @@
 package de.welt.contentapi.core.models
 
+import de.welt.contentapi.admin.services.ChannelTools
 import de.welt.welt.meta.ChannelHelper
 import org.scalatestplus.play.PlaySpec
 
@@ -74,12 +75,12 @@ class ChannelTest extends PlaySpec {
 
   }
 
-  "Channel" must {
+  "ChannelTools" must {
 
     "support additions" must {
 
       "detect addition of new channels" in new Fixture {
-        val update = twoChildren.root.diff(threeChildren.root)
+        val update = ChannelTools.diff(twoChildren.root, threeChildren.root)
         update must be(ChannelUpdate(
           added = Seq(child3),
           deleted = Seq.empty,
@@ -88,7 +89,7 @@ class ChannelTest extends PlaySpec {
 
       "apply additions to channel tree" in new Fixture {
         val root = twoChildren.root
-        root.merge(threeChildren.root)
+        ChannelTools.merge(root, threeChildren.root)
 
         root.children must have size 3
       }
@@ -96,7 +97,7 @@ class ChannelTest extends PlaySpec {
       "maintain the data for all the nodes" in new Fixture {
 
         val root = twoChildren.root
-        root.merge(threeChildren.root)
+        ChannelTools.merge(root, threeChildren.root)
 
         root.data must be(twoChildren.rootData)
         root.findByEce(1).map(_.data) must ===(Some(child1Data))
@@ -107,7 +108,7 @@ class ChannelTest extends PlaySpec {
 
     "support deletions" should {
       "detect deletion of channels" in new Fixture {
-        private val update = threeChildren.root.diff(twoChildren.root)
+        private val update = ChannelTools.diff(threeChildren.root, twoChildren.root)
 
         update must be(ChannelUpdate(
           added = Seq.empty,
@@ -117,7 +118,7 @@ class ChannelTest extends PlaySpec {
 
       "apply deletions to the tree" in new Fixture {
         val root = threeChildren.root
-        root.merge(twoChildren.root)
+        ChannelTools.merge(root, twoChildren.root)
 
         root.children must have size 2
         root.findByEce(3) must === (None)
@@ -125,7 +126,7 @@ class ChannelTest extends PlaySpec {
 
       "maintain the data for all the nodes" in new Fixture {
         val root = threeChildren.root
-        root.merge(twoChildren.root)
+        ChannelTools.merge(root, twoChildren.root)
 
         root.data must be(threeChildren.rootData)
         root.findByEce(1).map(_.data) must ===(Some(child1Data))
@@ -134,7 +135,7 @@ class ChannelTest extends PlaySpec {
     }
     "support moving of channels" should {
       "detect moved channels" in new Fixture {
-        private val update = threeChildren.root.diff(movedChild.root)
+        private val update = ChannelTools.diff(threeChildren.root, movedChild.root)
 
         update must be(ChannelUpdate(
           added = Seq.empty,
@@ -145,7 +146,7 @@ class ChannelTest extends PlaySpec {
 
       "apply movings to the tree" in new Fixture {
         val root = threeChildren.root
-        root.merge(movedChild.root)
+        ChannelTools.merge(root, movedChild.root)
 
         root.children must have size 2
         root.children must not contain child3
@@ -156,7 +157,7 @@ class ChannelTest extends PlaySpec {
       "maintain the data for all the nodes" in new Fixture {
 
         val root = threeChildren.root
-        root.merge(movedChild.root)
+        ChannelTools.merge(root, movedChild.root)
 
         root.data must be(threeChildren.rootData)
         root.findByEce(1).map(_.data) must ===(Some(child1Data))
@@ -170,19 +171,19 @@ class ChannelTest extends PlaySpec {
       "for twoChildren example" in new Fixture {
 
         private val root = twoChildren.root
-        root.merge(root)
+        ChannelTools.merge(root, root)
         root must be (new Fixture {}.twoChildren.root )
       }
       "for threeChildren example" in new Fixture {
 
         private val root = threeChildren.root
-        root.merge(root)
+        ChannelTools.merge(root, root)
         root must be (new Fixture {}.threeChildren.root )
       }
       "for movedChild example" in new Fixture {
 
         private val root = movedChild.root
-        root.merge(root)
+        ChannelTools.merge(root,root)
         root must be (new Fixture {}.movedChild.root )
       }
     }

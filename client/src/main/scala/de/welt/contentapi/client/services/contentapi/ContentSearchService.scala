@@ -2,8 +2,8 @@ package de.welt.contentapi.client.services.contentapi
 
 import javax.inject.{Inject, Singleton}
 
-import de.welt.contentapi.core.models.api.{ApiContent, ApiReads}
 import de.welt.contentapi.client.services.configuration.{ContentClientConfig, ServiceConfiguration}
+import de.welt.contentapi.core.models.{ApiContent, ApiReads, EnrichedApiContent}
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient
 
@@ -26,7 +26,7 @@ sealed trait ContentSearchService {
 class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
                                          //                                         override val metrics: Metrics,
                                          cfg: ContentClientConfig,
-                                         sectionMetadataService: LegacySectionService)
+                                         sectionService: SectionService)
   extends AbstractService[Seq[ApiContent]] with ContentSearchService {
 
   import ApiReads._
@@ -57,12 +57,12 @@ class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
       maybeTyp.map("type" -> _) ++
       maybeSubType.map("subType" -> _) ++
       flags.map("flags" -> _)
-//        subTypeExcludes.map ( "excludes" -> _ )
+    //        subTypeExcludes.map ( "excludes" -> _ )
 
     get(Nil, parameters)
       .map { responses =>
         responses.map { content =>
-          sectionMetadataService.enrich(content)
+          sectionService.enrich(content)
         }
       }
   }

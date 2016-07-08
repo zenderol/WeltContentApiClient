@@ -9,11 +9,12 @@ object MyBuild extends Build {
 
   scalaVersion := "2.11.8"
   val playVersion = "2.5.4"
+  def withTests(project: Project) = project % "test->test;compile->compile"
 
   val frontendCompilationSettings = Seq(
     organization := "de.welt",
     scalaVersion := "2.11.8",
-    version := "0.1.0-SNAPSHOT",
+    version := "0.1.4",
 
     licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
@@ -99,23 +100,33 @@ object MyBuild extends Build {
 
   val core = project("core")
     .settings(
-      name := """welt-content-api-core"""
+      name := "welt-content-api-core"
     )
     .settings(coreDependencySettings: _*)
 
   val client = project("client")
     .settings(
-      name := """welt-content-api-client"""
+      name := "welt-content-api-client"
     )
     .settings(clientDependencySettings: _*)
-    .dependsOn(core).aggregate(core)
+    .dependsOn(withTests(core)).aggregate(core)
+
+  val admin = project("admin")
+    .settings(
+      name := "welt-content-api-admin-client"
+    )
+    .settings(clientDependencySettings: _*)
+    .dependsOn(withTests(client)).aggregate(client)
 
   val main = Project("Root", base = file("."))
     .settings(
-      name := """welt-content-api-root"""
+      name := "welt-content-api-root"
     )
     .settings(frontendCompilationSettings: _*)
-    .settings(publish := {})
-    .aggregate(core, client)
+    .settings(
+      publish := {},
+      bintrayUnpublish := {}
+    )
+    .aggregate(core, client, admin)
 
 }

@@ -2,7 +2,6 @@ package de.welt.contentapi.core.models
 
 import play.api.libs.json._
 
-object api {
 
   case class ApiResponse(content: ApiContent,
                          related: Option[List[ApiContent]] = None) {
@@ -142,6 +141,5 @@ object api {
     implicit lazy val apiListsWrites = Json.writes[ApiLists]
     implicit lazy val apiResponseWrites = Json.writes[ApiResponse]
 
-  }
 
 }

@@ -1,19 +1,21 @@
-package de.welt.client.services.configuration
+package de.welt.contentapi.admin.services
 
-import de.welt.contentapi.client.services.configuration.{ContentClientConfigImpl, SectionConfigurationServiceImpl}
-import de.welt.contentapi.client.services.contentapi.LegacySectionService
+import de.welt.contentapi.admin.models.SdpSectionData
+import de.welt.contentapi.client.services.configuration.ContentClientConfigImpl
+import de.welt.contentapi.client.services.contentapi.admin.LegacySectionService
 import de.welt.contentapi.client.services.s3.S3
-import de.welt.contentapi.core.models.{Live, Preview, SdpSectionData}
-import de.welt.welt.meta.MockCacheApi
+import de.welt.contentapi.core.models.{Live, Preview}
+import de.welt.meta.DisabledCache
+import org.mockito.Mockito._
 import org.mockito.{Matchers, Mockito}
-import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.{Configuration, Environment}
 
-class SectionConfigurationServiceTest extends PlaySpec with MockitoSugar {
+class SectionServiceTest extends PlaySpec with MockitoSugar {
 
   trait Fixture {
+
     val childOfChild = SdpSectionData("/child/child/", "childOfChild", None, Seq.empty)
     val childOfRoot = SdpSectionData("/child/", "child", None, Seq(childOfChild))
     val root = SdpSectionData("/", "root", None, Seq(childOfRoot))
@@ -29,14 +31,14 @@ class SectionConfigurationServiceTest extends PlaySpec with MockitoSugar {
     val legacyServiceMock = mock[LegacySectionService]
     when(legacyServiceMock.getSectionData) thenReturn root
 
-    val service = new SectionConfigurationServiceImpl(config, emptyS3ResponseMock, Environment.simple(), legacyServiceMock, MockCacheApi)
+    val service = new AdminSectionServiceImpl(config, emptyS3ResponseMock, Environment.simple(), legacyServiceMock, DisabledCache)
   }
 
   "SectionConfigurationService with empty initial s3 response" must {
 
     "load initial data from legacy service" in new Fixture {
 
-      val channel = service.root(Preview)
+      val channel = service.root(Preview).get
 
       channel.id.path must be("/")
       channel.data.label must be("root")
@@ -44,7 +46,7 @@ class SectionConfigurationServiceTest extends PlaySpec with MockitoSugar {
 
     "have ad tags defined for depth 0~1" in new Fixture {
 
-      val channel = service.root(Preview)
+      val channel = service.root(Preview).get
 
       channel.data.adData.definesAdTag must be(true)
       channel.children.map(_.data.adData.definesAdTag) must contain(true)
@@ -52,7 +54,7 @@ class SectionConfigurationServiceTest extends PlaySpec with MockitoSugar {
 
     "have not ad-tags for depth 2" in new Fixture {
 
-      val channel = service.root(Preview)
+      val channel = service.root(Preview).get
 
       val secondChild = channel.children.flatMap(_.children)
       secondChild.map(_.data.adData.definesAdTag) must contain(false)
@@ -70,3 +72,4 @@ class SectionConfigurationServiceTest extends PlaySpec with MockitoSugar {
     }
   }
 }
+
