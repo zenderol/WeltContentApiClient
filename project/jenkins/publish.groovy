@@ -4,3 +4,5 @@ def doPublish() {
         sh './activator publish'
     }
 }
+
+return this
