@@ -21,8 +21,10 @@ class SectionServiceTest extends PlaySpec with MockitoSugar {
     val root = SdpSectionData("/", "root", None, Seq(childOfRoot))
 
     val bucket = "le-bucket"
+    val file = "le-file"
     val config = new ContentClientConfigImpl(Configuration(
-      "funkotron.aws.s3.janus.bucket" → bucket
+      "funkotron.aws.s3.janus.bucket" → bucket,
+      "funkotron.aws.s3.janus.file" → file
     ))
 
     val emptyS3ResponseMock = mock[S3]

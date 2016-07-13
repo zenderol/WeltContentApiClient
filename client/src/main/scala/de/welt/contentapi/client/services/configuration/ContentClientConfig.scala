@@ -33,6 +33,8 @@ sealed trait ContentClientConfig {
 
       object janus {
         lazy val bucket = s3Config.flatMap(_.getString("janus.bucket")).getOrElse(throw new BadConfigurationException("'funkotron.aws.s3.janus.bucket' not configured"))
+        lazy val file = s3Config.flatMap(_.getString("janus.file")).getOrElse(throw new BadConfigurationException("'funkotron.aws.s3.janus.file' not configured"))
+
       }
 
       object sectionMetadata {

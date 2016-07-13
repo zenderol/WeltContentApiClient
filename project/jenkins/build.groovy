@@ -17,6 +17,7 @@ node('slave') {
     test = load 'project/jenkins/test.groovy'
     test.doTest()
 
-    // todo: publish
+    publish = load 'project/jenkins/publish.groovy'
+    publish.doPublish()
 
 }

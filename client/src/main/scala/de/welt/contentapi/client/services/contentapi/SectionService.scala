@@ -47,7 +47,7 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
   }
 
   protected def objectKeyForEnv(env: Env) = environment.mode match {
-    case Mode.Prod ⇒ s"janus2/prod/${env.toString}/config.json"
-    case _ ⇒ s"janus2/dev/${env.toString}/config.json"
+    case Mode.Prod ⇒ s"${config.aws.s3.janus.file}/prod/${env.toString}/config.json"
+    case _ ⇒ s"${config.aws.s3.janus.file}/dev/${env.toString}/config.json"
   }
 }
