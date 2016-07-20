@@ -1,13 +1,21 @@
 package de.welt.contentapi.client.services
 
+import play.api.PlayException
+
 object exceptions {
 
   class BadConfigurationException(msg: String) extends RuntimeException(msg)
 
-  class NotFoundException(message: String) extends RuntimeException(message: String) {
-    override def getMessage: String = s"Not Found (HTTP 404) $message"
+  abstract class HttpStatusCodeException(statusCode: Int, statusPhrase: String, url: String)
+    extends PlayException(s"HttpStatusCodeException[$statusCode]", statusPhrase) {
+    def getStatusCode = statusCode
+    def getStatusPhrase = statusPhrase
+    def getUrl = url
+
+    override def toString: String = super.toString
   }
 
-  class ServerError(message: String) extends RuntimeException(message: String)
+  case class HttpClientErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
+  case class HttpServerErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
 
 }

@@ -14,7 +14,7 @@ object MyBuild extends Build {
   val frontendCompilationSettings = Seq(
     organization := "de.welt",
     scalaVersion := "2.11.8",
-    version := "0.1.7",
+    version := "0.1.8",
 
     licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
@@ -24,8 +24,8 @@ object MyBuild extends Build {
 
   val frontendDependencyManagementSettings = Seq(
     resolvers := Seq(
-      "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-      "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+      Resolver.typesafeRepo("releases"),
+      Resolver.jcenterRepo
     ),
     // https://www.typesafe.com/blog/improved-dependency-management-with-sbt-0137
     updateOptions := updateOptions.value.withCachedResolution(true)
@@ -46,6 +46,9 @@ object MyBuild extends Build {
 
       "com.amazonaws" % "aws-java-sdk-core" % "1.11.13",
       "com.amazonaws" % "aws-java-sdk-s3" % "1.11.13",
+
+      // this is a temporary fix until the original maintainer releases the 2.5 version of this plugin
+      "de.threedimensions" %% "metrics-play" % "2.5.13",
 
       "com.typesafe" % "config" % "1.3.0" % Provided,
 

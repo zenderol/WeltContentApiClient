@@ -1,18 +1,22 @@
 package de.welt.contentapi.client.services.contentapi
 
+import com.codahale.metrics.{MetricRegistry, Timer}
+import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.client.services.configuration.ServiceConfiguration
-import de.welt.contentapi.client.services.exceptions.{NotFoundException, ServerError}
+import de.welt.contentapi.client.services.exceptions.{HttpClientErrorException, HttpServerErrorException}
 import de.welt.contentapi.core.traits.Loggable
+import play.api.http.Status
 import play.api.libs.json.{JsError, JsLookupResult, JsResult, JsSuccess}
-import play.api.libs.ws.{WSAuthScheme, WSClient, WSResponse}
+import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest}
+import play.api.mvc.{Headers, Request}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AbstractService[T] extends Loggable {
+trait AbstractService[T] extends Loggable with Status {
 
   /** these need to be provided by the implementing services */
   val ws: WSClient
-  //  val metrics: Metrics
+  val metrics: Metrics
 
   /**
     * This must provide a [[ServiceConfiguration]]. It will be used to
@@ -31,35 +35,51 @@ trait AbstractService[T] extends Loggable {
     */
   def jsonValidate: JsLookupResult => JsResult[T]
 
-  def get(forwardHeaders: Seq[(String, String)], parameters: Seq[(String, String)], id: String*)(implicit executionContext: ExecutionContext): Future[T] = {
+  def get(ids: Seq[String] = Nil,
+          parameters: Seq[(String, String)] = Nil,
+          headers: Seq[(String, String)] = Nil)
+         (implicit request: Request[Any], executionContext: ExecutionContext): Future[T] = {
 
     def parseJson(json: JsLookupResult): T = jsonValidate(json) match {
-      case JsSuccess(apiResponse, path) => apiResponse
+      case JsSuccess(value, path) => value
       case err@JsError(_) => throw new IllegalStateException(err.toString)
     }
 
-    //    def initializeMetricsContext(name: String): Timer.Context = {
-    //      metrics.defaultRegistry.timer(MetricRegistry.name(s"funkotron.$name", "requestTimer")).time()
-    //    }
+    val context = initializeMetricsContext(config.serviceName)
 
-    //    val context = initializeMetricsContext(config.serviceName)
+    val url: String = config.host + config.endpoint.format(ids: _*)
 
-    val url: String = config.host + config.endpoint.format(id: _*)
-
-    val request: Future[WSResponse] = ws.url(url)
+    val getRequest: WSRequest = ws.url(url)
       .withQueryString(parameters: _*)
-      .withHeaders(forwardHeaders: _*)
-      .withAuth(config.username, config.password, WSAuthScheme.BASIC).get()
+      .withHeaders(headers ++ forwardHeaders(request.headers): _*)
+      .withAuth(config.username, config.password, WSAuthScheme.BASIC)
 
-    request.map { response =>
+    log.debug(s"HTTP GET to ${getRequest.uri}")
 
-      //      context.stop()
+    getRequest.get().map { response ⇒
+
+      context.stop()
 
       response.status match {
-        case 200 => parseJson(response.json.result)
-        case 404 => throw new NotFoundException(url)
-        case status@_ => throw new ServerError(s"Server responded with Status '$status' while requesting '$url'.")
+        case OK ⇒ parseJson(response.json.result)
+        case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url)
+        case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
       }
     }
+  }
+
+  /**
+    * headers to be forwared from client to server, e.g. the `X-Unique-Id`
+    * @param headers [[Headers]] from the incoming [[play.api.mvc.Request]]
+    *
+    * @return tuples of type String for headers to be forwarded
+    */
+  def forwardHeaders(headers: Headers): Seq[(String, String)] = headers.get("X-Unique-Id") match {
+    case Some(value) ⇒ Seq(("X-Unique-Id", value))
+    case _ ⇒ Nil
+  }
+
+  protected def initializeMetricsContext(name: String): Timer.Context = {
+    metrics.defaultRegistry.timer(MetricRegistry.name(s"funkotron.$name", "requestTimer")).time()
   }
 }
