@@ -57,7 +57,7 @@ trait AbstractService[T] extends Loggable with Status {
     log.debug(s"HTTP GET to ${getRequest.uri}")
 
     getRequest.get().map { response ⇒
-
+      
       context.stop()
 
       response.status match {

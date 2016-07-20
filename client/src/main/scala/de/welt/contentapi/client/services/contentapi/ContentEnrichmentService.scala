@@ -9,15 +9,20 @@ import play.api.mvc.Request
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ContentEnrichmentService {
-  def find(id: String)(implicit request: Request[Any], executionContext: ExecutionContext): Future[EnrichedApiResponse]
+  def find(id: String, showRelated: Boolean = true)
+          (implicit request: Request[Any], executionContext: ExecutionContext): Future[EnrichedApiResponse]
 }
 
 @Singleton
 class ContentEnrichmentServiceImpl @Inject()(contentService: ContentService, sectionMetadataService: SectionService)
   extends ContentEnrichmentService with Loggable {
 
-  override def find(id: String)(implicit request: Request[Any], executionContext: ExecutionContext): Future[EnrichedApiResponse] =
-    contentService.find(id).map { response ⇒
-      EnrichedApiResponse(sectionMetadataService.enrich(response))
+  override def find(id: String, showRelated: Boolean = true)(implicit request: Request[Any], executionContext: ExecutionContext): Future[EnrichedApiResponse] =
+    contentService.find(id, showRelated).map { response ⇒
+
+      EnrichedApiResponse(
+        sectionMetadataService.enrich(response.content),
+        response.related.getOrElse(Nil).map(sectionMetadataService.enrich)
+      )
     }
 }
