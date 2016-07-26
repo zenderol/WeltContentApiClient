@@ -143,6 +143,15 @@ case class Channel(id: ChannelId,
     channelUpdate
   }
 
+  /**
+    * apply updates to the [[ChannelData]] and [[ChannelId]] from another [[Channel]]
+    * @param other the source for the changes
+    */
+  def updateMasterData(other: Channel) = {
+    id.path = other.id.path
+    data = data.copy(label = other.data.label)
+  }
+
   // todo remove after model updates are persisted
   def applyChannelUpdates(): Unit = {
     // populate new metadata node
@@ -165,7 +174,7 @@ case class Channel(id: ChannelId,
   override def hashCode: Int = this.id.hashCode
 }
 
-case class ChannelId(path: String, isVirtual: Boolean = false, ece: Long = -1) {
+case class ChannelId(var path: String, isVirtual: Boolean = false, ece: Long = -1) {
 
   override def equals(obj: Any): Boolean = obj match {
     case ChannelId(_, _, otherEce) ⇒ this.ece.hashCode == otherEce.hashCode

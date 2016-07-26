@@ -36,6 +36,28 @@ class ChannelTest extends PlaySpec {
       root.data = rootData
     }
 
+    object twoChildrenMasterDataDiffers {
+      /**
+        *    (0)
+        *   /  \
+        * (1) (2)
+        *
+        */
+      /** CHILD 1 */
+      val modifiedChild1Data = ChannelData(label = "child1", adData = ChannelAdData(true))
+      val modifiedChild1 = ChannelHelper.emptyWithIdAndData(1, child1Data)
+
+      /** CHILD 2 */
+      val modifiedChild2Data = ChannelData(label = "child2", adData = ChannelAdData(false))
+      val modifiedChild2 = ChannelHelper.emptyWithIdAndData(2, child2Data)
+      val root = ChannelHelper.emptyWithIdAndChildren(0, children = Seq(modifiedChild1, modifiedChild2))
+      root.updateParentRelations()
+
+      // data node for root
+      val rootData = ChannelData(label = "modified-label", adData = ChannelAdData(false))
+      root.data = rootData
+    }
+
     object threeChildren {
 
       /**
@@ -162,8 +184,8 @@ class ChannelTest extends PlaySpec {
         root.data must be(threeChildren.rootData)
         root.findByEce(1).map(_.data) must ===(Some(child1Data))
         root.findByEce(2).map(_.data) must ===(Some(child2Data))
-        // the data from the other tree (movedChild.root) must not be copied!
-        root.findByEce(3).map(_.data) must ===(Some(child3Data))
+        // the data from the other tree (movedChild.root) must be copied!
+        root.findByEce(3).map(_.data) must ===(Some(child3Data.copy(label = movedChild.dataForCopyOf3.label)))
       }
     }
 
@@ -183,8 +205,49 @@ class ChannelTest extends PlaySpec {
       "for movedChild example" in new Fixture {
 
         private val root = movedChild.root
-        ChannelTools.merge(root,root)
+        ChannelTools.merge(root, root)
         root must be (new Fixture {}.movedChild.root )
+      }
+    }
+
+    "support updates within the channels itself" must {
+      "update the label" in new Fixture {
+
+        private val root = twoChildren.root
+        private val other: Channel = twoChildrenMasterDataDiffers.root
+        ChannelTools.merge(root, other)
+
+        root.id must be (other.id)
+        root.data.label must be (other.data.label)
+
+        root.findByEce(1).map(_.data.label) must ===(Some(twoChildrenMasterDataDiffers.modifiedChild1.data.label))
+        root.findByEce(2).map(_.data.label) must ===(Some(twoChildrenMasterDataDiffers.modifiedChild2.data.label))
+      }
+
+      "update the path" in new Fixture {
+
+        private val root = twoChildren.root
+        private val other: Channel = twoChildrenMasterDataDiffers.root
+        ChannelTools.merge(root, other)
+
+        root.id must be (other.id)
+        root.id.path must be (other.id.path)
+
+        root.findByEce(1).map(_.id.path) must ===(Some(twoChildrenMasterDataDiffers.modifiedChild1.id.path))
+        root.findByEce(2).map(_.id.path) must ===(Some(twoChildrenMasterDataDiffers.modifiedChild2.id.path))
+      }
+
+      "not update the ad data" in new Fixture {
+
+        private val root = twoChildren.root
+        private val other: Channel = twoChildrenMasterDataDiffers.root
+        ChannelTools.merge(root, other)
+
+        root.id must be (other.id)
+        root.data.adData.definesAdTag must be (true)
+
+        root.findByEce(1).map(_.data.adData.definesAdTag) must ===(Some(true))
+        root.findByEce(2).map(_.data.adData.definesAdTag) must ===(Some(true))
       }
     }
   }

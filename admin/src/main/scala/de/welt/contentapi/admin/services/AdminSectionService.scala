@@ -147,9 +147,9 @@ object ChannelTools extends Loggable {
       log.debug(s"[$this] deleted globally: $deleted")
       log.debug(s"[$this] added globally: $added")
 
-      val u = ChannelUpdate(added, deleted, moved).merge(updatesFromChildren)
-      log.debug(s"[$this] Changes: $u\n\n")
-      u
+      val channelUpdate = ChannelUpdate(added, deleted, moved).merge(updatesFromChildren)
+      log.debug(s"[$this] Changes: $channelUpdate\n\n")
+      channelUpdate
     }
   }
 
@@ -183,9 +183,24 @@ object ChannelTools extends Loggable {
         }
       }
     }
+
+    // update master data (path and displayName) from legacy source
+    updateData(current, other)
+
     // for logging
     channelUpdate
   }
+
+  /**
+    * copies some data from the `legacyRoot` tree to the `current` tree
+    * @param current the destination where to write updates to
+    * @param legacyRoot the source object where to read updates from
+    */
+  def updateData(current: Channel, legacyRoot: Channel): Unit = {
+    legacyRoot.findByEce(current.id.ece).foreach(other ⇒ current.updateMasterData(other))
+    current.children.foreach(child ⇒ updateData(child, legacyRoot))
+  }
+
 
 }
 

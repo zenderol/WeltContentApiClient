@@ -14,7 +14,7 @@ object MyBuild extends Build {
   val frontendCompilationSettings = Seq(
     organization := "de.welt",
     scalaVersion := "2.11.8",
-    version := "0.1.9",
+    version := "0.2.0",
 
     licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
