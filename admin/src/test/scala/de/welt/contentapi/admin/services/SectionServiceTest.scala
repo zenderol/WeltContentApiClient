@@ -16,9 +16,9 @@ class SectionServiceTest extends PlaySpec with MockitoSugar {
 
   trait Fixture {
 
-    val childOfChild = SdpSectionData("/child/child/", "childOfChild", None, Seq.empty)
-    val childOfRoot = SdpSectionData("/child/", "child", None, Seq(childOfChild))
-    val root = SdpSectionData("/", "root", None, Seq(childOfRoot))
+    val childOfChild = SdpSectionData("/child/child/", "childOfChild", None, Seq.empty, 2)
+    val childOfRoot = SdpSectionData("/child/", "child", None, Seq(childOfChild), 1)
+    val root = SdpSectionData("/", "root", None, Seq(childOfRoot), 0)
 
     val bucket = "le-bucket"
     val file = "le-file"

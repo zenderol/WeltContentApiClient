@@ -8,9 +8,9 @@ import org.scalatestplus.play.PlaySpec
 class SdpSectionDataTest extends PlaySpec {
 
   trait Fixture {
-    val childOfChild = SdpSectionData("/child/child/", "childOfChild", None, Seq.empty)
-    val childOfRoot = SdpSectionData("/child/", "child", None, Seq(childOfChild))
-    val root = SdpSectionData("/", "root", None, Seq(childOfRoot))
+    val childOfChild = SdpSectionData("/child/child/", "childOfChild", None, Seq.empty, 2)
+    val childOfRoot = SdpSectionData("/child/", "child", None, Seq(childOfChild), 1)
+    val root = SdpSectionData("/", "root", None, Seq(childOfRoot), 0)
   }
 
   "SdpSectionData" must {
@@ -30,14 +30,14 @@ class SdpSectionDataTest extends PlaySpec {
 
     "lastMod will be copied if present" in {
       val now = Instant.now
-      val channel = SdpSectionData("/", "", Some(now.toEpochMilli.toString), Seq.empty).toChannel
+      val channel = SdpSectionData("/", "", Some(now.toEpochMilli.toString), Seq.empty, -1).toChannel
 
       channel.lastModifiedDate must be(now.toEpochMilli)
     }
 
     "lastMod will be created if missing" in {
       val now = Instant.now
-      val channel = SdpSectionData("/", "", None, Seq.empty).toChannel
+      val channel = SdpSectionData("/", "", None, Seq.empty, -1).toChannel
 
       channel.lastModifiedDate must be >= now.toEpochMilli
     }
