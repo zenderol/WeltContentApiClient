@@ -50,7 +50,7 @@ case class Channel(id: ChannelId,
     }
   }
 
-  override def toString: String = s"Channel(${id.path})"
+  override def toString: String = s"Channel(id='${id.path}', ece=${id.ece}'')"
 
   @tailrec
   final def root: Channel = parent match {
@@ -150,6 +150,7 @@ case class Channel(id: ChannelId,
   def updateMasterData(other: Channel) = {
     id.path = other.id.path
     data = data.copy(label = other.data.label)
+    lastModifiedDate = Instant.now.toEpochMilli
   }
 
   // todo remove after model updates are persisted

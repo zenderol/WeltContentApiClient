@@ -39,13 +39,13 @@ class LegacySectionServiceImpl @Inject()(s3: S3, cache: CacheApi, funkConfig: Co
             value
           case err@JsError(e) ⇒
             log.error("S3 Section Data could not be parsed.", new scala.IllegalArgumentException(err.errors.head.toString))
-            SdpSectionData("/", "No Data", None, Seq.empty)
+            SdpSectionData("/", "No Data", None, Seq.empty, -1)
         }
       case _ ⇒
         log.error(s"S3 Section Data not found: '$b/$f'")
-        SdpSectionData("/", "No Data", None, Seq.empty)
+        SdpSectionData("/", "No Data", None, Seq.empty, -1)
     }
-    data getOrElse SdpSectionData("/", "No Data", None, Seq.empty)
+    data getOrElse SdpSectionData("/", "No Data", None, Seq.empty, -1)
   }
 
 }

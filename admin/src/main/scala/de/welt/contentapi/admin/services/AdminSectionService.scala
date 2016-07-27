@@ -105,7 +105,7 @@ object ChannelTools extends Loggable {
   def diff(current: Channel, update: Channel): ChannelUpdate = {
 
     if (current != update) {
-      log.debug(s"Cannot diff($this, $update, because they are not .equal()")
+      log.debug(s"Cannot diff($current, $update, because they are not .equal()")
       ChannelUpdate(Seq.empty, Seq.empty, Seq.empty)
     } else {
 
@@ -159,7 +159,7 @@ object ChannelTools extends Loggable {
 
     channelUpdate.deleted.foreach { deletion ⇒
       deletion.parent.foreach { parent ⇒
-        parent.children = parent.children.diff(Seq(deletion))
+        parent.children = parent.children.filterNot(_ == deletion)
       }
     }
 
@@ -170,7 +170,7 @@ object ChannelTools extends Loggable {
     channelUpdate.moved.foreach { moved ⇒
       // remove from current parent
       moved.parent.foreach { parent ⇒
-        parent.children = parent.children.diff(Seq(moved))
+        parent.children = parent.children.filterNot(_ == moved)
       }
       // add to new parent
       val newParentId = other.findByEce(moved.id.ece)

@@ -8,6 +8,18 @@ Build
     ./activator coverageReport
     ./activator coverageAggregate
 
+Local Development (with an ApiClient-Project)
+---------------------------------------------
+
+There is no need to do a full dev cycle (publish to bintray and bump the version in the other project)
+each time something changes. For this use case you can benefit from _SNAPSHOT_ releases. Set the version to
+`version := "0.2.1-SNAPSHOT",` and then do a
+
+    ./activator publishLocal
+
+in the other project, enable resolving vom local caches by adding a resolver `Resolver.mavenLocal` and also
+switch to the same _SNAPSHOT_ version.
+
 Publish
 -------
 

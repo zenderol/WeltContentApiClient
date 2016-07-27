@@ -59,7 +59,7 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
 
     import FullChannelReads._
 
-    s3.get(config.aws.s3.janus.bucket, objectKeyForEnv(env))
+    val root = s3.get(config.aws.s3.janus.bucket, objectKeyForEnv(env))
       .map { data ⇒ Json.parse(data).validate[Channel] }
       .flatMap {
         case JsSuccess(v, _) ⇒
@@ -68,6 +68,10 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
           log.warn(err.toString)
           None
       }
+
+    root.foreach(_.updateParentRelations())
+
+    root
   }
 
   protected def objectKeyForEnv(env: Env) = environment.mode match {

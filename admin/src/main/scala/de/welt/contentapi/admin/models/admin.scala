@@ -7,7 +7,8 @@ import de.welt.contentapi.core.models.{Channel, ChannelData, ChannelId}
 case class SdpSectionData(url: String,
                           displayName: String,
                           lastModifiedDate: Option[String],
-                          children: Seq[SdpSectionData]) {
+                          children: Seq[SdpSectionData],
+                          id: Long) {
 
   private def defineAdTag(data: ChannelData) = data.copy(adData = data.adData.copy(definesAdTag = true))
 
@@ -23,7 +24,7 @@ case class SdpSectionData(url: String,
   }
 
   private def transform: Channel = Channel(
-    id = ChannelId(url),
+    id = ChannelId(path = url, ece = id),
     data = ChannelData(displayName),
     children = children.map(_.transform),
     lastModifiedDate = lastModifiedDate match {
@@ -44,6 +45,7 @@ object SdpSectionDataReads {
     (JsPath \ "url").read[String] and
       (JsPath \ "displayName").read[String] and
       (JsPath \ "lastModifiedDate").readNullable[String] and
-      (JsPath \ "children").lazyRead(Reads.seq[SdpSectionData](s3SectionDataReads))
+      (JsPath \ "children").lazyRead(Reads.seq[SdpSectionData](s3SectionDataReads)) and
+      (JsPath \ "id").read[String].map(_.toLong)
     ) (SdpSectionData)
 }
