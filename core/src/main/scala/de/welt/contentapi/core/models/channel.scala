@@ -192,6 +192,8 @@ case class ChannelUpdate(added: Seq[Channel] = Seq.empty, deleted: Seq[Channel] 
     moved = (moved ++ other.moved).distinct
   )
 
+  def isEmpty: Boolean = added.isEmpty && deleted.isEmpty && moved.isEmpty
+
   /** merge all the updates into this */
   def merge(updates: Seq[ChannelUpdate]): ChannelUpdate = updates.foldLeft(this)((acc, update) ⇒ acc.merge(update))
 }

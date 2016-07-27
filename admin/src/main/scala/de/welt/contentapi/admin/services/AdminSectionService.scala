@@ -122,33 +122,26 @@ object ChannelTools extends Loggable {
       // additional elements from `other.children`
       val addedByOther = update.children.diff(current.children)
 
-      log.debug(s"[$this] added locally: $addedByOther")
-      log.debug(s"[$this] deleted locally: $deletedByOther")
-
       val moved = {
         lazy val currentRoot = current.root
 
         // if we can find it in our tree, it hasn't been added but only moved
         val notAddedButMoved = addedByOther.filter { elem ⇒ currentRoot.findByEce(elem.id.ece).isDefined }
-        log.debug(s"[$this] not added but moved: $notAddedButMoved")
 
         lazy val otherRoot = update.root
         // if we can find the deleted elem, it has been moved
         val notDeletedButMoved = deletedByOther.filter { elem ⇒ otherRoot.findByEce(elem.id.ece).isDefined }
-        log.debug(s"[$this] not deleted but moved: $notDeletedButMoved")
 
         notAddedButMoved ++ notDeletedButMoved
       }
-      log.debug(s"[$this] moved: $moved")
 
       val deleted = deletedByOther.diff(moved)
       val added = addedByOther.diff(moved)
 
-      log.debug(s"[$this] deleted globally: $deleted")
-      log.debug(s"[$this] added globally: $added")
-
       val channelUpdate = ChannelUpdate(added, deleted, moved).merge(updatesFromChildren)
-      log.debug(s"[$this] Changes: $channelUpdate\n\n")
+      if (!channelUpdate.isEmpty) {
+        log.debug(s"[$this] Changes: $channelUpdate\n\n")
+      }
       channelUpdate
     }
   }
