@@ -117,6 +117,7 @@ object SimpleFormats {
   implicit lazy val idFormat: Format[ChannelId] = Json.format[ChannelId]
   implicit lazy val adFormat: Format[ChannelAdData] = Json.format[ChannelAdData]
   implicit lazy val metaDataFormat: Format[ChannelMetadata] = Json.format[ChannelMetadata]
+  implicit lazy val siteBuildingFormat: Format[ChannelSiteBuilding] = Json.format[ChannelSiteBuilding]
   implicit lazy val metaDataNewFormat: Format[ChannelMetadataNew] = Json.format[ChannelMetadataNew]
   implicit lazy val dataFormat: Format[ChannelData] = Json.format[ChannelData]
   implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]

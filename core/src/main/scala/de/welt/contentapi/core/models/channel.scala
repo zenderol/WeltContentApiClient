@@ -145,6 +145,7 @@ case class Channel(id: ChannelId,
 
   /**
     * apply updates to the [[ChannelData]] and [[ChannelId]] from another [[Channel]]
+    *
     * @param other the source for the changes
     */
   def updateMasterData(other: Channel) = {
@@ -203,9 +204,12 @@ case class ChannelMetadataNew(changedBy: String = "system", lastModifiedDate: Lo
 case class ChannelData(label: String,
                        adData: ChannelAdData = ChannelAdData(),
                        metadata: ChannelMetadata = ChannelMetadata(), // @deprecated
+                       siteBuilding: Option[ChannelSiteBuilding] = None,
                        fields: Option[Map[String, String]] = None // todo, remove option when changes have been applied everywhere
                       )
 
 case class ChannelMetadata(data: Map[String, String] = Map.empty)
 
 case class ChannelAdData(definesAdTag: Boolean = false)
+
+case class ChannelSiteBuilding(theme: String = "")

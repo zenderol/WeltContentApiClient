@@ -35,8 +35,12 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
   override def updateChannel(channel: Channel, updatedChannelData: ChannelData, user: String)
                             (implicit env: Env): Option[Channel] = {
 
-    // update channel (lastModified), currently adData and fields allowed only
-    channel.data = channel.data.copy(adData = updatedChannelData.adData, fields = updatedChannelData.fields)
+    // update channel (lastModified), currently adData, fields and siteBuilding allowed only
+    channel.data = channel.data.copy(
+      adData = updatedChannelData.adData,
+      fields = updatedChannelData.fields,
+      siteBuilding = updatedChannelData.siteBuilding
+    )
     channel.lastModifiedDate = Instant.now.toEpochMilli
     channel.metadata = Some(ChannelMetadataNew(user, Instant.now.toEpochMilli))
 
