@@ -103,6 +103,15 @@ import play.api.libs.json._
 
   case class ApiTag(id: Option[String], value: Option[String])
 
+  case class ContentApiQuery(path: Option[String],
+                             excludePaths: Option[String],
+                             typ: Option[String] = None,
+                             subType: Option[String] = None,
+                             subTypeExcludes: Iterable[String] = Iterable.empty,
+                             flags: Iterable[String] = Iterable.empty,
+                             limit: Option[Int] = None) {}
+
+
   /**
     * Import these into your scope to easily transform Json to the required object
     *
@@ -140,6 +149,23 @@ import play.api.libs.json._
     implicit lazy val apiSectionWrites = Json.writes[ApiSection]
     implicit lazy val apiListsWrites = Json.writes[ApiLists]
     implicit lazy val apiResponseWrites = Json.writes[ApiResponse]
+
+
+  }
+
+object ApiFormats {
+
+  implicit lazy val apiOnwardWrites = Json.format[ApiOnward]
+  implicit lazy val apiAssetWrites = Json.format[ApiAsset]
+  implicit lazy val apiSectionDataWrites = Json.format[ApiSectionData]
+  implicit lazy val apiElementWrites = Json.format[ApiElement]
+  implicit lazy val apiAuthorWrites = Json.format[ApiAuthor]
+  implicit lazy val apiHomeSectionWrites = Json.format[ApiHomeSection]
+  implicit lazy val apiTagWrites = Json.format[ApiTag]
+  implicit lazy val apiContentWrites = Json.format[ApiContent]
+  implicit lazy val apiSectionWrites = Json.format[ApiSection]
+  implicit lazy val apiListsWrites = Json.format[ApiLists]
+  implicit lazy val apiResponseWrites = Json.format[ApiResponse]
 
 
 }

@@ -1,4 +1,4 @@
-package de.welt.welt.meta
+package de.welt.meta
 
 import de.welt.contentapi.core.models.{Channel, ChannelData, ChannelId}
 

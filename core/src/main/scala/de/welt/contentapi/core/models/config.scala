@@ -1,7 +1,6 @@
 package de.welt.contentapi.core.models
 
-import de.welt.contentapi.core.models.Datasource._
-import de.welt.contentapi.core.models.Query._
+import de.welt.contentapi.core.models.writes.PartialChannelWrites
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -26,6 +25,7 @@ object reads {
   object FullChannelReads {
 
     import SimpleFormats._
+    import StageFormats._
     import play.api.libs.functional.syntax._
     import play.api.libs.json._
 
@@ -65,6 +65,7 @@ object writes {
   object FullChannelWrites {
 
     import SimpleFormats._
+    import StageFormats._
     import play.api.libs.functional.syntax._
     import play.api.libs.json._
 
@@ -84,6 +85,7 @@ object writes {
   object PartialChannelWrites {
 
     import SimpleFormats._
+    import StageFormats._
 
     implicit lazy val noChildrenWrites = new Writes[Channel] {
       override def writes(o: Channel): JsValue = JsObject(Map(
@@ -113,6 +115,12 @@ object writes {
   }
 }
 
+
+  object ChannelFormatNoChildren {
+    implicit lazy val channelFormat: Format[Channel] = Format(reads.PartialChannelReads.noChildrenReads, PartialChannelWrites.noChildrenWrites)
+  }
+
+
 object SimpleFormats {
   implicit lazy val idFormat: Format[ChannelId] = Json.format[ChannelId]
   implicit lazy val adFormat: Format[ChannelAdData] = Json.format[ChannelAdData]
@@ -120,17 +128,6 @@ object SimpleFormats {
   implicit lazy val siteBuildingFormat: Format[ChannelSiteBuilding] = Json.format[ChannelSiteBuilding]
   implicit lazy val metaDataNewFormat: Format[ChannelMetadataNew] = Json.format[ChannelMetadataNew]
   implicit lazy val dataFormat: Format[ChannelData] = Json.format[ChannelData]
-  implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]
-  // Data Sources
-  implicit lazy val datasourceFormat: Format[Datasource] = Json.format[Datasource]
-  implicit lazy val searchSourceFormat: Format[SearchSource] = Json.format[SearchSource]
-  implicit lazy val curatedSourceFormat: Format[CuratedSource] = Json.format[CuratedSource]
-  // SearchApiFilters
-  implicit lazy val queryFormat: Format[Query] = Json.format[Query]
-  implicit lazy val flagQueryFormat: Format[FlagQuery] = Json.format[FlagQuery]
-  implicit lazy val sectionQueryFormat: Format[SectionQuery] = Json.format[SectionQuery]
-  implicit lazy val subtypeQueryFormat: Format[SubTypeQuery] = Json.format[SubTypeQuery]
-  implicit lazy val typeQueryFormat: Format[TypeQuery] = Json.format[TypeQuery]
 
 }
 

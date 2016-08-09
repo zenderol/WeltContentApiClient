@@ -1,15 +1,39 @@
 package de.welt.contentapi.core.models
 
-import play.api.libs.json.{JsValue, Json}
+import de.welt.contentapi.core.models.Datasource.{CuratedSource, SearchSource}
+import de.welt.contentapi.core.models.Query.{FlagQuery, SectionQuery, SubTypeQuery, TypeQuery}
+import de.welt.contentapi.core.models.pressed.SectionReference
+import play.api.libs.json._
 
-case class Stage(channelId: ChannelId,
-                 maxSize: Option[Int] = None,
-                 sources: Seq[Datasource],
-                 layout: Option[String] = None, // fixed, dynamic todo
-                 lazyLoaded: Boolean = false,
-                 headline: Option[String] = None,
-                 path: Option[String] = None) {
+case class Stage(
+                  id: String = "default",
+                  maxSize: Option[Int] = None,
+                  sources: Seq[Datasource],
+                  layout: Option[String] = None, // fixed, dynamic todo
+                  lazyLoaded: Boolean = false,
+                  headline: Option[String] = None,
+                  path: Option[String] = None,
+                  sectionReferences: Seq[SectionReference] = Seq.empty
+                ) {}
+
+
+object StageFormats {
+
+  import de.welt.contentapi.core.models.pressed.PressedFormats.SectionReferenceFormat
+
+  implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]
+  // Data Sources
+  implicit lazy val datasourceFormat: Format[Datasource] = Json.format[Datasource]
+  implicit lazy val searchSourceFormat: Format[SearchSource] = Json.format[SearchSource]
+  implicit lazy val curatedSourceFormat: Format[CuratedSource] = Json.format[CuratedSource]
+  // SearchApiFilters
+  implicit lazy val queryFormat: Format[Query] = Json.format[Query]
+  implicit lazy val flagQueryFormat: Format[FlagQuery] = Json.format[FlagQuery]
+  implicit lazy val sectionQueryFormat: Format[SectionQuery] = Json.format[SectionQuery]
+  implicit lazy val subtypeQueryFormat: Format[SubTypeQuery] = Json.format[SubTypeQuery]
+  implicit lazy val typeQueryFormat: Format[TypeQuery] = Json.format[TypeQuery]
 }
+
 
 sealed trait Query {
   val filterNegative: Boolean
@@ -31,26 +55,26 @@ object Query {
     val (typ: String, sub) = query.queryType match {
       case QueryTypes.typesQuery =>
         val typedQuery = query.asInstanceOf[TypeQuery]
-        (typedQuery.queryType, Json.toJson(typedQuery)(SimpleFormats.typeQueryFormat))
+        (typedQuery.queryType, Json.toJson(typedQuery)(StageFormats.typeQueryFormat))
       case QueryTypes.subTypesQuery =>
         val typedQuery = query.asInstanceOf[SubTypeQuery]
-        (typedQuery.queryType, Json.toJson(typedQuery)(SimpleFormats.subtypeQueryFormat))
+        (typedQuery.queryType, Json.toJson(typedQuery)(StageFormats.subtypeQueryFormat))
       case QueryTypes.sectionsQuery =>
         val typedQuery = query.asInstanceOf[SectionQuery]
-        (typedQuery.queryType, Json.toJson(typedQuery)(SimpleFormats.sectionQueryFormat))
+        (typedQuery.queryType, Json.toJson(typedQuery)(StageFormats.sectionQueryFormat))
       case QueryTypes.flagsQuery =>
         val typedQuery = query.asInstanceOf[FlagQuery]
-        (typedQuery.queryType, Json.toJson(typedQuery)(SimpleFormats.flagQueryFormat))
+        (typedQuery.queryType, Json.toJson(typedQuery)(StageFormats.flagQueryFormat))
     }
     Some(typ -> sub)
   }
 
   def apply(typ: String, query: JsValue): Query = {
     (typ match {
-      case QueryTypes.typesQuery ⇒ Json.fromJson(query)(SimpleFormats.typeQueryFormat)
-      case QueryTypes.subTypesQuery ⇒ Json.fromJson(query)(SimpleFormats.subtypeQueryFormat)
-      case QueryTypes.sectionsQuery ⇒ Json.fromJson(query)(SimpleFormats.sectionQueryFormat)
-      case QueryTypes.flagsQuery ⇒ Json.fromJson(query)(SimpleFormats.flagQueryFormat)
+      case QueryTypes.typesQuery ⇒ Json.fromJson(query)(StageFormats.typeQueryFormat)
+      case QueryTypes.subTypesQuery ⇒ Json.fromJson(query)(StageFormats.subtypeQueryFormat)
+      case QueryTypes.sectionsQuery ⇒ Json.fromJson(query)(StageFormats.sectionQueryFormat)
+      case QueryTypes.flagsQuery ⇒ Json.fromJson(query)(StageFormats.flagQueryFormat)
     }).get
   }
 
@@ -94,18 +118,18 @@ object Datasource {
     val (typ: String, sub) = datasource.typ match {
       case DatasourceTypes.curatedSource =>
         val typedSource = datasource.asInstanceOf[CuratedSource]
-        (typedSource.typ, Json.toJson(typedSource)(SimpleFormats.curatedSourceFormat))
+        (typedSource.typ, Json.toJson(typedSource)(StageFormats.curatedSourceFormat))
       case DatasourceTypes.searchSource =>
         val typedSource = datasource.asInstanceOf[SearchSource]
-        (typedSource.typ, Json.toJson(typedSource)(SimpleFormats.searchSourceFormat))
+        (typedSource.typ, Json.toJson(typedSource)(StageFormats.searchSourceFormat))
     }
     Some(typ -> sub)
   }
 
   def apply(typ: String, sourceParams: JsValue): Datasource = {
     (typ match {
-      case DatasourceTypes.curatedSource => Json.fromJson[CuratedSource](sourceParams)(SimpleFormats.curatedSourceFormat)
-      case DatasourceTypes.searchSource => Json.fromJson[SearchSource](sourceParams)(SimpleFormats.searchSourceFormat)
+      case DatasourceTypes.curatedSource => Json.fromJson[CuratedSource](sourceParams)(StageFormats.curatedSourceFormat)
+      case DatasourceTypes.searchSource => Json.fromJson[SearchSource](sourceParams)(StageFormats.searchSourceFormat)
     }).get
   }
 

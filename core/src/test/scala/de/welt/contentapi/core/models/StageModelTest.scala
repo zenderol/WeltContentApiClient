@@ -26,7 +26,6 @@ class StageModelTest extends PlaySpec {
         papyrusFile = "ausland")
 
       val curatedStage: Stage = Stage(
-        channelId = id,
         sources = Seq(papyrusAuslandSource),
         lazyLoaded = false,
         maxSize = Some(limitCurationSize),
@@ -35,7 +34,7 @@ class StageModelTest extends PlaySpec {
         layout = None)
 
       val politicsChannel: Channel = Channel(
-        id = curatedStage.channelId,
+        id = id,
         data = ChannelData("channel-label", ChannelAdData(false), ChannelMetadata()),
         stages = Some(Seq(curatedStage)),
         parent = None,
@@ -66,7 +65,6 @@ class StageModelTest extends PlaySpec {
         queries = Seq(typeQuery, subTypeQuery, sectionQuery, flagQuery))
 
       val searchStage: Stage = Stage(
-        channelId = ChannelId("/politik/"),
         lazyLoaded = true,
         maxSize = Some(stageLimit),
         headline = Some("headline"),
@@ -75,8 +73,9 @@ class StageModelTest extends PlaySpec {
         sources = Seq(allSearchQueriesDataSource)
       )
 
+
       val politikChannel: Channel = Channel(
-        id = searchStage.channelId,
+        id = ChannelId("/politik/"),
         data = ChannelData("channel-label", ChannelAdData(false), ChannelMetadata()),
         stages = Some(Seq(searchStage)),
         parent = None,
@@ -98,6 +97,7 @@ class StageModelTest extends PlaySpec {
   }
 
 
+  private val defaultMaxSize: Int = 24
   "The Config Model for SearchApiFilters" must {
 
 
@@ -107,9 +107,14 @@ class StageModelTest extends PlaySpec {
 
       val filters: Seq[Query] = Seq(filter)
       val apiSourceWithFilter: SearchSource = SearchSource(
-        maxSize = Some(24), queries = filters)
+        maxSize = Some(defaultMaxSize), queries = filters)
       val apiHighlightStage: Stage = Stage(
-        maxSize = Some(24), sources = Seq(apiSourceWithFilter), layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/"), channelId = ChannelId("/home/"))
+        maxSize = Some(defaultMaxSize),
+        sources = Seq(apiSourceWithFilter),
+        layout = None,
+        lazyLoaded = false,
+        headline = Some("Politik"),
+        path = Some("/politik/"))
 
       val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
 
@@ -122,9 +127,11 @@ class StageModelTest extends PlaySpec {
 
       val filters: Seq[Query] = Seq(filter)
       val apiSourceWithFilter: SearchSource = SearchSource(
-        maxSize = Some(24), queries = filters)
+        maxSize = Some(defaultMaxSize), queries = filters)
       val apiHighlightStage: Stage = Stage(
-        maxSize = Some(24), sources = Seq(apiSourceWithFilter), layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/"), channelId = ChannelId("/home/"))
+        maxSize = Some(defaultMaxSize), sources = Seq(apiSourceWithFilter),
+        layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/")
+      )
 
       val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
       source.queries.head.getClass mustBe classOf[SubTypeQuery]
@@ -136,9 +143,12 @@ class StageModelTest extends PlaySpec {
 
       val filters: Seq[Query] = Seq(filter)
       val apiSourceWithFilter: SearchSource = SearchSource(
-        maxSize = Some(24), queries = filters)
+        maxSize = Some(defaultMaxSize), queries = filters)
       val apiHighlightStage: Stage = Stage(
-        maxSize = Some(24), sources = Seq(apiSourceWithFilter), layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/"), channelId = ChannelId("/home/"))
+        maxSize = Some(defaultMaxSize),
+        sources = Seq(apiSourceWithFilter), layout = None, lazyLoaded = false,
+        headline = Some("Politik"), path = Some("/politik/")
+      )
 
       val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
       source.queries.head.getClass mustBe classOf[SectionQuery]
@@ -150,12 +160,17 @@ class StageModelTest extends PlaySpec {
 
       val filters: Seq[Query] = Seq(filter)
       val apiSourceWithFilter: SearchSource = SearchSource(
-        maxSize = Some(24), queries = filters)
+        maxSize = Some(defaultMaxSize), queries = filters)
       val apiHighlightStage: Stage = Stage(
-        maxSize = Some(24), sources = Seq(apiSourceWithFilter), layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/"), channelId = ChannelId("/home/"))
+        maxSize = Some(defaultMaxSize), sources = Seq(apiSourceWithFilter),
+        layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/")
+      )
 
       val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
       source.queries.head.getClass mustBe classOf[FlagQuery]
+      implicit val query = Json.format[Query]
+      implicit val sourceW = Json.writes[SearchSource]
+      println(Json.toJson(source)(sourceW))
     }
 
   }
@@ -165,9 +180,11 @@ class StageModelTest extends PlaySpec {
       val folder: String = "homepage"
       val file: String = "aufmacher"
       val papyrusPolitikSource: CuratedSource = CuratedSource(
-        maxSize = Some(24), papyrusFolder = folder, papyrusFile = file)
+        maxSize = Some(defaultMaxSize), papyrusFolder = folder, papyrusFile = file)
       val papyrusPolitikStage: Stage = Stage(
-        maxSize = Some(24), sources = Seq(papyrusPolitikSource), layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/"), channelId = ChannelId("/home/"))
+        maxSize = Some(defaultMaxSize), sources = Seq(papyrusPolitikSource),
+        layout = None, lazyLoaded = false, headline = Some("Politik"), path = Some("/politik/")
+      )
 
       papyrusPolitikStage.sources.head.asInstanceOf[CuratedSource].papyrusFile mustBe file
       papyrusPolitikStage.sources.head.asInstanceOf[CuratedSource].papyrusFolder mustBe folder
