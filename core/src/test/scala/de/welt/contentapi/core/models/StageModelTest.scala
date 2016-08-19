@@ -28,7 +28,7 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(limitCurationSize),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
 
       val curatedStage: Stage = Stage(
@@ -68,7 +68,7 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(stageLimit),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
       val searchStage: Stage = Stage(
         sources = Seq(allSearchQueriesDataSource),
@@ -113,7 +113,7 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
 
       val apiHighlightStage: Stage = Stage(
@@ -135,7 +135,7 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
       val apiHighlightStage: Stage = Stage(
         sources = Seq(apiSourceWithFilter),
@@ -155,7 +155,7 @@ class StageModelTest extends PlaySpec {
         maxSize = Some(defaultMaxSize), queries = filters)
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
       val apiHighlightStage: Stage = Stage(
         sources = Seq(apiSourceWithFilter),
@@ -176,7 +176,7 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
       val apiHighlightStage: Stage = Stage(
         sources = Seq(apiSourceWithFilter),
@@ -199,7 +199,7 @@ class StageModelTest extends PlaySpec {
         maxSize = Some(defaultMaxSize), papyrusFolder = folder, papyrusFile = file)
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        lazyLoaded = Some(false),
+        stageType = StageType("default"),
         path = Some("/stage-link/"))
       val papyrusPolitikStage: Stage = Stage(
         sources = Seq(papyrusPolitikSource),

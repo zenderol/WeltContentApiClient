@@ -13,7 +13,7 @@ case class StageConfig(maxSize: Option[Int] = None,
                        stageTheme: Option[StageTheme] = None,
                        headlineTheme: Option[HeadlineTheme] = None,
                        isHidden: Option[Boolean] = None,
-                       typ: StageType = StageType("default"),
+                       stageType: StageType = StageType("default"),
                        sectionReferences: Seq[SectionReference] = Nil,
                        commercial: Option[Commercial] = None)
 
@@ -37,9 +37,12 @@ object StageFormats {
   import play.api.libs.json._
   import pressed.PressedFormats.sectionReferenceFormat
 
+  // need typesafe val, because default Type is OFormat[...]
+
   implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]
   implicit lazy val commercialFormat: Format[Commercial] = Json.format[Commercial]
   implicit lazy val stageThemeFormat: Format[StageTheme] = Json.format[StageTheme]
+  implicit lazy val stageTypeFormat: Format[StageType] = Json.format[StageType]
   implicit lazy val stageConfigFormat: Format[StageConfig] = Json.format[StageConfig]
   implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]
   // Data Sources
