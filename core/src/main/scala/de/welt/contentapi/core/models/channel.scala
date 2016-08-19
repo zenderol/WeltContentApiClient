@@ -24,6 +24,14 @@ case class Channel(id: ChannelId,
 
   }
 
+  def getAdTag: Option[String] = {
+    if (data.adData.definesAdTag) {
+      Some(id.path)
+    } else {
+      parent.flatMap(_.getAdTag)
+    }
+  }
+
   final def findByEce(ece: Long): Option[Channel] = {
     if (id.ece == ece) {
       Some(this)
@@ -205,6 +213,7 @@ case class ChannelData(label: String,
                        adData: ChannelAdData = ChannelAdData(),
                        metadata: ChannelMetadata = ChannelMetadata(), // @deprecated
                        siteBuilding: Option[ChannelSiteBuilding] = None,
+                       bgColor: Option[String] = None,
                        fields: Option[Map[String, String]] = None // todo, remove option when changes have been applied everywhere
                       )
 

@@ -50,14 +50,14 @@ object reads {
         case JsObject(underlying) ⇒ (for {
           id ← underlying.get("id").map(_.as[ChannelId])
           data ← underlying.get("data").map(_.as[ChannelData])
-          metadata ← underlying.get("metadata").map(_.as[ChannelMetadataNew])
-        } yield JsSuccess(Channel(id = id, data = data, metadata = Some(metadata))))
+        } yield JsSuccess(Channel(id = id, data = data, metadata = underlying.get("metadata").flatMap(_.asOpt[ChannelMetadataNew]))))
           .getOrElse(JsError("Could not validate json [something is missing]. " + Json.prettyPrint(json)))
 
         case err@_ ⇒ JsError(s"expected js-object, but was $err")
       }
     }
   }
+
 }
 
 object writes {
@@ -92,10 +92,10 @@ object writes {
         "id" → Json.toJson(o.id),
         "lastModifiedDate" → JsNumber(o.lastModifiedDate),
         "hasChildren" → JsBoolean(o.hasChildren),
-        "data" → Json.toJson(o.data),
-        "stages" → Json.toJson(o.stages),
-        "metadata" → Json.toJson(o.metadata)
-      ))
+        "data" → Json.toJson(o.data)
+      ) ++ o.stages.map { stage ⇒ "stages" → Json.toJson(stage) }
+        ++ o.metadata.map { metadata ⇒ "metadata" → Json.toJson(metadata) }
+      )
     }
 
     implicit lazy val oneLevelOfChildren: Writes[Channel] = (
@@ -113,13 +113,12 @@ object writes {
       override def writes(o: Channel): JsValue = JsNull
     }
   }
+
 }
 
-
-  object ChannelFormatNoChildren {
-    implicit lazy val channelFormat: Format[Channel] = Format(reads.PartialChannelReads.noChildrenReads, PartialChannelWrites.noChildrenWrites)
-  }
-
+object ChannelFormatNoChildren {
+  implicit lazy val channelFormat: Format[Channel] = Format(reads.PartialChannelReads.noChildrenReads, PartialChannelWrites.noChildrenWrites)
+}
 
 object SimpleFormats {
   implicit lazy val idFormat: Format[ChannelId] = Json.format[ChannelId]

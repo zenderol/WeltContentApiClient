@@ -1,52 +1,88 @@
 package de.welt.contentapi.core.models
 
-import play.api.libs.json.Json
-
 object pressed {
 
   case class SectionPage(config: SectionPageConfig, stages: Seq[ContentStage] = Seq.empty)
 
-  case class SectionPageConfig(label: String,
+  case class SectionPageConfig(displayName: String,
                                adZone: String,
                                path: String,
-                               theme: SectionPageTheme)
+                               theme: SectionPageTheme,
+                               keywords: Option[String],
+                               description: Option[String],
+                               title: Option[String],
+                               eceId: Long
+                              )
 
-  case class SectionPageTheme(name: String = "default")
+  object SectionPageConfig {
+    def fromChannel(channel: Channel) = SectionPageConfig(
+      displayName = channel.data.label,
+      adZone = channel.getAdTag.getOrElse("home").stripPrefix("/").stripSuffix("/") + "_index",
+      path = channel.id.path,
+      theme = SectionPageTheme(),
+      keywords = channel.data.fields.flatMap(_.get("keywords")),
+      description = channel.data.fields.flatMap(_.get("description")),
+      title = channel.data.fields.flatMap(_.get("title")),
+      eceId = channel.id.ece
+    )
+  }
+
+  case class SectionPageTheme(name: String = "default",
+                              bgColor: Option[String] = None
+                             )
 
   case class ContentStage(config: StageConfig, content: Seq[PressedContent])
 
-  case class StageConfig(id: String= "default",
-                         theme: StageMetadata = StageMetadata(),
-                         headline: Option[String] = None,
+  case class StageConfig(id: String = "default",
+                         theme: Option[StageTheme] = None,
+                         headlineTheme: Option[HeadlineTheme] = None,
                          path: Option[String] = None,
-                         lazyLoaded: Boolean = false
+                         sectionReferences: Seq[SectionReference] = Nil,
+                         lazyLoaded: Boolean = false,
+                         commercial: Option[String] = None
                         )
 
-  case class StageMetadata(name: String = "default", sectionReferences: Seq[SectionReference] = Nil)
+  case class HeadlineTheme(headline: String,
+                           size: Option[String],
+                           weight: Option[String]
+                           )
+
+  case class StageTheme(name: String = "default",
+                        bgColor: Option[String] = None,
+                        itemGap: Option[String] = None,
+                        stageGap: Option[String] = None,
+                        isHidden: Boolean = false,
+                        isFrameless: Boolean = true)
 
   case class SectionReference(path: String, label: String)
 
   case class PressedContent(config: PressedContentConfig, content: EnrichedApiContent)
 
-  case class PressedContentConfig(profile: String = "wide")
+  /**
+    * Defines how a single Content should be displayed
+    * @param profile The view profile, one of ```[tiny, small, half, medium, wide]```
+    * @param `type` Specifies the teaser Type, one of ```[Hero, Mediahero, Default, DefaultIcon, Simple, Upright, Inline, Cluster, Counter, Newsticker]```
+    */
+  case class PressedContentConfig(profile: String = "wide", `type`: String = "Default")
 
 
   object PressedFormats {
-    import SectionDataFormats._
-    import ApiFormats._
-    // reads
-    implicit lazy val SectionReferenceReads = Json.reads[SectionReference]
 
-    // writes
-    implicit lazy val PressedContentConfigFormat = Json.format[PressedContentConfig]
-    implicit lazy val PressedContentFormat = Json.format[PressedContent]
-    implicit lazy val SectionReferenceFormat = Json.format[SectionReference]
-    implicit lazy val StageMetadataFormat = Json.format[StageMetadata]
-    implicit lazy val StageConfigWrites = Json.format[StageConfig]
-    implicit lazy val ContentStageWrites = Json.format[ContentStage]
-    implicit lazy val SectionPageThemeWrites = Json.format[SectionPageTheme]
-    implicit lazy val SectionPageConfigWrites = Json.format[SectionPageConfig]
-    implicit lazy val SectionPageWrites = Json.format[SectionPage]
+    import play.api.libs.json._
+    import de.welt.contentapi.core.models.SectionDataFormats._
+    import de.welt.contentapi.core.models.ApiFormats._
+
+    // formats
+    implicit lazy val pressedContentConfigFormat: Format[PressedContentConfig] = Json.format[PressedContentConfig]
+    implicit lazy val pressedContentFormat: Format[PressedContent] = Json.format[PressedContent]
+    implicit lazy val sectionReferenceFormat: Format[SectionReference] = Json.format[SectionReference]
+    implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]
+    implicit lazy val stageThemeFormat: Format[StageTheme] = Json.format[StageTheme]
+    implicit lazy val stageConfigFormat: Format[StageConfig] = Json.format[StageConfig]
+    implicit lazy val contentStageFormat: Format[ContentStage] = Json.format[ContentStage]
+    implicit lazy val sectionPageThemeFormat: Format[SectionPageTheme] = Json.format[SectionPageTheme]
+    implicit lazy val sectionPageConfigFormat: Format[SectionPageConfig] = Json.format[SectionPageConfig]
+    implicit lazy val sectionPageFormat: Format[SectionPage] = Json.format[SectionPage]
   }
 
 }

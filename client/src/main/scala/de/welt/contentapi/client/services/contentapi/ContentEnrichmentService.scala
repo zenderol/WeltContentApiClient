@@ -14,15 +14,15 @@ trait ContentEnrichmentService {
 }
 
 @Singleton
-class ContentEnrichmentServiceImpl @Inject()(contentService: ContentService, sectionMetadataService: SectionService)
+class ContentEnrichmentServiceImpl @Inject()(contentService: ContentService, sectionService: SectionService)
   extends ContentEnrichmentService with Loggable {
 
   override def find(id: String, showRelated: Boolean = true)(implicit request: Request[Any], executionContext: ExecutionContext): Future[EnrichedApiResponse] =
     contentService.find(id, showRelated).map { response ⇒
 
       EnrichedApiResponse(
-        sectionMetadataService.enrich(response.content),
-        response.related.getOrElse(Nil).map(sectionMetadataService.enrich)
+        sectionService.enrich(response.content),
+        response.related.getOrElse(Nil).map(sectionService.enrich)
       )
     }
 }

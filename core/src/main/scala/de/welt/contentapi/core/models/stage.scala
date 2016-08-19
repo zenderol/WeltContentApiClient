@@ -3,24 +3,44 @@ package de.welt.contentapi.core.models
 import de.welt.contentapi.core.models.Datasource.{CuratedSource, SearchSource}
 import de.welt.contentapi.core.models.Query.{FlagQuery, SectionQuery, SubTypeQuery, TypeQuery}
 import de.welt.contentapi.core.models.pressed.SectionReference
-import play.api.libs.json._
 
-case class Stage(
-                  id: String = "default",
-                  maxSize: Option[Int] = None,
-                  sources: Seq[Datasource],
-                  layout: Option[String] = None, // fixed, dynamic todo
-                  lazyLoaded: Boolean = false,
-                  headline: Option[String] = None,
-                  path: Option[String] = None,
-                  sectionReferences: Seq[SectionReference] = Seq.empty
-                ) {}
+case class Stage(id: String = "default",
+                 sources: Seq[Datasource],
+                 config: StageConfig) {}
+
+case class StageConfig(maxSize: Option[Int] = None,
+                       path: Option[String] = None,
+                       stageTheme: Option[StageTheme] = None,
+                       headlineTheme: Option[HeadlineTheme] = None,
+                       isHidden: Option[Boolean] = None,
+                       typ: StageType = StageType("default"),
+                       sectionReferences: Seq[SectionReference] = Nil,
+                       commercial: Option[Commercial] = None)
+
+case class Commercial(typ: String)
+
+case class HeadlineTheme(headline: String,
+                         size: Option[String],
+                         weight: Option[String])
+
+case class StageTheme(name: String = "default",
+                      itemGap: Option[String] = None,
+                      sectionGap: Option[String] = None,
+                      bgColor: Option[String] = None,
+                      frameless : Option[Boolean] = None)
+
+case class StageType(typ: String)
 
 
 object StageFormats {
 
-  import de.welt.contentapi.core.models.pressed.PressedFormats.SectionReferenceFormat
+  import play.api.libs.json._
+  import pressed.PressedFormats.sectionReferenceFormat
 
+  implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]
+  implicit lazy val commercialFormat: Format[Commercial] = Json.format[Commercial]
+  implicit lazy val stageThemeFormat: Format[StageTheme] = Json.format[StageTheme]
+  implicit lazy val stageConfigFormat: Format[StageConfig] = Json.format[StageConfig]
   implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]
   // Data Sources
   implicit lazy val datasourceFormat: Format[Datasource] = Json.format[Datasource]
@@ -43,6 +63,8 @@ sealed trait Query {
 }
 
 object Query {
+
+  import play.api.libs.json._
 
   object QueryTypes {
     val typesQuery: String = "type"
@@ -114,6 +136,9 @@ object DatasourceTypes {
 }
 
 object Datasource {
+
+  import play.api.libs.json._
+
   def unapply(datasource: Datasource): Option[(String, JsValue)] = {
     val (typ: String, sub) = datasource.typ match {
       case DatasourceTypes.curatedSource =>

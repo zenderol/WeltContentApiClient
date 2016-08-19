@@ -1,8 +1,5 @@
 package de.welt.contentapi.core.models
 
-import de.welt.contentapi.core.models.pressed.SectionReference
-import play.api.libs.json.Json
-
 case class EnrichedApiContent(content: ApiContent, sectionData: Option[SectionData]) {
   def `type`: String = content.`type`
 }
@@ -16,18 +13,11 @@ case class EnrichedApiResponse(main: EnrichedApiContent, related: List[EnrichedA
 
 case class SectionData(home: Channel, breadcrumb: Seq[Channel])
 
-object SectionData {
-  def apply(path: String, label: String, breadcrumb: Seq[Channel], definesAdTag: Boolean = false): SectionData = {
-    val channelData: ChannelData = ChannelData(label, adData = ChannelAdData(definesAdTag = definesAdTag))
-
-    SectionData(Channel(ChannelId(path), channelData), breadcrumb)
-  }
-}
-
 object SectionDataFormats {
-  import ApiFormats._
-  import ChannelFormatNoChildren.channelFormat
+  import play.api.libs.json._
+  import de.welt.contentapi.core.models.ApiFormats._
+  import de.welt.contentapi.core.models.ChannelFormatNoChildren.channelFormat
 
-  implicit lazy val sectionDataWrites = Json.format[SectionData]
-  implicit lazy val EnrichedApiContentWrites = Json.format[EnrichedApiContent]
+  implicit lazy val sectionDataFormat: Format[SectionData] = Json.format[SectionData]
+  implicit lazy val EnrichedApiContentFormat: Format[EnrichedApiContent] = Json.format[EnrichedApiContent]
 }

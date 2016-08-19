@@ -1,22 +1,32 @@
 import bintray.BintrayPlugin.autoImport._
 import com.scalapenos.sbt.prompt.SbtPrompt.autoImport._
+import org.scalastyle.sbt.ScalastylePlugin._
 import sbt.Keys._
 import sbt._
 import scoverage.ScoverageSbtPlugin.autoImport._
-import org.scalastyle.sbt.ScalastylePlugin._
 
 object MyBuild extends Build {
 
+  val forScala2_4 = if (System.getenv("PLAY_VERSION") == null) {
+    false
+  } else {
+    System.getenv("PLAY_VERSION").toBoolean
+  }
+  val isSnapshot = false
+
   scalaVersion := "2.11.8"
-  val playVersion = "2.5.4"
+  val playVersion = if (forScala2_4) "2.4.8" else "2.5.3"
+
   def withTests(project: Project) = project % "test->test;compile->compile"
+
+  private val actualVersion: String = "0.3.5"
 
   val frontendCompilationSettings = Seq(
     organization := "de.welt",
     scalaVersion := "2.11.8",
-    version := "0.3.0",
+    version := s"$actualVersion${if (forScala2_4) "_2.4.0" else ""}${if (isSnapshot) "-SNAPSHOT" else ""}",
 
-    licenses +=("MIT", url("http://opensource.org/licenses/MIT")),
+    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     publishArtifact in Test := false,
     promptTheme := com.scalapenos.sbt.prompt.PromptThemes.ScalapenosTheme
@@ -47,9 +57,6 @@ object MyBuild extends Build {
       "com.amazonaws" % "aws-java-sdk-core" % "1.11.13",
       "com.amazonaws" % "aws-java-sdk-s3" % "1.11.13",
 
-      // this is a temporary fix until the original maintainer releases the 2.5 version of this plugin
-      "de.threedimensions" %% "metrics-play" % "2.5.13",
-
       "com.typesafe" % "config" % "1.3.0" % Provided,
 
       "com.typesafe.play" %% "play-ws" % playVersion % Provided,
@@ -57,8 +64,16 @@ object MyBuild extends Build {
 
       "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % Test
-    )
+    ) ++ (
+      if (forScala2_4) {
+        Seq("com.kenshoo" %% "metrics-play" % "2.4.0_0.4.1")
+      }
+      else {
+        Seq("de.threedimensions" %% "metrics-play" % "2.5.13")
+      }
+      )
   )
+
 
   val bintraySettings = Seq(
     pomExtra := (
@@ -86,7 +101,7 @@ object MyBuild extends Build {
   def codeStyleSettings = Seq(
     // scoverage
     coverageExcludedPackages := "<empty>;",
-//    coverageMinimum := 25, // we are not that good yet ;)
+    //    coverageMinimum := 25, // we are not that good yet ;)
     coverageFailOnMinimum := true,
 
     // scalastyle
