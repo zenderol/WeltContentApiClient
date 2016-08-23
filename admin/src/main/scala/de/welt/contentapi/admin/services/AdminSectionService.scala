@@ -13,11 +13,14 @@ import de.welt.contentapi.core.models.writes.FullChannelWrites
 import de.welt.contentapi.core.traits.Loggable
 import play.api.Environment
 import play.api.cache.CacheApi
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 
 trait AdminSectionService extends SectionService {
 
-  def updateChannel(channel: Channel, updatedChannelData: ChannelData, user: String)(implicit env: Env): Option[Channel]
+  def updateChannel(channel: Channel,
+                    updatedChannelData: ChannelData,
+                    user: String,
+                    updatedStages: Option[Seq[Stage]])(implicit env: Env): Option[Channel]
 
   def syncWithLegacy(): Unit
 
@@ -32,10 +35,10 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
   extends SectionServiceImpl(config, cache, s3, environment) with AdminSectionService with Loggable {
 
 
-  override def updateChannel(channel: Channel, updatedChannelData: ChannelData, user: String)
+  override def updateChannel(channel: Channel, updatedChannelData: ChannelData, user: String, updatedStages: Option[Seq[Stage]] = None)
                             (implicit env: Env): Option[Channel] = {
 
-    // update channel (lastModified), currently adData, fields and siteBuilding allowed only
+    // update channel (lastModified), currently adData, fields, stages and siteBuilding allowed only
     channel.data = channel.data.copy(
       adData = updatedChannelData.adData,
       fields = updatedChannelData.fields,
@@ -43,6 +46,7 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
     )
     channel.lastModifiedDate = Instant.now.toEpochMilli
     channel.metadata = Some(ChannelMetadataNew(user, Instant.now.toEpochMilli))
+    channel.stages = updatedStages
 
     log.info(s"$channel changed by $user")
 
@@ -87,9 +91,11 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
   private def saveChannel(ch: Channel)(implicit env: Env) = {
     import FullChannelWrites._
 
+
     ch.applyChannelUpdates()
 
-    val serializedChannelData = Json.toJson(ch).toString
+    val json: JsValue = Json.toJson(ch)(channelWrites)
+    val serializedChannelData = json.toString
 
     log.info(s"saving channel tree to s3 -> ${objectKeyForEnv(env)}")
 

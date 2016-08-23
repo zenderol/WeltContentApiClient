@@ -44,13 +44,21 @@ object reads {
   object PartialChannelReads {
 
     import SimpleFormats._
+    import StageFormats._
 
     implicit lazy val noChildrenReads: Reads[Channel] = new Reads[Channel] {
       override def reads(json: JsValue): JsResult[Channel] = json match {
         case JsObject(underlying) ⇒ (for {
           id ← underlying.get("id").map(_.as[ChannelId])
           data ← underlying.get("data").map(_.as[ChannelData])
-        } yield JsSuccess(Channel(id = id, data = data, metadata = underlying.get("metadata").flatMap(_.asOpt[ChannelMetadataNew]))))
+          stages ← underlying.get("stages").map(_.asOpt[Seq[Stage]])
+        } yield JsSuccess(
+          Channel(
+            id = id,
+            data = data,
+            stages = stages,
+            metadata = underlying.get("metadata").flatMap(_.asOpt[ChannelMetadataNew])
+          )))
           .getOrElse(JsError("Could not validate json [something is missing]. " + Json.prettyPrint(json)))
 
         case err@_ ⇒ JsError(s"expected js-object, but was $err")
@@ -121,12 +129,15 @@ object ChannelFormatNoChildren {
 }
 
 object SimpleFormats {
+
+  import StageFormats._
+
   implicit lazy val idFormat: Format[ChannelId] = Json.format[ChannelId]
-  implicit lazy val adFormat: Format[ChannelAdData] = Json.format[ChannelAdData]
+  implicit lazy val dataFormat: Format[ChannelData] = Json.format[ChannelData]
   implicit lazy val metaDataFormat: Format[ChannelMetadata] = Json.format[ChannelMetadata]
   implicit lazy val siteBuildingFormat: Format[ChannelSiteBuilding] = Json.format[ChannelSiteBuilding]
+  implicit lazy val adFormat: Format[ChannelAdData] = Json.format[ChannelAdData]
   implicit lazy val metaDataNewFormat: Format[ChannelMetadataNew] = Json.format[ChannelMetadataNew]
-  implicit lazy val dataFormat: Format[ChannelData] = Json.format[ChannelData]
 
 }
 
