@@ -32,6 +32,7 @@ class StageModelTest extends PlaySpec {
         path = Some("/stage-link/"))
 
       val curatedStage: Stage = Stage(
+        index = 0,
         sources = Seq(papyrusAuslandSource),
         config = config)
 
@@ -71,6 +72,7 @@ class StageModelTest extends PlaySpec {
         stageType = StageType("default"),
         path = Some("/stage-link/"))
       val searchStage: Stage = Stage(
+        index = 0,
         sources = Seq(allSearchQueriesDataSource),
         config = config
       )
@@ -117,6 +119,7 @@ class StageModelTest extends PlaySpec {
         path = Some("/stage-link/"))
 
       val apiHighlightStage: Stage = Stage(
+        index = 0,
         sources = Seq(apiSourceWithFilter),
         config = config)
 
@@ -138,6 +141,7 @@ class StageModelTest extends PlaySpec {
         stageType = StageType("default"),
         path = Some("/stage-link/"))
       val apiHighlightStage: Stage = Stage(
+        index = 0,
         sources = Seq(apiSourceWithFilter),
         config = config
       )
@@ -158,6 +162,7 @@ class StageModelTest extends PlaySpec {
         stageType = StageType("default"),
         path = Some("/stage-link/"))
       val apiHighlightStage: Stage = Stage(
+        index = 0,
         sources = Seq(apiSourceWithFilter),
         config = config
       )
@@ -179,6 +184,7 @@ class StageModelTest extends PlaySpec {
         stageType = StageType("default"),
         path = Some("/stage-link/"))
       val apiHighlightStage: Stage = Stage(
+        index = 0,
         sources = Seq(apiSourceWithFilter),
         config = config
       )
@@ -202,6 +208,7 @@ class StageModelTest extends PlaySpec {
         stageType = StageType("default"),
         path = Some("/stage-link/"))
       val papyrusPolitikStage: Stage = Stage(
+        index = 0,
         sources = Seq(papyrusPolitikSource),
         config = config
       )
