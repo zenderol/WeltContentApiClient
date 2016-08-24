@@ -31,7 +31,7 @@ object pressed {
                               bgColor: Option[String] = None
                              )
 
-  case class ContentStage(config: StageConfig, content: Seq[PressedContent])
+  case class ContentStage(index: Int, config: StageConfig, content: Seq[PressedContent])
 
   case class StageConfig(id: String = "default",
                          theme: Option[StageTheme] = None,

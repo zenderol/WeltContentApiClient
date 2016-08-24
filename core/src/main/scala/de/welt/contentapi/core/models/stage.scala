@@ -5,6 +5,7 @@ import de.welt.contentapi.core.models.Query.{FlagQuery, SectionQuery, SubTypeQue
 import de.welt.contentapi.core.models.pressed.SectionReference
 
 case class Stage(id: String = "default",
+                 index: Int,
                  sources: Seq[Datasource],
                  config: StageConfig) {}
 
