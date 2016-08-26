@@ -237,6 +237,8 @@ case class ChannelData(label: String,
 
 case class ChannelMetadata(data: Map[String, String] = Map.empty)
 
-case class ChannelAdData(definesAdTag: Boolean = false)
+case class ChannelAdData(definesAdTag: Boolean = false,
+                         definesVideoAdTag: Boolean = false
+                        )
 
 case class ChannelSiteBuilding(theme: String = "")
