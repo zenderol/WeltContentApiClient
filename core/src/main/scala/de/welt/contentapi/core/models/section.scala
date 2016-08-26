@@ -11,7 +11,12 @@ case class EnrichedApiResponse(main: EnrichedApiContent, related: List[EnrichedA
   def playlist = related.filter(_.content.unwrappedRoles.contains("playlist"))
 }
 
-case class SectionData(home: Channel, breadcrumb: Seq[Channel])
+case class SectionData(home: Channel, breadcrumb: Seq[Channel]) {
+  def fromChannel(channel: Channel): Unit = {
+    SectionData(channel, channel.getBreadcrumb())
+  }
+}
+
 
 object SectionDataFormats {
   import play.api.libs.json._

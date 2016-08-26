@@ -24,6 +24,24 @@ case class Channel(id: ChannelId,
 
   }
 
+  def getBreadcrumb(): Seq[Channel] = {
+    val breadcrumb: Seq[Channel] = Seq.empty
+    var current = getParentSafeley(this)
+    while (current.isDefined) {
+      breadcrumb :+ current.get.copy(children = Seq())
+      current = getParentSafeley(current.get)
+    }
+    breadcrumb
+  }
+
+  def getParentSafeley(channel: Channel) : Option[Channel] = {
+    if (channel.parent.isDefined && channel.parent.get.id.ece != 0) {
+      Some(channel.parent.get)
+    } else {
+      None
+    }
+  }
+
   def getAdTag: Option[String] = {
     if (data.adData.definesAdTag) {
       Some(id.path)
