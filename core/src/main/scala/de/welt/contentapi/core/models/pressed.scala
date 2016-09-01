@@ -11,7 +11,8 @@ object pressed {
                                keywords: Option[String],
                                description: Option[String],
                                title: Option[String],
-                               eceId: Long
+                               eceId: Long,
+                               fields: Map[String, String]
                               )
 
   object SectionPageConfig {
@@ -23,7 +24,8 @@ object pressed {
       keywords = channel.data.fields.flatMap(_.get("keywords")),
       description = channel.data.fields.flatMap(_.get("description")),
       title = channel.data.fields.flatMap(_.get("title")),
-      eceId = channel.id.ece
+      eceId = channel.id.ece,
+      fields = channel.data.fields.getOrElse(Map.empty)
     )
   }
 
