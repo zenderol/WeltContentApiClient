@@ -8,11 +8,8 @@ object pressed {
                                adZone: String,
                                path: String,
                                theme: SectionPageTheme,
-                               keywords: Option[String],
-                               description: Option[String],
-                               title: Option[String],
                                eceId: Long,
-                               fields: Map[String, String]
+                               fields: Option[Map[String, String]]
                               )
 
   object SectionPageConfig {
@@ -21,11 +18,8 @@ object pressed {
       adZone = channel.getAdTag.getOrElse("home").stripPrefix("/").stripSuffix("/") + "_index",
       path = channel.id.path,
       theme = SectionPageTheme(),
-      keywords = channel.data.fields.flatMap(_.get("keywords")),
-      description = channel.data.fields.flatMap(_.get("description")),
-      title = channel.data.fields.flatMap(_.get("title")),
       eceId = channel.id.ece,
-      fields = channel.data.fields.getOrElse(Map.empty)
+      fields = channel.data.fields
     )
   }
 
