@@ -44,7 +44,7 @@ case class Channel(id: ChannelId,
 
   def getAdTag: Option[String] = {
     if (data.adData.definesAdTag) {
-      Some(id.path)
+      Some(id.getLastPathPart)
     } else {
       parent.flatMap(_.getAdTag)
     }
@@ -210,6 +210,10 @@ case class ChannelId(var path: String, isVirtual: Boolean = false, ece: Long = -
   }
 
   override def hashCode: Int = ece.hashCode
+
+  def getLastPathPart : String = {
+    path.split("/").filter(!_.isEmpty).last
+  }
 }
 
 case class ChannelUpdate(added: Seq[Channel] = Seq.empty, deleted: Seq[Channel] = Seq.empty, moved: Seq[Channel] = Seq.empty) {

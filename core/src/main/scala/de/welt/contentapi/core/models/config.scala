@@ -57,7 +57,8 @@ object reads {
             id = id,
             data = data,
             stages = stages,
-            metadata = underlying.get("metadata").flatMap(_.asOpt[ChannelMetadataNew])
+            metadata = underlying.get("metadata").flatMap(_.asOpt[ChannelMetadataNew]),
+            children = Seq.empty
           )))
           .getOrElse(JsError("Could not validate json [something is missing]. " + Json.prettyPrint(json)))
 

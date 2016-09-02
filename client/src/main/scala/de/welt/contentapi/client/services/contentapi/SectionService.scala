@@ -35,7 +35,7 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
       _.home.flatMap { home ⇒ {
         val maybeHomeSection: Option[Channel] = root(Live).flatMap(_.findByPath(home))
         maybeHomeSection.map { homeSection ⇒
-          SectionData(homeSection, breadcrumb(homeSection))
+          SectionData.fromChannel(homeSection)
         }
       }
       }

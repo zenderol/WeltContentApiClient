@@ -1,11 +1,14 @@
 package de.welt.contentapi.core.models
 
+import de.welt.contentapi.core.models.reads.FullChannelReads
+import de.welt.contentapi.core.models.writes.FullChannelWrites
+
 object pressed {
 
   case class SectionPage(config: SectionPageConfig, stages: Seq[ContentStage] = Seq.empty)
 
   case class SectionPageConfig(displayName: String,
-                               adZone: String,
+                               pathForAdtech: String,
                                path: String,
                                theme: SectionPageTheme,
                                eceId: Long,
@@ -15,7 +18,7 @@ object pressed {
   object SectionPageConfig {
     def fromChannel(channel: Channel) = SectionPageConfig(
       displayName = channel.data.label,
-      adZone = channel.getAdTag.getOrElse("home").stripPrefix("/").stripSuffix("/") + "_index",
+      pathForAdtech = channel.getAdTag.getOrElse("sonstiges"),
       path = channel.id.path,
       theme = SectionPageTheme(),
       eceId = channel.id.ece,
@@ -67,6 +70,7 @@ object pressed {
     import play.api.libs.json._
     import de.welt.contentapi.core.models.SectionDataFormats._
     import de.welt.contentapi.core.models.ApiFormats._
+    implicit val channelFormatFullChildren: Format[Channel] = Format(FullChannelReads.channelReads, FullChannelWrites.channelWrites)
 
     // formats
     implicit lazy val pressedContentConfigFormat: Format[PressedContentConfig] = Json.format[PressedContentConfig]
