@@ -16,6 +16,7 @@ case class Channel(id: ChannelId,
                    var metadata: Option[ChannelMetadataNew] = None) extends Loggable  {
 
   hasChildren = children.nonEmpty
+  val DEFAULT_AD_TAG = "sonstiges"
 
   final def updateParentRelations(newParent: Option[Channel] = None): Unit = {
 
@@ -44,7 +45,12 @@ case class Channel(id: ChannelId,
 
   def getAdTag: Option[String] = {
     if (data.adData.definesAdTag) {
-      Some(id.getLastPathPart)
+      val adPath: String = id.path.stripPrefix("/").stripSuffix("/").trim match {
+        case empty if empty.isEmpty && id.ece == 5 => "home"
+        case ok if !ok.isEmpty => ok
+        case _ => DEFAULT_AD_TAG
+      }
+      Some(adPath)
     } else {
       parent.flatMap(_.getAdTag)
     }
@@ -211,8 +217,12 @@ case class ChannelId(var path: String, isVirtual: Boolean = false, ece: Long = -
 
   override def hashCode: Int = ece.hashCode
 
-  def getLastPathPart : String = {
-    path.split("/").filter(!_.isEmpty).last
+  def getLastPathPart : Option[String] = {
+    path match {
+      case home if home.equals("/") => Some("home")
+      case channelPath if !channelPath.isEmpty => channelPath.split("/").filter(!_.isEmpty).lastOption
+      case _ => None
+    }
   }
 }
 
@@ -234,7 +244,7 @@ case class ChannelMetadataNew(changedBy: String = "system", lastModifiedDate: Lo
 case class ChannelData(label: String,
                        adData: ChannelAdData = ChannelAdData(),
                        metadata: ChannelMetadata = ChannelMetadata(), // @deprecated
-                       siteBuilding: Option[ChannelSiteBuilding] = None,
+                       siteBuilding: Option[ChannelTheme] = None,
                        bgColor: Option[String] = None,
                        fields: Option[Map[String, String]] = None // todo, remove option when changes have been applied everywhere
                       )
@@ -245,4 +255,16 @@ case class ChannelAdData(definesAdTag: Boolean = false,
                          definesVideoAdTag: Option[Boolean] = None
                         )
 
-case class ChannelSiteBuilding(theme: String = "")
+case class ChannelTheme(name: String = "default")
+
+object ChannelTheme {
+  lazy val DEFAULT = ChannelTheme(name = "")
+
+  lazy val ADVERTORIALS = ChannelTheme(name = "advertorials")
+  lazy val FORMEL1 = ChannelTheme(name = "formel1")
+  lazy val ICON = ChannelTheme(name = "icon")
+  lazy val MEDIATHEK = ChannelTheme(name = "mediathek")
+  lazy val NEWSTICKER = ChannelTheme(name = "newsticker")
+  lazy val OLYMPIA = ChannelTheme(name = "olympia")
+
+}

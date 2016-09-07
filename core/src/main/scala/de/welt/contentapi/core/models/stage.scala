@@ -2,47 +2,81 @@ package de.welt.contentapi.core.models
 
 import de.welt.contentapi.core.models.Datasource.{CuratedSource, SearchSource}
 import de.welt.contentapi.core.models.Query.{FlagQuery, SectionQuery, SubTypeQuery, TypeQuery}
-import de.welt.contentapi.core.models.pressed.SectionReference
 
-case class Stage(id: String = "default",
-                 index: Int,
-                 sources: Seq[Datasource],
-                 config: StageConfig) {}
+case class Stage(id: String = "stage",
+                 index: Int = -1,
+                 sources: Seq[Datasource] = Nil,
+                 config: StageConfig = StageConfig())
 
 case class StageConfig(maxSize: Option[Int] = None,
-                       path: Option[String] = None,
-                       stageTheme: Option[StageTheme] = None,
+                       stageTheme: StageTheme = StageTheme(),
                        headlineTheme: Option[HeadlineTheme] = None,
-                       isHidden: Option[Boolean] = None,
-                       stageType: StageType = StageType("default"),
+                       stageType: StageType = StageType(),
                        sectionReferences: Seq[SectionReference] = Nil,
                        commercial: Option[Commercial] = None)
 
-case class Commercial(typ: String)
 
-case class HeadlineTheme(headline: String,
-                         size: Option[String],
-                         weight: Option[String])
+case class StageTheme(stageLayout: StageLayout = StageLayout(),
+                      stageBgColor: StageBgColor = StageBgColor.DEFAULT)
 
-case class StageTheme(name: String = "default",
-                      itemGap: Option[String] = None,
-                      sectionGap: Option[String] = None,
-                      bgColor: Option[String] = None,
-                      frameless : Option[Boolean] = None)
+case class StageType(typ: String = "default",
+                     lazyloaded: Boolean = false,
+                     hidden: Boolean = false)
 
-case class StageType(typ: String)
+object StageType {
+  val USER_DEFINED = StageType(typ = "user-defined", lazyloaded = true)
+  val TEMPORARY_HIDDEN = StageType(hidden = true)
+}
+
+case class HeadlineTheme(text: String,
+                         small: Boolean = false)
+
+case class Commercial(name: String)
+
+object Commercial {
+  val MEDIUM_RECTANGLE = Commercial("MediumRectangle")
+  val BILLBOARD2 = Commercial("BillBoard2")
+}
+
+case class SectionReference(path: String, label: String)
+
+case class StageLayout(name: String = "default")
+
+object StageLayout {
+
+  lazy val HERO = StageLayout(name = "1-hero-3-small-2-wide") // hero
+  lazy val SIMPLE_GRID = StageLayout(name = "x-small") // default
+  lazy val MULTIMEDIA_BIG = StageLayout(name = "big-img_1-3-2") // MediaHero
+  lazy val TWO_COLUMN_ORDERED_LIST = StageLayout(name = "2-column_orderedList") // Meistgelesen
+  lazy val ONE_MEDIUM_GRID = StageLayout(name = "1-medium_x-small") // Sport
+  lazy val WIDE_HERO_PLUS_INLINE_THIRDS = StageLayout(name = "1-wide_3-inline-thirds") // Sport
+  lazy val WIDE_HERO_PLUS_INLINE_HALFS = StageLayout(name = "1-wide_3-inline-halfs") // Sport
+
+  // ... more Layouts
+}
+
+case class StageBgColor(color: String)
+
+object StageBgColor {
+  lazy val DEFAULT = StageBgColor("")
+
+  lazy val BLARZ = StageBgColor("blarz")
+  lazy val DARK = StageBgColor("dark")
+  lazy val LIGHT = StageBgColor("light")
+}
 
 
 object StageFormats {
 
   import play.api.libs.json._
-  import pressed.PressedFormats.sectionReferenceFormat
 
   // need typesafe val, because default Type is OFormat[...]
-
-  implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]
+  implicit lazy val stageBgColorFormat: Format[StageBgColor] = Json.format[StageBgColor]
   implicit lazy val commercialFormat: Format[Commercial] = Json.format[Commercial]
+  implicit lazy val sectionReferenceFormat: Format[SectionReference] = Json.format[SectionReference]
+  implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]
   implicit lazy val stageThemeFormat: Format[StageTheme] = Json.format[StageTheme]
+  implicit lazy val stageLayoutFormat: Format[StageLayout] = Json.format[StageLayout]
   implicit lazy val stageTypeFormat: Format[StageType] = Json.format[StageType]
   implicit lazy val stageConfigFormat: Format[StageConfig] = Json.format[StageConfig]
   implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]
