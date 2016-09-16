@@ -19,7 +19,7 @@ object MyBuild extends Build {
 
   def withTests(project: Project) = project % "test->test;compile->compile"
 
-  private val actualVersion: String = "0.3.16"
+  private val actualVersion: String = "0.3.17"
 
   val frontendCompilationSettings = Seq(
     organization := "de.welt",

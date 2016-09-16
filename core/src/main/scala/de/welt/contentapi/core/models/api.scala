@@ -92,10 +92,19 @@ import play.api.libs.json._
     def metadataAsset = unwrappedAssets.find(_.`type` == "metadata")
   }
 
+  case class ApiMetadata(validToDate: String) {
+    def asMap: Map[String, String] = Map(
+      "validToDate" -> validToDate
+    )
+  }
+
   case class ApiAsset(`type`: String,
                       fields: Option[Map[String, String]] = None,
+                      metadata: Option[ApiMetadata] = None,
                       index: Option[Int] = None) {
-    def unwrappedFields = fields.getOrElse(Map())
+    def unwrappedFields = fields.getOrElse(Map.empty)
+  
+    def unwrappedMetadata: Map[String, String] = metadata.map(_.asMap).getOrElse(Map.empty)
   }
 
   case class ApiSectionData(home: Option[String], all: Option[List[String]] = None)
@@ -122,6 +131,7 @@ import play.api.libs.json._
   object ApiReads {
 
     implicit lazy val apiOnwardReads = Json.reads[ApiOnward]
+    implicit lazy val apiMetadataReads = Json.reads[ApiMetadata]
     implicit lazy val apiSectionDataReads = Json.reads[ApiSectionData]
     implicit lazy val apiAssetReads = Json.reads[ApiAsset]
     implicit lazy val apiElementReads = Json.reads[ApiElement]
@@ -138,6 +148,7 @@ import play.api.libs.json._
   object ApiWrites {
 
     implicit lazy val apiOnwardWrites = Json.writes[ApiOnward]
+    implicit lazy val apiMetadataWrites = Json.writes[ApiMetadata]
     implicit lazy val apiAssetWrites = Json.writes[ApiAsset]
     implicit lazy val apiSectionDataWrites = Json.writes[ApiSectionData]
     implicit lazy val apiElementWrites = Json.writes[ApiElement]
@@ -153,16 +164,17 @@ import play.api.libs.json._
 
 object ApiFormats {
 
-  implicit lazy val apiOnwardWrites = Json.format[ApiOnward]
-  implicit lazy val apiAssetWrites = Json.format[ApiAsset]
-  implicit lazy val apiSectionDataWrites = Json.format[ApiSectionData]
-  implicit lazy val apiElementWrites = Json.format[ApiElement]
-  implicit lazy val apiAuthorWrites = Json.format[ApiAuthor]
-  implicit lazy val apiHomeSectionWrites = Json.format[ApiHomeSection]
-  implicit lazy val apiTagWrites = Json.format[ApiTag]
-  implicit lazy val apiContentWrites = Json.format[ApiContent]
-  implicit lazy val apiSectionWrites = Json.format[ApiSection]
-  implicit lazy val apiListsWrites = Json.format[ApiLists]
-  implicit lazy val apiResponseWrites = Json.format[ApiResponse]
+  implicit lazy val apiOnwardFormat = Json.format[ApiOnward]
+  implicit lazy val apiMetadataFormat = Json.format[ApiMetadata]
+  implicit lazy val apiAssetFormat = Json.format[ApiAsset]
+  implicit lazy val apiSectionDataFormat = Json.format[ApiSectionData]
+  implicit lazy val apiElementFormat = Json.format[ApiElement]
+  implicit lazy val apiAuthorFormat = Json.format[ApiAuthor]
+  implicit lazy val apiHomeSectionFormat = Json.format[ApiHomeSection]
+  implicit lazy val apiTagFormat = Json.format[ApiTag]
+  implicit lazy val apiContentFormat = Json.format[ApiContent]
+  implicit lazy val apiSectionFormat = Json.format[ApiSection]
+  implicit lazy val apiListsFormat = Json.format[ApiLists]
+  implicit lazy val apiResponseFormat = Json.format[ApiResponse]
 
 }
