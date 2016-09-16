@@ -1,5 +1,7 @@
 package de.welt.contentapi.core.models
 
+
+import com.google.common.collect.ImmutableMap
 import de.welt.contentapi.core.models.Datasource.{CuratedSource, SearchSource}
 import de.welt.contentapi.core.models.Query.{FlagQuery, SectionQuery, SubTypeQuery, TypeQuery}
 
@@ -16,53 +18,100 @@ case class StageConfig(maxSize: Option[Int] = None,
                        commercial: Option[Commercial] = None)
 
 
-case class StageTheme(stageLayout: StageLayout = StageLayout(),
-                      stageBgColor: StageBgColor = StageBgColor.DEFAULT)
+object StageTypeDefinitions {
+  lazy val USER_DEFINED = StageType(typ = "user-defined", lazyloaded = true)
+  lazy val HIDDEN = StageType(typ = "default", hidden = true)
+  lazy val DEFAULT = StageType(typ = "default")
 
-case class StageType(typ: String = "default",
-                     lazyloaded: Boolean = false,
-                     hidden: Boolean = false)
-
-object StageType {
-  val USER_DEFINED = StageType(typ = "user-defined", lazyloaded = true)
-  val TEMPORARY_HIDDEN = StageType(hidden = true)
+}
+case class StageType(typ: String = "default", lazyloaded: Boolean = false, hidden: Boolean = false) {
+  import StageTypeDefinitions._
+  private lazy val constants: ImmutableMap[String, StageType] = ImmutableMap
+    .builder()
+      .put(USER_DEFINED.typ, USER_DEFINED)
+      .put(HIDDEN.typ, HIDDEN)
+    .build()
+  def apply(typ: String = "default"): StageType = {
+    constants.getOrDefault(typ, DEFAULT)
+  }
 }
 
-case class HeadlineTheme(text: String,
-                         small: Boolean = false)
 
-case class Commercial(name: String)
+case class HeadlineTheme(text: String, small: Boolean = false)
 
-object Commercial {
-  val MEDIUM_RECTANGLE = Commercial("MediumRectangle")
-  val BILLBOARD2 = Commercial("BillBoard2")
+case class Commercial(name: String) {
+  import CommercialDefinitions._
+  def apply(value: String): Commercial = {
+    value match {
+      case MEDIUM_RECTANGLE.name => MEDIUM_RECTANGLE
+      case BILLBOARD2.name => BILLBOARD2
+      case _ => Commercial(name = value)
+    }
+  }
+}
+
+object CommercialDefinitions {
+  lazy val MEDIUM_RECTANGLE = Commercial(name = "MediumRectangle")
+  lazy val BILLBOARD2 = Commercial(name = "BillBoard2")
 }
 
 case class SectionReference(path: String, label: String)
 
-case class StageLayout(name: String = "default")
 
-object StageLayout {
+case class StageTheme(stageLayout: StageLayout = StageLayout(),
+                      stageBgColor: StageColor = StageColor(""))
 
-  lazy val HERO = StageLayout(name = "1-hero-3-small-2-wide") // hero
-  lazy val SIMPLE_GRID = StageLayout(name = "x-small") // default
-  lazy val MULTIMEDIA_BIG = StageLayout(name = "big-img_1-3-2") // MediaHero
-  lazy val TWO_COLUMN_ORDERED_LIST = StageLayout(name = "2-column_orderedList") // Meistgelesen
-  lazy val ONE_MEDIUM_GRID = StageLayout(name = "1-medium_x-small") // Sport
-  lazy val WIDE_HERO_PLUS_INLINE_THIRDS = StageLayout(name = "1-wide_3-inline-thirds") // Sport
-  lazy val WIDE_HERO_PLUS_INLINE_HALFS = StageLayout(name = "1-wide_3-inline-halfs") // Sport
 
-  // ... more Layouts
+object StageLayoutDefinitions {
+  lazy val DEFAULT = StageLayout(name = "x-smalls") // Default
+  lazy val HERO = StageLayout("1-hero-3-small-2-wide")
+  lazy val MEDIA_HERO = StageLayout("big-img_1-3-2")
+  lazy val MEISTGELESEN = StageLayout("2-column_orderedList", itemGap = Some("small"), sectionGap = Some("vertical"))
+  lazy val HERO_MEDIUM = StageLayout("1-medium_x-small")
+  lazy val HERO_X_BIG_THIRDS = StageLayout("1-wide_x-big-thirds")
+  lazy val MEDIATHEK = StageLayout("1-wide_x-squares")
+  lazy val HALFS_ONLY = StageLayout("x-halfs")
+  lazy val HIGHLIGHTS= StageLayout("1-wide_3-big-thirds-x-big-halfs")
 }
 
-case class StageBgColor(color: String)
+case class StageLayout(name: String = "default", itemGap: Option[String] = None, sectionGap: Option[String] = None) {
+  import StageLayoutDefinitions._
+  private lazy val constants: ImmutableMap[String, StageLayout] = ImmutableMap
+    .builder()
+    .put(HERO.name, HERO)
+    .put(MEDIA_HERO.name, MEDIA_HERO)
+    .put(MEISTGELESEN.name, MEISTGELESEN) // Meistgelesen
+    .put(HERO_MEDIUM.name, HERO_MEDIUM) // e.g. Sport
+    .put(HERO_X_BIG_THIRDS.name, HERO_X_BIG_THIRDS) // e.g. Schönes Leben
+    .put(MEDIATHEK.name, MEDIATHEK) // e.g. Mediathek on Home
+    .put(HALFS_ONLY.name, HALFS_ONLY) // e.g. Bilder des Tages
+    .put(HIGHLIGHTS.name, HIGHLIGHTS) // e.g. Highlights
+    .build()
 
-object StageBgColor {
-  lazy val DEFAULT = StageBgColor("")
+  def apply(name: String): StageLayout = {
+    constants.getOrDefault(name, DEFAULT)
+  }
+}
 
-  lazy val BLARZ = StageBgColor("blarz")
-  lazy val DARK = StageBgColor("dark")
-  lazy val LIGHT = StageBgColor("light")
+
+object StageColorDefinitions {
+  lazy val BLARZ = StageColor(bgColor = "blarz")
+  lazy val DARK = StageColor(bgColor = "dark")
+  lazy val LIGHT = StageColor(bgColor = "light")
+  lazy val DEFAULT = StageColor(bgColor = "", invertedTextColor = false)
+}
+
+case class StageColor(bgColor: String, invertedTextColor: Boolean = true) {
+  import StageColorDefinitions._
+  private lazy val constants: ImmutableMap[String, StageColor] = ImmutableMap
+    .builder()
+    .put(BLARZ.bgColor, BLARZ)
+    .put(DARK.bgColor, DARK)
+    .put(LIGHT.bgColor, LIGHT)
+    .build()
+  def apply(bgColor: String): StageColor = {
+    constants.getOrDefault(bgColor, DEFAULT)
+  }
 }
 
 
@@ -71,7 +120,7 @@ object StageFormats {
   import play.api.libs.json._
 
   // need typesafe val, because default Type is OFormat[...]
-  implicit lazy val stageBgColorFormat: Format[StageBgColor] = Json.format[StageBgColor]
+  implicit lazy val stageBgColorFormat: Format[StageColor] = Json.format[StageColor]
   implicit lazy val commercialFormat: Format[Commercial] = Json.format[Commercial]
   implicit lazy val sectionReferenceFormat: Format[SectionReference] = Json.format[SectionReference]
   implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]

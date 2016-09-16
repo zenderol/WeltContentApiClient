@@ -70,8 +70,9 @@ sealed trait S3 extends Loggable {
     metadata.setContentType(contentType)
     metadata.setContentLength(value.getBytes("UTF-8").length)
 
-    val request = new PutObjectRequest(bucket, key, new StringInputStream(value), metadata)
+    val request = new PutObjectRequest(bucket, key, new StringInputStream(value), metadata).withStorageClass(StorageClass.Glacier)
       .withCannedAcl(CannedAccessControlList.Private)
+
 
     client.foreach(_.putObject(request))
   }
