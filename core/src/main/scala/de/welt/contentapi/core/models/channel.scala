@@ -5,6 +5,7 @@ import java.time.Instant
 import de.welt.contentapi.core.traits.Loggable
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 
 case class Channel(id: ChannelId,
                    var data: ChannelData,
@@ -26,13 +27,13 @@ case class Channel(id: ChannelId,
   }
 
   def getBreadcrumb(): Seq[Channel] = {
-    val breadcrumb: Seq[Channel] = Seq.empty
+    var breadcrumb: mutable.MutableList[Channel] = mutable.MutableList(this.copy(children = Nil))
     var current = getParentSafeley(this)
     while (current.isDefined) {
-      breadcrumb :+ current.get.copy(children = Seq())
+      breadcrumb.++=(Seq(current.get.copy(children = Nil)))
       current = getParentSafeley(current.get)
     }
-    breadcrumb
+    breadcrumb.reverse
   }
 
   def getParentSafeley(channel: Channel) : Option[Channel] = {

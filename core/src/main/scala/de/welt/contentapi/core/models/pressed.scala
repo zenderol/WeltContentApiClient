@@ -12,7 +12,8 @@ object pressed {
                                path: String,
                                theme: ChannelTheme = ChannelTheme.DEFAULT,
                                eceId: Long,
-                               fields: Option[Map[String, String]]
+                               fields: Option[Map[String, String]],
+                               breadCrumb: Seq[Channel] = Nil
                               )
 
   object SectionPageConfig {
@@ -22,7 +23,8 @@ object pressed {
       path = channel.id.path,
       theme = channel.data.siteBuilding.getOrElse(ChannelTheme.DEFAULT),
       eceId = channel.id.ece,
-      fields = channel.data.fields
+      fields = channel.data.fields,
+      breadCrumb = channel.getBreadcrumb()
     )
   }
 
@@ -49,6 +51,7 @@ object pressed {
     import ApiFormats._
     import StageFormats.stageConfigFormat
     import SimpleFormats.channelThemeFormat
+    import ChannelFormatNoChildren.channelFormat
 
     implicit val channelFormatFullChildren: Format[Channel] = Format(FullChannelReads.channelReads, FullChannelWrites.channelWrites)
 

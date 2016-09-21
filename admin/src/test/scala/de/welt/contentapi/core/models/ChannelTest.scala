@@ -97,6 +97,15 @@ class ChannelTest extends PlaySpec {
 
   }
 
+  "Channel Model" must {
+    "generate correct breadcrumb" in new Fixture {
+      private val ece = movedChild.root.findByEce(3)
+      val breadcrumb = ece.get.getBreadcrumb()
+
+      breadcrumb mustBe Seq(child2, child3)
+    }
+  }
+
   "ChannelTools" must {
 
     "support additions" must {
