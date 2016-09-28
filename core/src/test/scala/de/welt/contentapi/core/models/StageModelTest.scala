@@ -4,7 +4,7 @@ import java.nio.charset.Charset
 import java.time.Instant
 
 import de.welt.contentapi.core.models.Datasource._
-import de.welt.contentapi.core.models.Query._
+import de.welt.contentapi.core.models.Query.{QueryTypes, _}
 import org.apache.commons.io.FileUtils
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
@@ -28,17 +28,17 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(limitCurationSize),
-        stageType = StageType()
+        stageType = Some("")
         )
 
       val curatedStage: Stage = Stage(
         index = 0,
-        sources = Seq(papyrusAuslandSource),
-        config = config)
+        sources = Some(Seq(papyrusAuslandSource)),
+        config = Some(config))
 
-      val politicsChannel: Channel = Channel(
+      val politicsChannel: ApiChannel = ApiChannel(
         id = id,
-        data = ChannelData("channel-label", ChannelAdData(false), ChannelMetadata()),
+        data = ApiChannelData("channel-label", ApiChannelAdData(false), ApiChannelMetadata()),
         stages = Some(Seq(curatedStage)),
         parent = None,
         children = Seq.empty,
@@ -69,17 +69,17 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(stageLimit),
-        stageType = StageType())
+        stageType = Some(""))
       val searchStage: Stage = Stage(
         index = 0,
-        sources = Seq(allSearchQueriesDataSource),
-        config = config
+        sources = Some(Seq(allSearchQueriesDataSource)),
+        config = Some(config)
       )
 
 
-      val politikChannel: Channel = Channel(
+      val politikChannel: ApiChannel = ApiChannel(
         id = ChannelId("/politik/"),
-        data = ChannelData("channel-label", ChannelAdData(false), ChannelMetadata()),
+        data = ApiChannelData("channel-label", ApiChannelAdData(false), ApiChannelMetadata()),
         stages = Some(Seq(searchStage)),
         parent = None,
         children = Seq.empty,
@@ -114,16 +114,14 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        stageType = StageType())
+        stageType = Some(""))
 
       val apiHighlightStage: Stage = Stage(
         index = 0,
-        sources = Seq(apiSourceWithFilter),
-        config = config)
+        sources = Some(Seq(apiSourceWithFilter)),
+        config = Some(config))
 
-      val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
-
-      source.queries.head.getClass mustBe classOf[TypeQuery]
+      apiHighlightStage.sources.foreach(_.head.asInstanceOf[SearchSource].queries.head.queryType mustBe QueryTypes.typesQuery)
     }
 
     "produce a SubTypeFilter with a `subType query`" in {
@@ -136,15 +134,14 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        stageType = StageType())
+        stageType = Some(""))
       val apiHighlightStage: Stage = Stage(
         index = 0,
-        sources = Seq(apiSourceWithFilter),
-        config = config
+        sources = Some(Seq(apiSourceWithFilter)),
+        config = Some(config)
       )
 
-      val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
-      source.queries.head.getClass mustBe classOf[SubTypeQuery]
+      apiHighlightStage.sources.foreach(_.head.asInstanceOf[SearchSource].queries.head.queryType mustBe QueryTypes.subTypesQuery)
     }
 
     "produce a SectionFilter with a `sectionPath query`" in {
@@ -156,15 +153,14 @@ class StageModelTest extends PlaySpec {
         maxSize = Some(defaultMaxSize), queries = filters)
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        stageType = StageType())
+        stageType = Some(""))
       val apiHighlightStage: Stage = Stage(
         index = 0,
-        sources = Seq(apiSourceWithFilter),
-        config = config
+        sources = Some(Seq(apiSourceWithFilter)),
+        config = Some(config)
       )
 
-      val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
-      source.queries.head.getClass mustBe classOf[SectionQuery]
+      apiHighlightStage.sources.foreach(_.head.asInstanceOf[SearchSource].queries.head.queryType mustBe QueryTypes.sectionsQuery)
     }
 
     "produce a FlagFilter with a `flags query`" in {
@@ -177,17 +173,15 @@ class StageModelTest extends PlaySpec {
 
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        stageType = StageType("default"))
+        stageType = Some("default"))
       val apiHighlightStage: Stage = Stage(
         index = 0,
-        sources = Seq(apiSourceWithFilter),
-        config = config
+        sources = Some(Seq(apiSourceWithFilter)),
+        config = Some(config)
       )
 
-      val source: SearchSource = apiHighlightStage.sources.head.asInstanceOf[SearchSource]
-      source.queries.head.getClass mustBe classOf[FlagQuery]
-      implicit val query = Json.format[Query]
-      implicit val sourceW = Json.writes[SearchSource]
+      apiHighlightStage.sources.foreach(_.head.asInstanceOf[SearchSource].queries.head.queryType mustBe QueryTypes.flagsQuery)
+
     }
 
   }
@@ -200,16 +194,13 @@ class StageModelTest extends PlaySpec {
         maxSize = Some(defaultMaxSize), papyrusFolder = folder, papyrusFile = file)
       val config: StageConfig = StageConfig(
         maxSize = Some(defaultMaxSize),
-        stageType = StageType("default"))
+        stageType = Some("default"))
       val papyrusPolitikStage: Stage = Stage(
         index = 0,
-        sources = Seq(papyrusPolitikSource),
-        config = config
+        sources = Some(Seq(papyrusPolitikSource)),
+        config = Some(config)
       )
-
-      papyrusPolitikStage.sources.head.asInstanceOf[CuratedSource].papyrusFile mustBe file
-      papyrusPolitikStage.sources.head.asInstanceOf[CuratedSource].papyrusFolder mustBe folder
-
+      papyrusPolitikStage.sources.foreach(_.head.asInstanceOf[CuratedSource].papyrusFile mustBe file )
     }
 
   }

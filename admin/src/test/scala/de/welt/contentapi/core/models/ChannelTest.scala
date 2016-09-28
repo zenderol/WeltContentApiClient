@@ -9,15 +9,15 @@ class ChannelTest extends PlaySpec {
   trait Fixture {
 
     /** CHILD 1 */
-    val child1Data = ChannelData(label = "child1", adData = ChannelAdData(true))
+    val child1Data = ApiChannelData(label = "child1", adData = ApiChannelAdData(true))
     val child1 = ChannelHelper.emptyWithIdAndData(1, child1Data)
 
     /** CHILD 2 */
-    val child2Data = ChannelData(label = "child2", adData = ChannelAdData(true))
+    val child2Data = ApiChannelData(label = "child2", adData = ApiChannelAdData(true))
     val child2 = ChannelHelper.emptyWithIdAndData(2, child2Data)
 
     /** CHILD 2 */
-    val child3Data = ChannelData(label = "child3", adData = ChannelAdData(true))
+    val child3Data = ApiChannelData(label = "child3", adData = ApiChannelAdData(true))
     val child3 = ChannelHelper.emptyWithIdAndData(3, child3Data)
 
     object twoChildren {
@@ -32,7 +32,7 @@ class ChannelTest extends PlaySpec {
       root.updateParentRelations()
 
       // data node for root
-      val rootData = ChannelData(label = "label", adData = ChannelAdData(true))
+      val rootData = ApiChannelData(label = "label", adData = ApiChannelAdData(true))
       root.data = rootData
     }
 
@@ -44,17 +44,17 @@ class ChannelTest extends PlaySpec {
         *
         */
       /** CHILD 1 */
-      val modifiedChild1Data = ChannelData(label = "child1", adData = ChannelAdData(true))
+      val modifiedChild1Data = ApiChannelData(label = "child1", adData = ApiChannelAdData(true))
       val modifiedChild1 = ChannelHelper.emptyWithIdAndData(1, child1Data)
 
       /** CHILD 2 */
-      val modifiedChild2Data = ChannelData(label = "child2", adData = ChannelAdData(false))
+      val modifiedChild2Data = ApiChannelData(label = "child2", adData = ApiChannelAdData(false))
       val modifiedChild2 = ChannelHelper.emptyWithIdAndData(2, child2Data)
       val root = ChannelHelper.emptyWithIdAndChildren(0, children = Seq(modifiedChild1, modifiedChild2))
       root.updateParentRelations()
 
       // data node for root
-      val rootData = ChannelData(label = "modified-label", adData = ChannelAdData(false))
+      val rootData = ApiChannelData(label = "modified-label", adData = ApiChannelAdData(false))
       root.data = rootData
     }
 
@@ -70,7 +70,7 @@ class ChannelTest extends PlaySpec {
       root.updateParentRelations()
 
       // data node for root
-      val rootData = ChannelData(label = "label", adData = ChannelAdData(true))
+      val rootData = ApiChannelData(label = "label", adData = ApiChannelAdData(true))
       root.data = rootData
     }
 
@@ -91,7 +91,7 @@ class ChannelTest extends PlaySpec {
       root.updateParentRelations()
 
       // data node for root
-      val rootData = ChannelData(label = "label", adData = ChannelAdData(true))
+      val rootData = ApiChannelData(label = "label", adData = ApiChannelAdData(true))
       root.data = rootData
     }
 
@@ -223,7 +223,7 @@ class ChannelTest extends PlaySpec {
       "update the label" in new Fixture {
 
         private val root = twoChildren.root
-        private val other: Channel = twoChildrenMasterDataDiffers.root
+        private val other: ApiChannel = twoChildrenMasterDataDiffers.root
         ChannelTools.merge(root, other)
 
         root.id must be (other.id)
@@ -236,7 +236,7 @@ class ChannelTest extends PlaySpec {
       "update the path" in new Fixture {
 
         private val root = twoChildren.root
-        private val other: Channel = twoChildrenMasterDataDiffers.root
+        private val other: ApiChannel = twoChildrenMasterDataDiffers.root
         ChannelTools.merge(root, other)
 
         root.id must be (other.id)
@@ -249,7 +249,7 @@ class ChannelTest extends PlaySpec {
       "not update the ad data" in new Fixture {
 
         private val root = twoChildren.root
-        private val other: Channel = twoChildrenMasterDataDiffers.root
+        private val other: ApiChannel = twoChildrenMasterDataDiffers.root
         ChannelTools.merge(root, other)
 
         root.id must be (other.id)

@@ -7,27 +7,27 @@ import de.welt.contentapi.core.traits.Loggable
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-case class Channel(id: ChannelId,
-                   var data: ChannelData,
-                   var stages: Option[Seq[Stage]] = None,
-                   var parent: Option[Channel] = None,
-                   var children: Seq[Channel] = Seq.empty,
-                   var hasChildren: Boolean = false,
-                   var lastModifiedDate: Long = Instant.now.toEpochMilli,
-                   var metadata: Option[ChannelMetadataNew] = None) extends Loggable  {
+case class ApiChannel(id: ChannelId,
+                      var data: ApiChannelData,
+                      var stages: Option[Seq[Stage]] = None,
+                      var parent: Option[ApiChannel] = None,
+                      var children: Seq[ApiChannel] = Seq.empty,
+                      var hasChildren: Boolean = false,
+                      var lastModifiedDate: Long = Instant.now.toEpochMilli,
+                      var metadata: Option[ApiChannelMetadataNew] = None) extends Loggable  {
 
   hasChildren = children.nonEmpty
   val DEFAULT_AD_TAG = "sonstiges"
 
-  final def updateParentRelations(newParent: Option[Channel] = None): Unit = {
+  final def updateParentRelations(newParent: Option[ApiChannel] = None): Unit = {
 
     this.parent = newParent
     children.foreach(_.updateParentRelations(Some(this)))
 
   }
 
-  def getBreadcrumb(): Seq[Channel] = {
-    var breadcrumb: mutable.MutableList[Channel] = mutable.MutableList(this.copy(children = Nil))
+  def getBreadcrumb(): Seq[ApiChannel] = {
+    var breadcrumb: mutable.MutableList[ApiChannel] = mutable.MutableList(this.copy(children = Nil))
     var current = getParentSafeley(this)
     while (current.isDefined) {
       breadcrumb.++=(Seq(current.get.copy(children = Nil)))
@@ -36,7 +36,7 @@ case class Channel(id: ChannelId,
     breadcrumb.reverse
   }
 
-  def getParentSafeley(channel: Channel) : Option[Channel] = {
+  def getParentSafeley(channel: ApiChannel) : Option[ApiChannel] = {
     if (channel.parent.isDefined && channel.parent.get.id.ece != 0) {
       Some(channel.parent.get)
     } else {
@@ -57,7 +57,7 @@ case class Channel(id: ChannelId,
     }
   }
 
-  final def findByEce(ece: Long): Option[Channel] = {
+  final def findByEce(ece: Long): Option[ApiChannel] = {
     if (id.ece == ece) {
       Some(this)
     } else {
@@ -65,14 +65,14 @@ case class Channel(id: ChannelId,
     }
   }
 
-  def findByPath(search: String): Option[Channel] = findByPath(
+  def findByPath(search: String): Option[ApiChannel] = findByPath(
     search.split('/').filter(_.nonEmpty).toList match {
       case Nil ⇒ Nil
       case head :: tail ⇒ tail.scanLeft(s"/$head/")((path, s) ⇒ path + s + "/")
     }
   )
 
-  private def findByPath(sectionPath: Seq[String]): Option[Channel] = {
+  private def findByPath(sectionPath: Seq[String]): Option[ApiChannel] = {
     sectionPath match {
       case Nil ⇒
         Some(this)
@@ -86,12 +86,12 @@ case class Channel(id: ChannelId,
   override def toString: String = s"Channel(id='${id.path}', ece=${id.ece}'')"
 
   @tailrec
-  final def root: Channel = parent match {
+  final def root: ApiChannel = parent match {
     case Some(p) ⇒ p.root
     case None ⇒ this
   }
 
-  def diff(other: Channel): ChannelUpdate = {
+  def diff(other: ApiChannel): ChannelUpdate = {
 
     if (this != other) {
       log.debug(s"Cannot diff($this, $other, because they are not .equal()")
@@ -142,7 +142,7 @@ case class Channel(id: ChannelId,
     }
   }
 
-  def merge(other: Channel): ChannelUpdate = {
+  def merge(other: ApiChannel): ChannelUpdate = {
 
     val channelUpdate = diff(other)
 
@@ -177,11 +177,11 @@ case class Channel(id: ChannelId,
   }
 
   /**
-    * apply updates to the [[ChannelData]] and [[ChannelId]] from another [[Channel]]
+    * apply updates to the [[ApiChannelData]] and [[ChannelId]] from another [[ApiChannel]]
     *
     * @param other the source for the changes
     */
-  def updateMasterData(other: Channel) = {
+  def updateMasterData(other: ApiChannel) = {
     id.path = other.id.path
     data = data.copy(label = other.data.label)
     lastModifiedDate = Instant.now.toEpochMilli
@@ -191,7 +191,7 @@ case class Channel(id: ChannelId,
   def applyChannelUpdates(): Unit = {
     // populate new metadata node
     if (this.metadata.isEmpty) {
-      this.metadata = Some(ChannelMetadataNew("system", lastModifiedDate))
+      this.metadata = Some(ApiChannelMetadataNew("system", lastModifiedDate))
     }
 
     // populate new fields node
@@ -203,7 +203,7 @@ case class Channel(id: ChannelId,
   }
 
   override def equals(obj: Any): Boolean = obj match {
-    case Channel(otherId, _, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
+    case ApiChannel(otherId, _, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
   }
 
   override def hashCode: Int = this.id.hashCode
@@ -227,7 +227,7 @@ case class ChannelId(var path: String, isVirtual: Boolean = false, ece: Long = -
   }
 }
 
-case class ChannelUpdate(added: Seq[Channel] = Seq.empty, deleted: Seq[Channel] = Seq.empty, moved: Seq[Channel] = Seq.empty) {
+case class ChannelUpdate(added: Seq[ApiChannel] = Seq.empty, deleted: Seq[ApiChannel] = Seq.empty, moved: Seq[ApiChannel] = Seq.empty) {
   def merge(other: ChannelUpdate): ChannelUpdate = ChannelUpdate(
     added = (added ++ other.added).distinct,
     deleted = (deleted ++ other.deleted).distinct,
@@ -240,32 +240,32 @@ case class ChannelUpdate(added: Seq[Channel] = Seq.empty, deleted: Seq[Channel] 
   def merge(updates: Seq[ChannelUpdate]): ChannelUpdate = updates.foldLeft(this)((acc, update) ⇒ acc.merge(update))
 }
 
-case class ChannelMetadataNew(changedBy: String = "system", lastModifiedDate: Long = Instant.now.toEpochMilli)
+case class ApiChannelMetadataNew(changedBy: String = "system", lastModifiedDate: Long = Instant.now.toEpochMilli)
 
-case class ChannelData(label: String,
-                       adData: ChannelAdData = ChannelAdData(),
-                       metadata: ChannelMetadata = ChannelMetadata(), // @deprecated
-                       siteBuilding: Option[ChannelTheme] = None,
-                       bgColor: Option[String] = None,
-                       fields: Option[Map[String, String]] = None // todo, remove option when changes have been applied everywhere
+case class ApiChannelData(label: String,
+                          adData: ApiChannelAdData = ApiChannelAdData(),
+                          metadata: ApiChannelMetadata = ApiChannelMetadata(), // @deprecated
+                          siteBuilding: Option[ApiChannelTheme] = None,
+                          bgColor: Option[String] = None,
+                          fields: Option[Map[String, String]] = None // todo, remove option when changes have been applied everywhere
                       )
 
-case class ChannelMetadata(data: Map[String, String] = Map.empty)
+case class ApiChannelMetadata(data: Map[String, String] = Map.empty)
 
-case class ChannelAdData(definesAdTag: Boolean = false,
-                         definesVideoAdTag: Option[Boolean] = None
+case class ApiChannelAdData(definesAdTag: Boolean = false,
+                            definesVideoAdTag: Option[Boolean] = None
                         )
 
-case class ChannelTheme(name: String = "default")
+case class ApiChannelTheme(name: String = "default")
 
-object ChannelTheme {
-  lazy val DEFAULT = ChannelTheme(name = "")
+object ApiChannelTheme {
+  lazy val DEFAULT = ApiChannelTheme(name = "")
 
-  lazy val ADVERTORIALS = ChannelTheme(name = "advertorials")
-  lazy val FORMEL1 = ChannelTheme(name = "formel1")
-  lazy val ICON = ChannelTheme(name = "icon")
-  lazy val MEDIATHEK = ChannelTheme(name = "mediathek")
-  lazy val NEWSTICKER = ChannelTheme(name = "newsticker")
-  lazy val OLYMPIA = ChannelTheme(name = "olympia")
+  lazy val ADVERTORIALS = ApiChannelTheme(name = "advertorials")
+  lazy val FORMEL1 = ApiChannelTheme(name = "formel1")
+  lazy val ICON = ApiChannelTheme(name = "icon")
+  lazy val MEDIATHEK = ApiChannelTheme(name = "mediathek")
+  lazy val NEWSTICKER = ApiChannelTheme(name = "newsticker")
+  lazy val OLYMPIA = ApiChannelTheme(name = "olympia")
 
 }

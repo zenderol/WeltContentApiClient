@@ -2,7 +2,7 @@ package de.welt.contentapi.admin.models
 
 import java.time.Instant
 
-import de.welt.contentapi.core.models.{Channel, ChannelData, ChannelId}
+import de.welt.contentapi.core.models.{ApiChannel, ApiChannelData, ChannelId}
 
 case class SdpSectionData(url: String,
                           displayName: String,
@@ -10,9 +10,9 @@ case class SdpSectionData(url: String,
                           children: Seq[SdpSectionData],
                           id: Long) {
 
-  private def defineAdTag(data: ChannelData) = data.copy(adData = data.adData.copy(definesAdTag = true))
+  private def defineAdTag(data: ApiChannelData) = data.copy(adData = data.adData.copy(definesAdTag = true))
 
-  def toChannel: Channel = {
+  def toChannel: ApiChannel = {
     val root = transform
     // initially set hasAdTag to true for level 0 & 1 of the section tree
     root.data = defineAdTag(root.data)
@@ -23,9 +23,9 @@ case class SdpSectionData(url: String,
     root
   }
 
-  private def transform: Channel = Channel(
+  private def transform: ApiChannel = ApiChannel(
     id = ChannelId(path = url, ece = id),
-    data = ChannelData(displayName),
+    data = ApiChannelData(displayName),
     children = children.map(_.transform),
     lastModifiedDate = lastModifiedDate match {
       case Some("") ⇒ Instant.now.toEpochMilli

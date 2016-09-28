@@ -17,10 +17,10 @@ import play.api.libs.json.{JsValue, Json}
 
 trait AdminSectionService extends SectionService {
 
-  def updateChannel(channel: Channel,
-                    updatedChannelData: ChannelData,
+  def updateChannel(channel: ApiChannel,
+                    updatedChannelData: ApiChannelData,
                     user: String,
-                    updatedStages: Option[Seq[Stage]])(implicit env: Env): Option[Channel]
+                    updatedStages: Option[Seq[Stage]])(implicit env: Env): Option[ApiChannel]
 
   def syncWithLegacy(): Unit
 
@@ -35,8 +35,8 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
   extends SectionServiceImpl(config, cache, s3, environment) with AdminSectionService with Loggable {
 
 
-  override def updateChannel(channel: Channel, updatedChannelData: ChannelData, user: String, updatedStages: Option[Seq[Stage]] = None)
-                            (implicit env: Env): Option[Channel] = {
+  override def updateChannel(channel: ApiChannel, updatedChannelData: ApiChannelData, user: String, updatedStages: Option[Seq[Stage]] = None)
+                            (implicit env: Env): Option[ApiChannel] = {
 
     // update channel (lastModified), currently adData, fields, stages and siteBuilding allowed only
     channel.data = channel.data.copy(
@@ -45,7 +45,7 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
       siteBuilding = updatedChannelData.siteBuilding
     )
     channel.lastModifiedDate = Instant.now.toEpochMilli
-    channel.metadata = Some(ChannelMetadataNew(user, Instant.now.toEpochMilli))
+    channel.metadata = Some(ApiChannelMetadataNew(user, Instant.now.toEpochMilli))
     channel.stages = updatedStages
 
     log.info(s"$channel changed by $user")
@@ -61,7 +61,7 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
   }
 
   override def syncWithLegacy(): Unit = {
-    def mergeAndSave(updates: Channel, env: Env): Option[ChannelUpdate] = {
+    def mergeAndSave(updates: ApiChannel, env: Env): Option[ChannelUpdate] = {
       val maybeRoot = root(env)
       val mergeResult = maybeRoot.map(root => ChannelTools.merge(root, updates))
       maybeRoot.foreach(root ⇒ saveChannel(root)(env))
@@ -79,7 +79,7 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
   }
 
 
-  override protected[services] def root(implicit env: Env): Option[Channel] = super.root.orElse {
+  override protected[services] def root(implicit env: Env): Option[ApiChannel] = super.root.orElse {
     log.warn("No data found in s3 bucket, creating new data set from scratch.")
     val root = legacySectionService.getSectionData.toChannel
 
@@ -88,7 +88,7 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
     Some(root)
   }
 
-  private def saveChannel(ch: Channel)(implicit env: Env) = {
+  private def saveChannel(ch: ApiChannel)(implicit env: Env) = {
     import FullChannelWrites._
 
 
@@ -112,7 +112,7 @@ class AdminSectionServiceImpl @Inject()(config: ContentClientConfig,
 
 object ChannelTools extends Loggable {
 
-  def diff(current: Channel, update: Channel): ChannelUpdate = {
+  def diff(current: ApiChannel, update: ApiChannel): ChannelUpdate = {
 
     if (current != update) {
       log.debug(s"Cannot diff($current, $update, because they are not .equal()")
@@ -156,7 +156,7 @@ object ChannelTools extends Loggable {
     }
   }
 
-  def merge(current: Channel, other: Channel): ChannelUpdate = {
+  def merge(current: ApiChannel, other: ApiChannel): ChannelUpdate = {
 
     val channelUpdate = diff(current, other)
 
@@ -199,7 +199,7 @@ object ChannelTools extends Loggable {
     * @param current the destination where to write updates to
     * @param legacyRoot the source object where to read updates from
     */
-  def updateData(current: Channel, legacyRoot: Channel): Unit = {
+  def updateData(current: ApiChannel, legacyRoot: ApiChannel): Unit = {
     legacyRoot.findByEce(current.id.ece).foreach(other ⇒ current.updateMasterData(other))
     current.children.foreach(child ⇒ updateData(child, legacyRoot))
   }

@@ -7,10 +7,10 @@ import scoverage.ScoverageSbtPlugin.autoImport._
 
 object MyBuild extends Build {
 
-  val forScala2_4 = if (System.getenv("PLAY_VERSION") == null) {
+  val forScala2_4 = if (System.getenv("PLAY24") == null) {
     false
   } else {
-    System.getenv("PLAY_VERSION").toBoolean
+    System.getenv("PLAY24").toBoolean
   }
   val isSnapshot = false
 
@@ -19,7 +19,7 @@ object MyBuild extends Build {
 
   def withTests(project: Project) = project % "test->test;compile->compile"
 
-  private val actualVersion: String = "0.3.18"
+  private val actualVersion: String = "0.3.20"
 
   val frontendCompilationSettings = Seq(
     organization := "de.welt",

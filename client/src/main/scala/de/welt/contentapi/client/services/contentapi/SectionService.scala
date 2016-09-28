@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 
 trait SectionService {
 
-  def findChannel(path: String)(implicit env: Env): Option[Channel]
+  def findChannel(path: String)(implicit env: Env): Option[ApiChannel]
 
   def enrich(apiContent: ApiContent): EnrichedApiContent
 
@@ -27,13 +27,13 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
                                    environment: Environment)
   extends SectionService with Loggable {
 
-  override def findChannel(path: String)(implicit env: Env): Option[Channel] = root.flatMap(_.findByPath(path))
+  override def findChannel(path: String)(implicit env: Env): Option[ApiChannel] = root.flatMap(_.findByPath(path))
 
   override def enrich(apiContent: ApiContent): EnrichedApiContent = {
 
     val maybeSectionData: Option[SectionData] = apiContent.sections.flatMap {
       _.home.flatMap { home ⇒ {
-        val maybeHomeSection: Option[Channel] = root(Live).flatMap(_.findByPath(home))
+        val maybeHomeSection: Option[ApiChannel] = root(Live).flatMap(_.findByPath(home))
         maybeHomeSection.map { homeSection ⇒
           SectionData.fromChannel(homeSection)
         }
@@ -43,23 +43,23 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
     EnrichedApiContent(apiContent, maybeSectionData)
   }
 
-  protected def breadcrumb(home: Channel): Seq[Channel] = {
+  protected def breadcrumb(home: ApiChannel): Seq[ApiChannel] = {
     val breadcrumbPath = home.id.path.split('/').filter(_.nonEmpty).toList match {
       case Nil ⇒ Nil
       case head :: tail ⇒ tail.scanLeft(s"/$head/")((path, s) ⇒ path + s + "/")
     }
 
-    val breadcrumbChannels: List[Channel] = breadcrumbPath.flatMap(segment ⇒ root(Live).flatMap(_.findByPath(segment)))
+    val breadcrumbChannels: List[ApiChannel] = breadcrumbPath.flatMap(segment ⇒ root(Live).flatMap(_.findByPath(segment)))
     SectionConfigurationServiceImpl.fakeRoot :: breadcrumbChannels
   }
 
 
-  protected def root(implicit env: Env): Option[Channel] = cache.getOrElse(env.toString, 10.minutes) {
+  protected def root(implicit env: Env): Option[ApiChannel] = cache.getOrElse(env.toString, 10.minutes) {
 
     import de.welt.contentapi.core.models.reads.FullChannelReads._
 
     s3.get(config.aws.s3.janus.bucket, objectKeyForEnv(env))
-      .map { data ⇒ Json.parse(data).validate[Channel] }
+      .map { data ⇒ Json.parse(data).validate[ApiChannel] }
       .flatMap {
         case JsSuccess(v, _) ⇒
           v.updateParentRelations()
@@ -79,5 +79,5 @@ class SectionServiceImpl @Inject()(config: ContentClientConfig,
 
 object SectionConfigurationServiceImpl {
   // One Slash for root node is needed for traversing the channels (e.g. in def breadcrumb()).
-  val fakeRoot = Channel(ChannelId("/"), ChannelData("Startseite"))
+  val fakeRoot = ApiChannel(ChannelId("/"), ApiChannelData("Startseite"))
 }

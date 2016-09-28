@@ -29,16 +29,16 @@ object reads {
     import play.api.libs.functional.syntax._
     import play.api.libs.json._
 
-    implicit lazy val channelReads: Reads[Channel] = (
+    implicit lazy val channelReads: Reads[ApiChannel] = (
       (__ \ "id").read[ChannelId] and
-        (__ \ "data").read[ChannelData] and
+        (__ \ "data").read[ApiChannelData] and
         (__ \ "stages").readNullable[Seq[Stage]] and
         (__ \ "parent").lazyRead(Reads.optionWithNull(channelReads)) and
-        (__ \ "children").lazyRead(Reads.seq[Channel](channelReads)) and
+        (__ \ "children").lazyRead(Reads.seq[ApiChannel](channelReads)) and
         (__ \ "hasChildren").read[Boolean] and
         (__ \ "lastModifiedDate").read[Long] and
-        (__ \ "metadata").readNullable[ChannelMetadataNew]
-      ) (Channel)
+        (__ \ "metadata").readNullable[ApiChannelMetadataNew]
+      ) (ApiChannel)
   }
 
   object PartialChannelReads {
@@ -46,18 +46,18 @@ object reads {
     import SimpleFormats._
     import StageFormats._
 
-    implicit lazy val noChildrenReads: Reads[Channel] = new Reads[Channel] {
-      override def reads(json: JsValue): JsResult[Channel] = json match {
+    implicit lazy val noChildrenReads: Reads[ApiChannel] = new Reads[ApiChannel] {
+      override def reads(json: JsValue): JsResult[ApiChannel] = json match {
         case JsObject(underlying) ⇒ (for {
           id ← underlying.get("id").map(_.as[ChannelId])
-          data ← underlying.get("data").map(_.as[ChannelData])
+          data ← underlying.get("data").map(_.as[ApiChannelData])
           stages ← underlying.get("stages").map(_.asOpt[Seq[Stage]])
         } yield JsSuccess(
-          Channel(
+          ApiChannel(
             id = id,
             data = data,
             stages = stages,
-            metadata = underlying.get("metadata").flatMap(_.asOpt[ChannelMetadataNew]),
+            metadata = underlying.get("metadata").flatMap(_.asOpt[ApiChannelMetadataNew]),
             children = Seq.empty
           )))
           .getOrElse(JsError("Could not validate json [something is missing]. " + Json.prettyPrint(json)))
@@ -78,16 +78,16 @@ object writes {
     import play.api.libs.functional.syntax._
     import play.api.libs.json._
 
-    implicit lazy val channelWrites: Writes[Channel] = (
+    implicit lazy val channelWrites: Writes[ApiChannel] = (
       (__ \ "id").write[ChannelId] and
-        (__ \ "data").write[ChannelData] and
+        (__ \ "data").write[ApiChannelData] and
         (__ \ "stages").writeNullable[Seq[Stage]] and
         (__ \ "parent").lazyWrite(Writes.optionWithNull(PartialChannelWrites.writeChannelAsNull)) and // avoid loops
-        (__ \ "children").lazyWrite(Writes.seq[Channel](channelWrites)) and
+        (__ \ "children").lazyWrite(Writes.seq[ApiChannel](channelWrites)) and
         (__ \ "hasChildren").write[Boolean] and
         (__ \ "lastModifiedDate").write[Long] and
-        (__ \ "metadata").writeNullable[ChannelMetadataNew]
-      ) (unlift(Channel.unapply))
+        (__ \ "metadata").writeNullable[ApiChannelMetadataNew]
+      ) (unlift(ApiChannel.unapply))
 
   }
 
@@ -96,8 +96,8 @@ object writes {
     import SimpleFormats._
     import StageFormats._
 
-    implicit lazy val noChildrenWrites = new Writes[Channel] {
-      override def writes(o: Channel): JsValue = JsObject(Map(
+    implicit lazy val noChildrenWrites = new Writes[ApiChannel] {
+      override def writes(o: ApiChannel): JsValue = JsObject(Map(
         "id" → Json.toJson(o.id),
         "lastModifiedDate" → JsNumber(o.lastModifiedDate),
         "hasChildren" → JsBoolean(o.hasChildren),
@@ -107,26 +107,26 @@ object writes {
       )
     }
 
-    implicit lazy val oneLevelOfChildren: Writes[Channel] = (
+    implicit lazy val oneLevelOfChildren: Writes[ApiChannel] = (
       (__ \ "id").write[ChannelId] and
-        (__ \ "data").write[ChannelData] and
+        (__ \ "data").write[ApiChannelData] and
         (__ \ "stages").writeNullable[Seq[Stage]] and
         (__ \ "parent").lazyWrite(Writes.optionWithNull(noChildrenWrites)) and
-        (__ \ "children").lazyWrite(Writes.seq[Channel](noChildrenWrites)) and
+        (__ \ "children").lazyWrite(Writes.seq[ApiChannel](noChildrenWrites)) and
         (__ \ "hasChildren").write[Boolean] and
         (__ \ "lastModifiedDate").write[Long] and
-        (__ \ "metadata").writeNullable[ChannelMetadataNew]
-      ) (unlift(Channel.unapply))
+        (__ \ "metadata").writeNullable[ApiChannelMetadataNew]
+      ) (unlift(ApiChannel.unapply))
 
-    implicit lazy val writeChannelAsNull: Writes[Channel] = new Writes[Channel] {
-      override def writes(o: Channel): JsValue = JsNull
+    implicit lazy val writeChannelAsNull: Writes[ApiChannel] = new Writes[ApiChannel] {
+      override def writes(o: ApiChannel): JsValue = JsNull
     }
   }
 
 }
 
 object ChannelFormatNoChildren {
-  implicit lazy val channelFormat: Format[Channel] = Format(reads.PartialChannelReads.noChildrenReads, PartialChannelWrites.noChildrenWrites)
+  implicit lazy val channelFormat: Format[ApiChannel] = Format(reads.PartialChannelReads.noChildrenReads, PartialChannelWrites.noChildrenWrites)
 }
 
 object SimpleFormats {
@@ -134,11 +134,11 @@ object SimpleFormats {
   import StageFormats._
 
   implicit lazy val idFormat: Format[ChannelId] = Json.format[ChannelId]
-  implicit lazy val dataFormat: Format[ChannelData] = Json.format[ChannelData]
-  implicit lazy val metaDataFormat: Format[ChannelMetadata] = Json.format[ChannelMetadata]
-  implicit lazy val channelThemeFormat: Format[ChannelTheme] = Json.format[ChannelTheme]
-  implicit lazy val adFormat: Format[ChannelAdData] = Json.format[ChannelAdData]
-  implicit lazy val metaDataNewFormat: Format[ChannelMetadataNew] = Json.format[ChannelMetadataNew]
+  implicit lazy val dataFormat: Format[ApiChannelData] = Json.format[ApiChannelData]
+  implicit lazy val metaDataFormat: Format[ApiChannelMetadata] = Json.format[ApiChannelMetadata]
+  implicit lazy val channelThemeFormat: Format[ApiChannelTheme] = Json.format[ApiChannelTheme]
+  implicit lazy val adFormat: Format[ApiChannelAdData] = Json.format[ApiChannelAdData]
+  implicit lazy val metaDataNewFormat: Format[ApiChannelMetadataNew] = Json.format[ApiChannelMetadataNew]
 
 }
 
