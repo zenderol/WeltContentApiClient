@@ -5,6 +5,7 @@ import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.client.services.configuration.ServiceConfiguration
 import de.welt.contentapi.client.services.contentapi.AbstractService
 import de.welt.contentapi.client.services.exceptions.{HttpClientErrorException, HttpServerErrorException}
+import de.welt.contentapi.core.models.http.RequestHeaders
 import org.mockito.Matchers
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.{verify, when}
@@ -53,7 +54,6 @@ class AbstractServiceTest extends PlaySpec
       override protected def initializeMetricsContext(name: String): Context = mockTimerContext
     }
 
-    implicit val request: Request[Any] = FakeRequest()
   }
 
   object TestService {
@@ -68,9 +68,8 @@ class AbstractServiceTest extends PlaySpec
     }
 
     "forward the X-Unique-Id header" in new TestScope {
-      private val asdf = Headers("X-Unique-Id" → "0xdeadbeef")
-      val fakeRequest = FakeRequest("GET", "", headers = asdf, body = "")
-      new TestService().get(Seq("fake-id"), Seq.empty, Seq.empty)(fakeRequest, defaultContext)
+      val headers = Seq(("X-Unique-Id","0xdeadbeef"))
+      new TestService().get(Seq("fake-id"), Seq.empty, Seq.empty)(Some(headers), defaultContext)
       verify(mockRequest).withHeaders(("X-Unique-Id", "0xdeadbeef"))
     }
 

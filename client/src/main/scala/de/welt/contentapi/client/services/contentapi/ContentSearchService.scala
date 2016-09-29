@@ -4,6 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.client.services.configuration.{ContentClientConfig, ServiceConfiguration}
+import de.welt.contentapi.core.models.http.RequestHeaders
 import de.welt.contentapi.core.models.{ApiContent, ContentApiQuery, EnrichedApiContent}
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient
@@ -15,7 +16,7 @@ sealed trait ContentSearchService {
   protected val serviceName = "search"
 
   def search(query: ContentApiQuery)
-            (implicit request: Request[Any], executionContext: ExecutionContext): Future[Seq[EnrichedApiContent]]
+            (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[Seq[EnrichedApiContent]]
 }
 
 @Singleton
@@ -32,7 +33,7 @@ class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
   override def jsonValidate: (JsLookupResult) => JsResult[Seq[ApiContent]] = json => json.validate[Seq[ApiContent]]
 
   override def search(query: ContentApiQuery)
-                     (implicit request: Request[Any], executionContext: ExecutionContext): Future[Seq[EnrichedApiContent]] = {
+                     (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[Seq[EnrichedApiContent]] = {
 
 
 
