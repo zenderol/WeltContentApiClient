@@ -22,9 +22,14 @@ switch to the same _SNAPSHOT_ version.
 
 Publish
 -------
+Publishing Versions is done by commiting to master. CI [Jenkins](https://jenkins.up.welt.de/job/funkotron/job/WeltContentApiClient/job/WeltContentApiClientPipeline/) will take care of the rest for you.
+
+(!) Bump the version in file `MyBuild.scala`, otherwise you will get an error when publishing a version that already exists.
 
 We are using the [bintray sbt plugin](https://github.com/softprops/bintray-sbt).
 
+Deploying from local
+--------------------
 You will need a [bintray](https://bintray.com/) account. Log in through sbt:
 
 	./activator bintrayChangeCredentials
@@ -32,5 +37,3 @@ You will need a [bintray](https://bintray.com/) account. Log in through sbt:
 Then you can publish new releases with:
 
 	./activator publish
-
-(!) Bump the version, otherwise you will get an error when publishing a version that already exists.
