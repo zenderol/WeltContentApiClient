@@ -1,15 +1,16 @@
 package de.welt.contentapi.core.models
 
-
-import com.google.common.collect.ImmutableMap
 import de.welt.contentapi.core.models.Datasource.{CuratedSource, SearchSource}
 import de.welt.contentapi.core.models.Query.{FlagQuery, SectionQuery, SubTypeQuery, TypeQuery}
 
 case class Stage(id: String = "stageId",
                  index: Int = -1,
                  sources: Option[Seq[Datasource]] = None,
-                 config: Option[StageConfig] = None,
-                 groups: Option[Seq[StageGroup]] = None)
+                 config: Option[ApiStageConfig] = None,
+                 groups: Option[Seq[ApiStageGroup]] = None) {
+  lazy val unwrappedSources: Seq[Datasource] = sources.getOrElse(Nil)
+  lazy val unwrappedGroups: Seq[ApiStageGroup] = groups.getOrElse(Nil)
+}
 
 /**
   * rowType determines the Grid Layout
@@ -23,52 +24,52 @@ case class Stage(id: String = "stageId",
   * ######|######
   * ######|######
   */
-case class StageGroup(rowType: String = "default",
-                      teaserType: String = "default")
+case class ApiStageGroup(rowType: String = "default",
+                         teaserType: String = "default")
 
-case class StageConfig(maxSize: Option[Int] = None,
-                       stageTheme: Option[StageTheme] = None,
-                       headlineTheme: Option[HeadlineTheme] = None,
-                       stageType: Option[String] = None,
-                       sectionReferences: Seq[SectionReference] = Nil,
-                       commercials: Option[Seq[Commercial]] = None)
+case class ApiStageConfig(maxSize: Option[Int] = None,
+                          stageTheme: Option[ApiStageTheme] = None,
+                          headlineTheme: Option[ApiHeadlineTheme] = None,
+                          stageType: Option[String] = None,
+                          sectionReferences: Option[Seq[ApiSectionReference]] = None,
+                          commercials: Option[Seq[ApiCommercial]] = None) {
+  lazy val unwrappedSectionReferences: Seq[ApiSectionReference] = sectionReferences.getOrElse(Nil)
+  lazy val unwrappedCommercials: Seq[ApiCommercial] = commercials.getOrElse(Nil)
+}
 
-case class HeadlineTheme(label: String, small: Boolean = false)
+case class ApiHeadlineTheme(label: String, small: Boolean = false)
 
-case class Commercial(format: String) {
-  import CommercialDefinitions._
-  def apply(value: String): Commercial = {
+case class ApiCommercial(format: String) {
+  import ApiCommercialDefinitions._
+  def apply(value: String): ApiCommercial = {
     value match {
       case MEDIUM_RECTANGLE.`format` => MEDIUM_RECTANGLE
       case BILLBOARD2.`format` => BILLBOARD2
-      case _ => Commercial(format = value)
+      case _ => ApiCommercial(format = value)
     }
   }
 }
 
-object CommercialDefinitions {
-  lazy val MEDIUM_RECTANGLE = Commercial(format = "MediumRectangle")
-  lazy val BILLBOARD2 = Commercial(format = "BillBoard2")
+object ApiCommercialDefinitions {
+  lazy val MEDIUM_RECTANGLE = ApiCommercial(format = "MediumRectangle")
+  lazy val BILLBOARD2 = ApiCommercial(format = "BillBoard2")
 }
 
-case class SectionReference(path: String, label: String)
+case class ApiSectionReference(path: String, label: String)
 
-
-case class StageTheme(name: String)
-
-
+case class ApiStageTheme(name: String)
 
 object StageFormats {
 
   import play.api.libs.json._
 
   // need typesafe val, because default Type is OFormat[...]
-  implicit lazy val commercialFormat: Format[Commercial] = Json.format[Commercial]
-  implicit lazy val sectionReferenceFormat: Format[SectionReference] = Json.format[SectionReference]
-  implicit lazy val headlineThemeFormat: Format[HeadlineTheme] = Json.format[HeadlineTheme]
-  implicit lazy val stageThemeFormat: Format[StageTheme] = Json.format[StageTheme]
-  implicit lazy val stageConfigFormat: Format[StageConfig] = Json.format[StageConfig]
-  implicit lazy val stageGroupFormat: Format[StageGroup] = Json.format[StageGroup]
+  implicit lazy val commercialFormat: Format[ApiCommercial] = Json.format[ApiCommercial]
+  implicit lazy val sectionReferenceFormat: Format[ApiSectionReference] = Json.format[ApiSectionReference]
+  implicit lazy val headlineThemeFormat: Format[ApiHeadlineTheme] = Json.format[ApiHeadlineTheme]
+  implicit lazy val stageThemeFormat: Format[ApiStageTheme] = Json.format[ApiStageTheme]
+  implicit lazy val stageConfigFormat: Format[ApiStageConfig] = Json.format[ApiStageConfig]
+  implicit lazy val stageGroupFormat: Format[ApiStageGroup] = Json.format[ApiStageGroup]
   implicit lazy val stageFormat: Format[Stage] = Json.format[Stage]
   // Data Sources
   implicit lazy val datasourceFormat: Format[Datasource] = Json.format[Datasource]

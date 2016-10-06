@@ -26,7 +26,7 @@ class StageModelTest extends PlaySpec {
         papyrusFile = "ausland")
 
 
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(limitCurationSize),
         stageType = Some("")
         )
@@ -67,7 +67,7 @@ class StageModelTest extends PlaySpec {
         maxSize = Some(searchLimit),
         queries = Seq(typeQuery, subTypeQuery, sectionQuery, flagQuery))
 
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(stageLimit),
         stageType = Some(""))
       val searchStage: Stage = Stage(
@@ -112,7 +112,7 @@ class StageModelTest extends PlaySpec {
       val apiSourceWithFilter: SearchSource = SearchSource(
         maxSize = Some(defaultMaxSize), queries = filters)
 
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(defaultMaxSize),
         stageType = Some(""))
 
@@ -132,7 +132,7 @@ class StageModelTest extends PlaySpec {
       val apiSourceWithFilter: SearchSource = SearchSource(
         maxSize = Some(defaultMaxSize), queries = filters)
 
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(defaultMaxSize),
         stageType = Some(""))
       val apiHighlightStage: Stage = Stage(
@@ -151,7 +151,7 @@ class StageModelTest extends PlaySpec {
       val filters: Seq[Query] = Seq(filter)
       val apiSourceWithFilter: SearchSource = SearchSource(
         maxSize = Some(defaultMaxSize), queries = filters)
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(defaultMaxSize),
         stageType = Some(""))
       val apiHighlightStage: Stage = Stage(
@@ -171,7 +171,7 @@ class StageModelTest extends PlaySpec {
       val apiSourceWithFilter: SearchSource = SearchSource(
         maxSize = Some(defaultMaxSize), queries = filters)
 
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(defaultMaxSize),
         stageType = Some("default"))
       val apiHighlightStage: Stage = Stage(
@@ -192,7 +192,7 @@ class StageModelTest extends PlaySpec {
       val file: String = "aufmacher"
       val papyrusPolitikSource: CuratedSource = CuratedSource(
         maxSize = Some(defaultMaxSize), papyrusFolder = folder, papyrusFile = file)
-      val config: StageConfig = StageConfig(
+      val config: ApiStageConfig = ApiStageConfig(
         maxSize = Some(defaultMaxSize),
         stageType = Some("default"))
       val papyrusPolitikStage: Stage = Stage(

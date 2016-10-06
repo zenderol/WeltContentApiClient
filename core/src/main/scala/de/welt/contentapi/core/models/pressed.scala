@@ -4,68 +4,94 @@ import de.welt.contentapi.core.models.reads.FullChannelReads
 import de.welt.contentapi.core.models.writes.FullChannelWrites
 
 object pressed {
+  
+  /**
+    * @param channelConfig channel configuration for the section [from@ConfigMcConfigFace]
+    * @param stages all stages of the section
+    */
+  case class ApiSectionPage(channelConfig: Option[ApiChannelConfig] = None, stages: Option[Seq[ApiContentStage]] = None) {
+    lazy val unwrappedStages: Seq[ApiContentStage] = stages.getOrElse(Nil)
+  }
+  
+  /**
+    * Short version of (root) ApiChannel just for a section page
+    *
+    * @param id channel id with section path
+    * @param data configured section data [from@ConfigMcConfigFace]
+    * @param metadata some meta data (changed by)
+    * @param lastModifiedDate last mod date
+    * @param breadcrumb breadcrumb for the section
+    */
+  case class ApiChannelConfig(id: Option[ChannelId] = None,
+                              data: Option[ApiChannelData] = None,
+                              metadata: Option[ApiChannelMetadataNew] = None,
+                              lastModifiedDate: Option[Long] = None,
+                              breadcrumb: Option[Seq[ApiChannel]] = None) {
+    lazy val unwrappedBreadcrumb: Seq[ApiChannel] = breadcrumb.getOrElse(Nil)
+  }
 
-  case class ApiSectionPage(config: ApiSectionPageConfig, stages: Seq[ApiContentStage] = Seq.empty)
-
-  case class ApiSectionPageConfig(displayName: String,
-                                  pathForAdvertisement: String,
-                                  path: String,
-                                  theme: ApiChannelTheme = ApiChannelTheme.DEFAULT,
-                                  eceId: Long,
-                                  fields: Option[Map[String, String]],
-                                  breadcrumb: Seq[ApiChannel] = Nil
-                              )
-
-  object ApiSectionPageConfig {
-    def fromChannel(channel: ApiChannel) = ApiSectionPageConfig(
-      displayName = channel.data.label,
-      pathForAdvertisement = channel.getAdTag.getOrElse(channel.DEFAULT_AD_TAG),
-      path = channel.id.path,
-      theme = channel.data.siteBuilding.getOrElse(ApiChannelTheme.DEFAULT),
-      eceId = channel.id.ece,
-      fields = channel.data.fields,
-      breadcrumb = channel.getBreadcrumb()
+  object ApiChannelConfig {
+    def fromApiChannel(apiChannel: ApiChannel): ApiChannelConfig = new ApiChannelConfig(
+      id = Some(apiChannel.id),
+      data = Some(apiChannel.data),
+      metadata = apiChannel.metadata,
+      lastModifiedDate = Some(apiChannel.lastModifiedDate),
+      breadcrumb = Some(apiChannel.getBreadcrumb())
     )
   }
 
-  case class ApiContentStage(index: Int,
-                             id: String,
-                             config: ApiStageConfig,
-                             content: Seq[ApiPressedContent])
-
-  object ApiContentStage {
-    def fromStageConfigAndContent(stage: Stage, content: Seq[ApiPressedContent]) = {
-      ApiContentStage(
-        index = stage.index,
-        id = stage.id,
-        config = new ApiStageConfig(
-          stageType = stage.config.flatMap(_.stageType),
-          stageTheme = stage.config.flatMap(_.stageTheme),
-          headlineTheme = stage.config.flatMap(_.headlineTheme),
-          sectionReferences = stage.config.map(_.sectionReferences),
-          commercials = stage.config.flatMap(_.commercials)
-        ),
-        content = content
-      )
-    }
+  /**
+    * @param index stage index -- starts at 0
+    * @param id ???
+    * @param config configuration of the stage (headline, theming, commercials) [from@ConfigMcConfigFace]
+    * @param content all content (articles) of the stage. rendered as teasers.
+    */
+  case class ApiContentStage(index: Int = -1,
+                             id: Option[String] = None,
+                             config: Option[ApiStageConfig] = None,
+                             content: Option[Seq[ApiPressedContent]] = None) {
+    lazy val unwrappedContent: Seq[ApiPressedContent] = content.getOrElse(Nil)
   }
 
-  case class ApiStageConfig(stageType: Option[String] = None,
-                            stageTheme: Option[StageTheme] = None,
-                            headlineTheme: Option[HeadlineTheme] = None,
-                            sectionReferences: Option[Seq[SectionReference]] = None,
-                            commercials: Option[Seq[Commercial]] = None)
-
-  object ApiStageConfig {
-    def fromStage(stage: Stage): Unit = {
-      new ApiStageConfig(
+  object ApiContentStage {
+    def fromStageConfigAndContent(stage: Stage, content: Seq[ApiPressedContent]): ApiContentStage = ApiContentStage(
+      index = stage.index,
+      id = Some(stage.id),
+      config = Some(new ApiStageConfig(
         stageType = stage.config.flatMap(_.stageType),
         stageTheme = stage.config.flatMap(_.stageTheme),
         headlineTheme = stage.config.flatMap(_.headlineTheme),
-        sectionReferences = stage.config.map(_.sectionReferences),
+        sectionReferences = stage.config.flatMap(_.sectionReferences),
         commercials = stage.config.flatMap(_.commercials)
-      )
-    }
+      )),
+      content = Some(content)
+    )
+  }
+  
+  /**
+    * @param stageType rendering option for a stage (default, carousel, user-defined, hidden) [mapping@funkotron]
+    * @param stageTheme theming options of the stage [mapping@funkotron]
+    * @param headlineTheme theming options for the stage headline
+    * @param sectionReferences links to other sections (e.g. Sendungen A-Z)
+    * @param commercials available commercials for a stage. positioning is made by funkotron
+    */
+  case class ApiStageConfig(stageType: Option[String] = None,
+                            stageTheme: Option[ApiStageTheme] = None,
+                            headlineTheme: Option[ApiHeadlineTheme] = None,
+                            sectionReferences: Option[Seq[ApiSectionReference]] = None,
+                            commercials: Option[Seq[ApiCommercial]] = None) {
+    lazy val unwrappedSectionReferences: Seq[ApiSectionReference] = sectionReferences.getOrElse(Nil)
+    lazy val unwrappedCommercials: Seq[ApiCommercial] = commercials.getOrElse(Nil)
+  }
+
+  object ApiStageConfig {
+    def fromStage(stage: Stage): ApiStageConfig = new ApiStageConfig(
+      stageType = stage.config.flatMap(_.stageType),
+      stageTheme = stage.config.flatMap(_.stageTheme),
+      headlineTheme = stage.config.flatMap(_.headlineTheme),
+      sectionReferences = stage.config.flatMap(_.sectionReferences),
+      commercials = stage.config.flatMap(_.commercials)
+    )
   }
 
   case class ApiPressedContent(teaserConfig: ApiPressedContentTeaserConfig,
@@ -85,18 +111,18 @@ object pressed {
     import SectionDataFormats._
     import ApiFormats._
     import StageFormats._
-    import SimpleFormats.channelThemeFormat
+    import SimpleFormats._
     import ChannelFormatNoChildren.channelFormat
 
     implicit val channelFormatFullChildren: Format[ApiChannel] = Format(FullChannelReads.channelReads, FullChannelWrites.channelWrites)
 
     // formats
-    implicit lazy val pressedContentConfigFormat: Format[ApiPressedContentTeaserConfig] = Json.format[ApiPressedContentTeaserConfig]
-    implicit lazy val pressedContentFormat: Format[ApiPressedContent] = Json.format[ApiPressedContent]
+    implicit lazy val apiPressedContentTeaserConfigFormat: Format[ApiPressedContentTeaserConfig] = Json.format[ApiPressedContentTeaserConfig]
+    implicit lazy val apiPressedContentFormat: Format[ApiPressedContent] = Json.format[ApiPressedContent]
     implicit lazy val apiStageConfigFormat: Format[ApiStageConfig] = Json.format[ApiStageConfig]
-    implicit lazy val contentStageFormat: Format[ApiContentStage] = Json.format[ApiContentStage]
-    implicit lazy val sectionPageConfigFormat: Format[ApiSectionPageConfig] = Json.format[ApiSectionPageConfig]
-    implicit lazy val sectionPageFormat: Format[ApiSectionPage] = Json.format[ApiSectionPage]
+    implicit lazy val apiContentStageFormat: Format[ApiContentStage] = Json.format[ApiContentStage]
+    implicit lazy val apiChannelConfigFormat: Format[ApiChannelConfig] = Json.format[ApiChannelConfig]
+    implicit lazy val apiSectionPageFormat: Format[ApiSectionPage] = Json.format[ApiSectionPage]
   }
 
 }
