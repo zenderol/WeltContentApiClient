@@ -51,12 +51,11 @@ object reads {
         case JsObject(underlying) ⇒ (for {
           id ← underlying.get("id").map(_.as[ChannelId])
           data ← underlying.get("data").map(_.as[ApiChannelData])
-          stages ← underlying.get("stages").map(_.asOpt[Seq[Stage]])
         } yield JsSuccess(
           ApiChannel(
             id = id,
             data = data,
-            stages = stages,
+            stages = underlying.get("stages").flatMap(_.asOpt[Seq[Stage]]),
             metadata = underlying.get("metadata").flatMap(_.asOpt[ApiChannelMetadataNew]),
             children = Seq.empty
           )))
