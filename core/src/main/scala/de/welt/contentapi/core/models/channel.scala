@@ -19,21 +19,29 @@ case class ApiChannel(id: ChannelId,
   hasChildren = children.nonEmpty
   val DEFAULT_AD_TAG = "sonstiges"
 
+  /**
+    * The default root channel label is "WON frontpage". Funkotron needs "Home".
+    */
+  private val renameRootChannel: (ApiChannel) => ApiChannel = (root: ApiChannel) => {
+    root.copy(data = root.data.copy(label = "Home"))
+  }
+  
   final def updateParentRelations(newParent: Option[ApiChannel] = None): Unit = {
-
     this.parent = newParent
     children.foreach(_.updateParentRelations(Some(this)))
-
   }
 
   def getBreadcrumb(): Seq[ApiChannel] = {
     var breadcrumb: mutable.MutableList[ApiChannel] = mutable.MutableList(this.copy(children = Nil))
-    var current = getParentSafeley(this)
+    var current: Option[ApiChannel] = getParentSafeley(this)
     while (current.isDefined) {
       breadcrumb.++=(Seq(current.get.copy(children = Nil)))
       current = getParentSafeley(current.get)
     }
-    breadcrumb.reverse
+    breadcrumb.reverse.toList match {
+      case head :: tail => Seq(renameRootChannel(head)) ++ tail
+      case _ => Nil
+    }
   }
 
   def getParentSafeley(channel: ApiChannel) : Option[ApiChannel] = {

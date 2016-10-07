@@ -20,12 +20,15 @@ object pressed {
     * @param data configured section data [from@ConfigMcConfigFace]
     * @param metadata some meta data (changed by)
     * @param lastModifiedDate last mod date
+    * @param escenicId Escenic (CMS) internal section id
     * @param breadcrumb breadcrumb for the section
     */
   case class ApiChannelConfig(id: Option[ChannelId] = None,
                               data: Option[ApiChannelData] = None,
                               metadata: Option[ApiChannelMetadataNew] = None,
                               lastModifiedDate: Option[Long] = None,
+                              pathForAdvertisement: Option[String] = None,
+                              escenicId: Option[String] = None,
                               breadcrumb: Option[Seq[ApiChannel]] = None) {
     lazy val unwrappedBreadcrumb: Seq[ApiChannel] = breadcrumb.getOrElse(Nil)
   }
@@ -36,6 +39,8 @@ object pressed {
       data = Some(apiChannel.data),
       metadata = apiChannel.metadata,
       lastModifiedDate = Some(apiChannel.lastModifiedDate),
+      pathForAdvertisement = apiChannel.getAdTag.orElse(Some(apiChannel.DEFAULT_AD_TAG)),
+      escenicId = Some(apiChannel.id.ece.toString),
       breadcrumb = Some(apiChannel.getBreadcrumb())
     )
   }
