@@ -264,16 +264,16 @@ case class ApiChannelAdData(definesAdTag: Boolean = false,
                             definesVideoAdTag: Option[Boolean] = None
                         )
 
-case class ApiChannelTheme(name: String = "default")
+case class ApiChannelTheme(theme: String = "default")
 
 object ApiChannelTheme {
-  lazy val DEFAULT = ApiChannelTheme(name = "")
+  lazy val DEFAULT = ApiChannelTheme(theme = "")
 
-  lazy val ADVERTORIALS = ApiChannelTheme(name = "advertorials")
-  lazy val FORMEL1 = ApiChannelTheme(name = "formel1")
-  lazy val ICON = ApiChannelTheme(name = "icon")
-  lazy val MEDIATHEK = ApiChannelTheme(name = "mediathek")
-  lazy val NEWSTICKER = ApiChannelTheme(name = "newsticker")
-  lazy val OLYMPIA = ApiChannelTheme(name = "olympia")
+  lazy val ADVERTORIALS = ApiChannelTheme(theme = "advertorials")
+  lazy val FORMEL1 = ApiChannelTheme(theme = "formel1")
+  lazy val ICON = ApiChannelTheme(theme = "icon")
+  lazy val MEDIATHEK = ApiChannelTheme(theme = "mediathek")
+  lazy val NEWSTICKER = ApiChannelTheme(theme = "newsticker")
+  lazy val OLYMPIA = ApiChannelTheme(theme = "olympia")
 
 }
