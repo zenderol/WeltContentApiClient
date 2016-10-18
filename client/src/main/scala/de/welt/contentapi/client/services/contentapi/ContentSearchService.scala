@@ -43,7 +43,8 @@ class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
       query.typ.map("type" → _) ++
       query.subType.map("subType" → _) ++
       query.flags.map("flags" → _) ++
-      query.subTypeExcludes.map("excludes" → _)
+      query.flag.map("flag" → _) ++
+      List("excludes" → query.subTypeExcludes.mkString(","))
 
     get(Nil, parameters, Nil).map { responses ⇒
       responses.map { content ⇒

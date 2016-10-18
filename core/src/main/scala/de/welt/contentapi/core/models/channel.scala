@@ -212,6 +212,7 @@ case class ApiChannel(id: ChannelId,
 
   override def equals(obj: Any): Boolean = obj match {
     case ApiChannel(otherId, _, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
+    case _ ⇒ false
   }
 
   override def hashCode: Int = this.id.hashCode
@@ -226,11 +227,12 @@ case class ChannelId(var path: String, isVirtual: Boolean = false, ece: Long = -
 
   override def hashCode: Int = ece.hashCode
 
+  // todo (mana): clean this up [2nd branch is not easy to underst
   def getLastPathPart : Option[String] = {
     path match {
-      case home if home.equals("/") => Some("home")
-      case channelPath if !channelPath.isEmpty => channelPath.split("/").filter(!_.isEmpty).lastOption
-      case _ => None
+      case "/" => Some("home")
+      case channelPath if !channelPath.isEmpty ⇒ channelPath.split("/").filter(!_.isEmpty).lastOption
+      case _ ⇒ None
     }
   }
 }

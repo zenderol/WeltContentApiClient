@@ -115,8 +115,9 @@ import play.api.libs.json._
                              excludePaths: Option[String] = None,
                              typ: Option[String] = None,
                              subType: Option[String] = None,
-                             subTypeExcludes: Iterable[String] = Iterable.empty,
-                             flags: Iterable[String] = Iterable.empty,
+                             @deprecated(message = "use subType instead") subTypeExcludes: Iterable[String] = Iterable.empty,
+                             @deprecated(message = "use flag instead") flags: Iterable[String] = Iterable.empty,
+                             flag: Option[String] = None,
                              limit: Option[Int] = None) {}
 
 
