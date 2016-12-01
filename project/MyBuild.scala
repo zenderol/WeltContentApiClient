@@ -5,21 +5,19 @@ import sbt.Keys._
 import sbt._
 import scoverage.ScoverageSbtPlugin.autoImport._
 
+
 object MyBuild extends Build {
 
-  val forScala2_4 = if (System.getenv("PLAY24") == null) {
-    false
-  } else {
-    System.getenv("PLAY24").toBoolean
-  }
   val isSnapshot = false
+  val buildNumber = if (System.getenv("BUILD_NUMBER") != null) System.getenv("BUILD_NUMBER") else "local"
+  val forScala2_4 = if (System.getenv("PLAY24") == null) false else System.getenv("PLAY24").toBoolean
+
+  val playVersion = if (forScala2_4) "2.4.8" else "2.5.10"
+  private val actualVersion: String = s"0.5.$buildNumber"
 
   scalaVersion := "2.11.8"
-  val playVersion = if (forScala2_4) "2.4.8" else "2.5.3"
 
   def withTests(project: Project) = project % "test->test;compile->compile"
-
-  private val actualVersion: String = "0.4.0"
 
   val frontendCompilationSettings = Seq(
     organization := "de.welt",
@@ -34,7 +32,7 @@ object MyBuild extends Build {
 
   val frontendDependencyManagementSettings = Seq(
     resolvers := Seq(
-      Resolver.typesafeRepo("releases"),
+//      Resolver.typesafeRepo("releases"),
       Resolver.jcenterRepo
     ),
     // https://www.typesafe.com/blog/improved-dependency-management-with-sbt-0137
@@ -116,25 +114,73 @@ object MyBuild extends Build {
     .settings(codeStyleSettings: _*)
 
 
+  // only in "welt-content-api-client"
+  val utils = project("utils")
+    .settings(
+      name := "welt-content-api-utils"
+    )
+    .settings(coreDependencySettings: _*)
+
   val core = project("core")
     .settings(
       name := "welt-content-api-core"
     )
     .settings(coreDependencySettings: _*)
 
-  val client = project("client")
-    .settings(
-      name := "welt-content-api-client"
-    )
+  val raw = project("raw")
     .settings(clientDependencySettings: _*)
+    .settings(
+      name := "welt-content-api-raw"
+    )
+    .dependsOn(withTests(utils)).aggregate(utils)
     .dependsOn(withTests(core)).aggregate(core)
 
-  val admin = project("admin")
+  val pressed = project("pressed")
     .settings(
-      name := "welt-content-api-admin-client"
+      name := "welt-content-api-pressed"
+    )
+    .settings(coreDependencySettings: _*)
+    .dependsOn(withTests(core)).aggregate(core)
+
+  val convert = project("convert")
+    .settings(
+      name := "welt-content-api-convert"
+    )
+    .settings(coreDependencySettings: _*)
+    .dependsOn(withTests(pressed)).aggregate(pressed)
+    .dependsOn(withTests(raw)).aggregate(raw)
+
+  val coreClient = project("core-client")
+    .settings(
+      name := "welt-content-api-core-client"
     )
     .settings(clientDependencySettings: _*)
-    .dependsOn(withTests(client)).aggregate(client)
+    .dependsOn(withTests(utils)).aggregate(utils)
+    .dependsOn(withTests(core)).aggregate(core)
+
+  val rawClient = project("raw-client")
+    .settings(
+      name := "welt-content-api-raw-client"
+    )
+    .settings(clientDependencySettings: _*)
+    .dependsOn(withTests(coreClient)).aggregate(coreClient)
+    .dependsOn(withTests(raw)).aggregate(raw)
+
+  val pressedClient = project("pressed-client")
+    .settings(
+      name := "welt-content-api-pressed-client"
+    )
+    .settings(clientDependencySettings: _*)
+    .dependsOn(withTests(coreClient)).aggregate(coreClient)
+    .dependsOn(withTests(pressed)).aggregate(pressed)
+    .dependsOn(withTests(rawClient)).aggregate(rawClient)
+
+  val legacyClient = project("legacy-client")
+    .settings(
+      name := "welt-content-api-legacy-client"
+    )
+    .settings(clientDependencySettings: _*)
+    .dependsOn(withTests(pressedClient)).aggregate(pressedClient)
 
   val main = Project("Root", base = file("."))
     .settings(
@@ -145,6 +191,6 @@ object MyBuild extends Build {
       publish := {},
       bintrayUnpublish := {}
     )
-    .aggregate(core, client, admin)
+    .aggregate(core, coreClient, raw, rawClient, pressed, pressedClient, legacyClient)
 
 }
