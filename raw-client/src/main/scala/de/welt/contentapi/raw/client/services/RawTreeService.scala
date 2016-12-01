@@ -36,7 +36,7 @@ class RawTreeServiceImpl @Inject()(s3Client: S3Client,
   // todo (mana): add metrics
   def root(implicit env: Env): Option[RawChannel] = {
 
-    cache.getOrElse(s"rawChannelData-$env", 10.minutes) {
+    cache.getOrElse(s"rawChannelData-$env", 1.minutes) {
       s3Client.get(bucket, objectKeyForEnv(env)).flatMap { tree ⇒
         Json.parse(tree).validate[RawChannel](de.welt.contentapi.raw.models.RawReads.rawChannelReads) match {
           case JsSuccess(root, _) ⇒

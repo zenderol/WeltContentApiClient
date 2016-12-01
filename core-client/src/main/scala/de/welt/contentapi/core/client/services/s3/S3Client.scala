@@ -6,6 +6,7 @@ import javax.inject.{Inject, Singleton}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.util.StringInputStream
+import de.welt.contentapi.core.client.services.exceptions.BadConfigurationException
 import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
 
@@ -16,13 +17,17 @@ sealed trait S3Client extends Loggable {
   val config: Configuration
   implicit val codec: Codec = Codec.UTF8
 
-  lazy val client: Option[AmazonS3Client] = for {
-    endpoint <- config.getString("welt.aws.s3.endpoint")
-  } yield {
-    val s3Client = new AmazonS3Client()
-    s3Client.setEndpoint(endpoint)
-    log.debug(s"s3 connected to $endpoint")
-    s3Client
+  val client: AmazonS3Client = {
+    val ENDPOINT_CONFIG_KEY = "welt.aws.s3.endpoint"
+    val maybeS3Client = for {
+      endpoint <- config.getString(ENDPOINT_CONFIG_KEY)
+    } yield {
+      val s3Client = new AmazonS3Client()
+      s3Client.setEndpoint(endpoint)
+      log.debug(s"s3 connected to $endpoint")
+      s3Client
+    }
+    maybeS3Client.getOrElse(throw BadConfigurationException(s"Missing mandatory config value: $ENDPOINT_CONFIG_KEY"))
   }
 
   def get(bucket: String, key: String): Option[String] = withS3Result(bucket, key)({
@@ -46,9 +51,8 @@ sealed trait S3Client extends Loggable {
     put(bucket, key, value, contentType)
   }
 
-  private def withS3Result[T](bucket: String, key: String)(action: S3Object => T): Option[T] = client.flatMap { client =>
+  private def withS3Result[T](bucket: String, key: String)(action: S3Object => T): Option[T] =
     try {
-
       val request = new GetObjectRequest(bucket, key)
       val result = client.getObject(request)
 
@@ -63,7 +67,7 @@ sealed trait S3Client extends Loggable {
         log.debug("not found at %s - %s" format(bucket, key))
         None
     }
-  }
+
 
   private def put(bucket: String, key: String, value: String, contentType: String) {
     val metadata = new ObjectMetadata()
@@ -74,7 +78,7 @@ sealed trait S3Client extends Loggable {
       .withCannedAcl(CannedAccessControlList.Private)
 
 
-    client.foreach(_.putObject(request))
+    client.putObject(request)
   }
 }
 
