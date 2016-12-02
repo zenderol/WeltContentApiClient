@@ -10,15 +10,17 @@ import play.api.Configuration
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 sealed trait PressedS3Client {
+  /**
+    * todo (harry): missing docs!
+    */
   def find(path: String): Option[(ApiPressedSection, Instant)]
 }
-
 
 case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client with Loggable {
 
   import PressedS3ClientImpl._
-  val bucket = config.getString(bucketConfigKey).getOrElse(throw config.reportError(bucketConfigKey, "Missing Configuration value"))
-  val file = config.getString(fileConfigKey).getOrElse(throw config.reportError(fileConfigKey, "Missing Configuration value"))
+  val bucket: String = config.getString(bucketConfigKey).getOrElse(throw config.reportError(bucketConfigKey, s"Missing Configuration value: $bucketConfigKey"))
+  val file: String = config.getString(fileConfigKey).getOrElse(throw config.reportError(fileConfigKey, s"Missing Configuration value: $fileConfigKey"))
 
   override def find(path: String): Option[(ApiPressedSection, Instant)] = {
 

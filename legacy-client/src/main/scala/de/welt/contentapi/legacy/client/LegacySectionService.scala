@@ -60,6 +60,12 @@ class LegacySectionServiceImpl @Inject()(pressedContentService: PressedContentSe
     content = Option(apiLegacySection.unwrappedContent.map(c ⇒ pressedContentService.convert(c, related = None)))
   )
 
-  private def findChannelForSection(sectionPath: String): Option[RawChannel] =
-    treeService.root(env = Env.Live).flatMap { rawTree ⇒ rawTree.findByPath(sectionPath) }
+  private def findChannelForSection(sectionPath: String): Option[RawChannel] = {
+    val cleanedSectionPath: String = sectionPath match {
+      case "home" ⇒ "/"
+      case valid@_ ⇒ valid
+    }
+    treeService.root(env = Env.Live).flatMap { rawTree ⇒ rawTree.findByPath(cleanedSectionPath) }
+  }
+
 }
