@@ -11,7 +11,7 @@ import de.welt.contentapi.core.models.ApiReference
   * @param commercial commercial configuration
   * @param sponsoring branding is part of the page header (page sponsoring). E.g. Formel1
   * @param header     (content) page header configuration. Not the real page header.
-  * @param theme      theme of the page
+  * @param theme      theme of the page. This contains only a mapping value.
   */
 case class ApiConfiguration(meta: Option[ApiMetaConfiguration] = None,
                             commercial: Option[ApiCommercialConfiguration] = None,
@@ -24,7 +24,7 @@ case class ApiConfiguration(meta: Option[ApiMetaConfiguration] = None,
   *
   * @param title             <title> override
   * @param description       <meta> description override
-  * @param tags              <meta> keyword override
+  * @param tags              <meta> keyword override & commercial tagging
   * @param contentMetaRobots override `<meta name="robots">` tag only for all content pages of the channel.
   * @param sectionMetaRobots override `<meta name="robots">` tag only for the section page of the channel.
   */

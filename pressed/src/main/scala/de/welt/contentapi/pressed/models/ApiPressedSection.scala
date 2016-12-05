@@ -1,7 +1,9 @@
 package de.welt.contentapi.pressed.models
 
 /**
-  * @param stages        todo harry: add docs!
+  * A complete section page with all teasers and page configuration.
+  *
+  * @param stages        all stages of the section. Includes (pressed) content teasers and the config.
   * @param channel       channel with breadcrumb of the section. (ConfigMcConfigFace)
   * @param configuration configuration for the section page. (ConfigMcConfigFace)
   */

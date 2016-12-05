@@ -9,8 +9,8 @@ import scoverage.ScoverageSbtPlugin.autoImport._
 object MyBuild extends Build {
 
   val isSnapshot = false
-  val buildNumber = if (System.getenv("BUILD_NUMBER") != null) System.getenv("BUILD_NUMBER") else "local"
-  val forScala2_4 = if (System.getenv("PLAY24") == null) false else System.getenv("PLAY24").toBoolean
+  val buildNumber = Option(System.getenv("BUILD_NUMBER")).getOrElse("local")
+  val forScala2_4 = Option(System.getenv("PLAY24")).exists(_.toBoolean)
 
   val playVersion = if (forScala2_4) "2.4.8" else "2.5.10"
   private val actualVersion: String = s"0.5.$buildNumber"
@@ -32,7 +32,7 @@ object MyBuild extends Build {
 
   val frontendDependencyManagementSettings = Seq(
     resolvers := Seq(
-//      Resolver.typesafeRepo("releases"),
+      //      Resolver.typesafeRepo("releases"),
       Resolver.jcenterRepo
     ),
     // https://www.typesafe.com/blog/improved-dependency-management-with-sbt-0137
@@ -74,14 +74,10 @@ object MyBuild extends Build {
 
 
   val bintraySettings = Seq(
-    pomExtra := (
+    pomExtra :=
       <scm>
-        <url>git@github.com:WeltN24/
-          {name.value}
-          .git</url>
-        <connection>scm:git:git@github.com:WeltN24/
-          {name.value}
-          .git</connection>
+        <url>git@github.com:WeltN24/{name.value}.git</url>
+        <connection>scm:git:git@github.com:WeltN24/{name.value}.git</connection>
       </scm>
         <developers>
           <developer>
@@ -89,8 +85,17 @@ object MyBuild extends Build {
             <name>Matthias Naber</name>
             <url>https://github.com/thisismana</url>
           </developer>
-        </developers>
-      ),
+          <developer>
+            <id>harryurban</id>
+            <name>Harry Urban</name>
+            <url>https://github.com/harryurban</url>
+          </developer>
+          <developer>
+            <id>bobaaaaa</id>
+            <name>Patrick Dahms</name>
+            <url>https://github.com/bobaaaaa</url>
+          </developer>
+        </developers>,
     bintrayRepository := "welt-content-api-client",
     bintrayOrganization := Some("welt"),
     bintrayVcsUrl := Some("git@github.com:you/your-repo.git")
@@ -141,14 +146,6 @@ object MyBuild extends Build {
     )
     .settings(coreDependencySettings: _*)
     .dependsOn(withTests(core)).aggregate(core)
-
-  val convert = project("convert")
-    .settings(
-      name := "welt-content-api-convert"
-    )
-    .settings(coreDependencySettings: _*)
-    .dependsOn(withTests(pressed)).aggregate(pressed)
-    .dependsOn(withTests(raw)).aggregate(raw)
 
   val coreClient = project("core-client")
     .settings(

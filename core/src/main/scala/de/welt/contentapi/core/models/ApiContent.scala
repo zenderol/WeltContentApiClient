@@ -51,7 +51,7 @@ case class ApiContent(webUrl: String,
 }
 
 /**
-  * TODO MANA
+  * TODO (mana) write some docs
   *
   * @param id    ???
   * @param roles ???
@@ -77,7 +77,7 @@ case class ApiAuthor(id: Option[String] = None,
   * @param id        unique identifier from WeltN24/brian to find a single element inside the content body text
   * @param `type`    type of element like: image, video, oembed ...
   * @param relations on witch relations is the element used: Teaser, Opener, Closer, Inline ...
-  * @param assets    all assets of the element: image asset with url, video asset with url, poster, width, heidht
+  * @param assets    all assets of the element: image asset with url, video asset with url, poster, width, height
   */
 case class ApiElement(id: String,
                       `type`: String,
@@ -114,9 +114,16 @@ case class ApiAsset(`type`: String,
 }
 
 /**
+  * Escenic data of the Sections path the Content is published. This is only a internal escenic representation. Do not
+  * use this for labels or breadcrumb. If you want the real Section and breadcrumb use the `ApiChannel` from
+  * ApiPressedContent.
   *
-  * @param home ???
-  * @param all  ???
+  * We use this Model to find the correct Channel in CMCF/Janus.
+  *
+  * @param home The path of the 'Home' Section.
+  *             E.g. `/icon/mode/`
+  * @param all  The paths of all Sections the Content is published.
+  *             E.g. [`/icon/`, `/icon/mode/`, `/icon/icon-newsletter/`]
   */
 case class ApiSectionData(home: Option[String], all: Option[List[String]] = None)
 
@@ -127,10 +134,7 @@ case class ApiSectionData(home: Option[String], all: Option[List[String]] = None
 case class ApiTag(id: Option[String], value: Option[String] = None)
 
 /**
-  * A reference <a/> to a section.
-  *
-  * Naming-Refactoring: Maybe is ApiReference better? Think of internal and external links. All internal links are
-  * relative and all external absolute. And what about links to content pages?
+  * A reference is model to render a <a/>. Used for internal (like Sections) or external links.
   *
   * @param label label of the <a/>
   * @param href  href of the <a/>
