@@ -6,9 +6,10 @@ case class ApiContentSearch(`type`: Option[MainTypeParam] = None,
                             homeSection: Option[HomeSectionParam] = None,
                             sectionExcludes: Option[SectionExcludes] = None,
                             flags: Option[FlagParam] = None,
-                            limit: Option[LimitParam] = None
+                            limit: Option[LimitParam] = None,
+                            page: Option[PageParam] = None
                            ) {
-  def allParams: Seq[Option[SearchParam]] = Seq(`type`, subType, section, homeSection, sectionExcludes, flags, limit)
+  def allParams: Seq[Option[SearchParam]] = Seq(`type`, subType, section, homeSection, sectionExcludes, flags, limit, page)
 
   def getAllParamsUnwrapped: Seq[(String, String)] = allParams
     .filter(_.isDefined)
@@ -57,6 +58,11 @@ case class FlagParam(queryValue: String)
 case class LimitParam(queryValue: String)
   extends SearchParam {
   override val queryParamName: String = "pageSize"
+}
+
+case class PageParam(queryValue: String)
+  extends SearchParam {
+  override val queryParamName: String = "page"
 }
 
 
