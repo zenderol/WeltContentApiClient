@@ -12,8 +12,36 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Reusable (Playframework) Service for Content By ID against our API provided by WeltN24/underwood (Frank).
+  * You need valid [[play.Configuration]] values for this Service:
+  *
+  * * {{{
+  *   welt {
+  *     api {
+  *       content {
+  *         host: "absolute url to the Content API"
+  *         endpoint: "relative content endpoint added to the host"
+  *         credentials: {
+  *           username: "BA username"
+  *           password: "BA password"
+  *         }
+  *       }
+  *     }
+  *   }
+  * }}}
+  */
 trait ContentService {
 
+  /**
+    * Get a single Content [[de.welt.contentapi.core.models.ApiContent]] wrapped in a [[ApiResponse]].
+    *
+    * @param id               Escenic ID of the Content ([[de.welt.contentapi.core.models.ApiContent.id]])
+    * @param showRelated      Retrieve the Related Content (related/playlist) of the main Content. Default is `true`
+    * @param requestHeaders   Forwarded Request Header of the Caller. Used for signing requests with a unique identifier.
+    *                         Track the call throw all Services
+    * @param executionContext Play [[scala.concurrent.ExecutionContext]] for [[scala.concurrent.Future]]'s
+    */
   def find(id: String, showRelated: Boolean = true)
           (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiResponse]
 }
@@ -30,7 +58,7 @@ class ContentServiceImpl @Inject()(override val ws: WSClient,
 
   override val jsonValidate: JsLookupResult ⇒ JsResult[ApiResponse] = _.validate[ApiResponse]
 
-  override def find(id: String, showRelated: Boolean)
+  override def find(id: String, showRelated: Boolean = true)
                    (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiResponse] = {
 
     val parameters = if (showRelated) {

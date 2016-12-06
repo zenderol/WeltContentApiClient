@@ -8,22 +8,19 @@ case class ApiContentSearch(`type`: Option[MainTypeParam] = None,
                             flags: Option[FlagParam] = None,
                             limit: Option[LimitParam] = None
                            ) {
-  def allParams: Seq[Option[SearchParam]
-    ] = Seq(`type`, subType, section, homeSection, sectionExcludes, flags, limit)
+  def allParams: Seq[Option[SearchParam]] = Seq(`type`, subType, section, homeSection, sectionExcludes, flags, limit)
 
-  def getAllParamsUnwrapped: Seq[(String, String)] = {
-    allParams
-      .filter(_.isDefined)
-      .map(_.get)
-      .map(_.getKeyValue)
-  }
+  def getAllParamsUnwrapped: Seq[(String, String)] = allParams
+    .filter(_.isDefined)
+    .map(_.get)
+    .map(_.getKeyValue)
 }
 
 sealed trait SearchParam {
   val queryParamName: String
   val queryValue: String
 
-  def getKeyValue = (queryParamName, queryValue)
+  def getKeyValue: (String, String) = (queryParamName, queryValue)
 }
 
 

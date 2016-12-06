@@ -8,16 +8,19 @@ import play.api.libs.json._
   * see: http://stackoverflow.com/q/26086815/
   */
 object ApiFormats {
-  implicit lazy val apiReferenceFormat: Format[ApiReference] = Json.format[ApiReference]
-  implicit lazy val apiOnwardFormat: Format[ApiOnward] = Json.format[ApiOnward]
-  implicit lazy val apiMetadataFormat: Format[ApiMetadata] = Json.format[ApiMetadata]
-  implicit lazy val apiAssetFormat: Format[ApiAsset] = Json.format[ApiAsset]
-  implicit lazy val apiSectionDataFormat: Format[ApiSectionData] = Json.format[ApiSectionData]
-  implicit lazy val apiElementFormat: Format[ApiElement] = Json.format[ApiElement]
-  implicit lazy val apiAuthorFormat: Format[ApiAuthor] = Json.format[ApiAuthor]
-  implicit lazy val apiTagFormat: Format[ApiTag] = Json.format[ApiTag]
-  implicit lazy val apiContentFormat: Format[ApiContent] = Json.format[ApiContent]
-  implicit lazy val apiResponseFormat: Format[ApiResponse] = Json.format[ApiResponse]
+  import ApiReads._
+  import ApiWrites._
+
+  implicit lazy val apiReferenceFormat: Format[ApiReference] = Format(apiReferenceReads, apiReferenceWrites)
+  implicit lazy val apiOnwardFormat: Format[ApiOnward] = Format(apiOnwardReads, apiOnwardWrites)
+  implicit lazy val apiMetadataFormat: Format[ApiMetadata] = Format(apiMetadataReads, apiMetadataWrites)
+  implicit lazy val apiAssetFormat: Format[ApiAsset] = Format(apiAssetReads, apiAssetWrites)
+  implicit lazy val apiSectionDataFormat: Format[ApiSectionData] = Format(apiSectionDataReads, apiSectionDataWrites)
+  implicit lazy val apiElementFormat: Format[ApiElement] = Format(apiElementReads, apiElementWrites)
+  implicit lazy val apiAuthorFormat: Format[ApiAuthor] = Format(apiAuthorReads, apiAuthorWrites)
+  implicit lazy val apiTagFormat: Format[ApiTag] = Format(apiTagReads, apiTagWrites)
+  implicit lazy val apiContentFormat: Format[ApiContent] = Format(apiContentReads, apiContentWrites)
+  implicit lazy val apiResponseFormat: Format[ApiResponse] = Format(apiResponseReads, apiResponseWrites)
 }
 
 
@@ -35,7 +38,7 @@ object ApiReads {
 }
 
 object ApiWrites {
-  implicit lazy val apiSectionReferenceWrites: Writes[ApiReference] = Json.writes[ApiReference]
+  implicit lazy val apiReferenceWrites: Writes[ApiReference] = Json.writes[ApiReference]
   implicit lazy val apiOnwardWrites: Writes[ApiOnward] = Json.writes[ApiOnward]
   implicit lazy val apiMetadataWrites: Writes[ApiMetadata] = Json.writes[ApiMetadata]
   implicit lazy val apiAssetWrites: Writes[ApiAsset] = Json.writes[ApiAsset]

@@ -2,6 +2,15 @@ package de.welt.contentapi.core.client.services.configuration
 
 import play.api.Configuration
 
+/**
+  * Reusable Service Configuration object based on the [[play.Configuration]]
+  *
+  * @param serviceName Name of the Service. Used for building Metrics.
+  * @param host        Absolute url the the service host
+  * @param endpoint    Relative service endpoint
+  * @param username    Basic Auth username
+  * @param password    Basic Auth password
+  */
 case class ServiceConfiguration(serviceName: String, host: String, endpoint: String, username: String, password: String)
 
 object ServiceConfiguration {
