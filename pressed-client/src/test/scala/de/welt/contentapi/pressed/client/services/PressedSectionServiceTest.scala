@@ -10,6 +10,7 @@ import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.client.repository.{PressedDiggerClient, PressedS3Client}
 import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection}
+import de.welt.contentapi.utils.Env
 import org.apache.http.HttpStatus
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -90,6 +91,21 @@ class PressedSectionServiceTest extends FlatSpec
 
     // Then
     verify(mockedDiggerClient, atLeastOnce).findByPath(sectionPath)
+  }
+
+  it must "dont ask S3 if Env == Preview" in new TestScope {
+    // Given
+    when(mockedDiggerClient.findByPath(sectionPath))
+      .thenReturn(pressedSectionFromDigger)
+
+    // When
+    Await.result(
+      awaitable = pressService.findByPath(sectionPath, Env.Preview),
+      atMost = Timeout(1L, TimeUnit.SECONDS).duration
+    )
+
+    // Then
+    verify(mockedS3Client, never).find(sectionPath)
   }
 
 }

@@ -18,11 +18,31 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 trait PressedContentService {
+  /**
+    * Uses the ContentService to get an ApiContent from ContentAPI and wraps it with the convert method as ApiPressedContent
+    *
+    * @param id          Escenic ID of the content
+    * @param showRelated flag for requesting related articles
+    * @return a Future[ApiPressedContent]
+    */
   def find(id: String, showRelated: Boolean = true)
           (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent]
 
+  /**
+    * Wraps ApiContent as ApiPressedContent with its Channel as ApiChannel and configuration data
+    *
+    * @param apiContent the content to wrap
+    * @param related    its related articles
+    * @return the wrapped ApiContent as ApiPressedContent
+    */
   def convert(apiContent: ApiContent, related: Option[Seq[ApiContent]] = None, env: Env = Live): ApiPressedContent
 
+  /**
+    * Wraps ApiContent as ApiPressedContent just with its Channel but no Configuration or related Content
+    *
+    * @param apiContent the content to wrap
+    * @return ApiPressedContent containing the ApiContent and its ApiChannel
+    */
   def pressSingleApiContent(apiContent: ApiContent, env: Env = Live): ApiPressedContent
 }
 
@@ -34,11 +54,11 @@ class PressedContentServiceImpl @Inject()(contentService: ContentService,
 
   override def find(id: String, showRelated: Boolean = true)
                    (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent] = {
-      contentService
-        .find(id, showRelated)
-        .map(response ⇒ {
-          convert(response.content, response.related, env)
-        })
+    contentService
+      .find(id, showRelated)
+      .map(response ⇒ {
+        convert(response.content, response.related, env)
+      })
   }
 
   override def convert(apiContent: ApiContent, maybeRelatedContent: Option[Seq[ApiContent]] = None, env: Env = Live): ApiPressedContent = {

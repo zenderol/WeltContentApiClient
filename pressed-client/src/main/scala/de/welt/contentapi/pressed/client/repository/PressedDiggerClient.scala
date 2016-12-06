@@ -15,6 +15,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait PressedDiggerClient {
 
+  /**
+    * Get an ApiPressedSection by path from Digger REST Endpoint
+    *
+    * @param path SectionPath for the Section, e.g. /sport/
+    * @param env  Live/Preview, default = Live
+    */
   def findByPath(path: String, env: Env = Live)
                 (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiPressedSection]
 }
