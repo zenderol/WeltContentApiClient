@@ -70,7 +70,7 @@ class PressedContentServiceTest extends FlatSpec
   val contentService: ContentService = mock[ContentService]
   val converter: RawToApiConverter = new RawToApiConverter()
   val rawTreeService: RawTreeService= mock[RawTreeService]
-  val pressedContentService: PressedContentService = new PressedContentServiceImpl(contentService, converter, rawTreeService)
+  val pressedContentService: PressedContentService = new PressedContentServiceImpl(contentService, converter, rawTreeService, None)
 
   // Test Content
 

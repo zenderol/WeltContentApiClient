@@ -45,16 +45,17 @@ class RawToApiConverter {
   private def calcAdTag(rawChannel: RawChannel, predicate: RawChannelCommercial ⇒ Boolean): String =
 
     rawChannel.parent match {
+      // root
       case None ⇒
-        "home" // root
-        // todo (harry): unused declaration below
-      case Some(parent) if predicate.apply(rawChannel.config.commercial) ⇒
-        trimPathForAdTag(rawChannel.id.path) // channel is advertised -> calculate Tag
+        "home"
+      // channel is advertised -> calculate Tag
+      case Some(parent) if predicate.apply(rawChannel.config.commercial) ⇒ trimPathForAdTag(rawChannel.id.path)
+      // is root channel but not advertised, so use fallback
       case Some(parent) if parent == rawChannel.root && !predicate.apply(rawChannel.config.commercial) ⇒
-        "sonstiges" // is root channel but not advertised, so use fallback
-        // todo (harry): since this should be the last option, you can simplify this to `case Some(parent) =>`
-      case Some(parent) if parent != rawChannel.root ⇒
-        calcAdTag(parent, predicate) // channel is not advertised but has parents that may be, so go up in tree
+        "sonstiges"
+      // channel is not advertised but has parents that may be, so go up in tree
+      case Some(parent) ⇒
+        calcAdTag(parent, predicate)
     }
 
   private[converter] def trimPathForAdTag(path: String): String = {
@@ -95,7 +96,7 @@ class RawToApiConverter {
   }
 
   private[converter] def apiHeaderConfigurationFromRawChannel(rawChannel: RawChannel) = {
-    val apiSectionReferences: Seq[ApiReference] = apiSectionReferencesFromRawSectionReferences(
+    val apiSectionReferences: Seq[ApiReference] = mapReferences(
       rawChannel.config.header.map(_.unwrappedSectionReferences).getOrElse(Nil)
     )
     ApiHeaderConfiguration(
@@ -107,7 +108,7 @@ class RawToApiConverter {
   }
   /** Simple Raw Reference -> Api Reference Converter
   */
-  def apiSectionReferencesFromRawSectionReferences(references: Seq[RawSectionReference]): Seq[ApiReference] = {
+  def mapReferences(references: Seq[RawSectionReference]): Seq[ApiReference] = {
     references.map(ref ⇒ ApiReference(ref.label, ref.path))
   }
 

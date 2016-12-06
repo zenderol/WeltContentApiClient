@@ -10,7 +10,7 @@ case class ApiStage(teasers: Seq[ApiTeaser],
                     configuration: Option[ApiStageConfiguration] = None)
 
 /**
-  * @param layout      "Default", "Hidden", "Carousel" todo (harry) this is wrong
+  * @param layout      Name of the layout for the stage, e.g. 'channel-hero', 'multimedia' or 'hidden'
   * @param label       Label to show above a stage
   * @param references  References to render with href and label, e.g. Sub Ressorts
   * @param commercials contains the format ids for the Ads

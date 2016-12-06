@@ -3,7 +3,6 @@ package de.welt.contentapi.pressed.client.repository
 import javax.inject.Inject
 
 import com.kenshoo.play.metrics.Metrics
-import de.welt.contentapi.core.client.services.configuration.ServiceConfiguration
 import de.welt.contentapi.core.client.services.contentapi.AbstractService
 import de.welt.contentapi.core.client.services.http._
 import de.welt.contentapi.pressed.models.ApiPressedSection
@@ -33,8 +32,6 @@ case class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
 
   override def findByPath(path: String, env: Env = Live)
                          (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiPressedSection] = {
-    // todo (harry)(digger): use env in path, provide formatable 'endpoint'
-    // /user/env/my/foo/bar/path/
     get(urlArguments = Seq(env.toString, path), parameters = Nil)
   }
 
