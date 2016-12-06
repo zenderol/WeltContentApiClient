@@ -4,8 +4,6 @@ import play.api.PlayException
 
 object exceptions {
 
-  case class BadConfigurationException(msg: String) extends RuntimeException(msg)
-
   abstract class HttpStatusCodeException(statusCode: Int, statusPhrase: String, url: String)
     extends PlayException(s"HttpStatusCodeException[$statusCode]", statusPhrase) {
     def getStatusCode: Int = statusCode
