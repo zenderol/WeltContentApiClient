@@ -49,7 +49,8 @@ trait PressedContentService {
 @Singleton
 class PressedContentServiceImpl @Inject()(contentService: ContentService,
                                           converter: RawToApiConverter,
-                                          rawTreeService: RawTreeService, metrics: Option[Metrics])
+                                          rawTreeService: RawTreeService,
+                                          metrics: Metrics)
   extends PressedContentService with Loggable {
 
   override def find(id: String, showRelated: Boolean = true)
@@ -62,7 +63,7 @@ class PressedContentServiceImpl @Inject()(contentService: ContentService,
   }
 
   override def convert(apiContent: ApiContent, maybeRelatedContent: Option[Seq[ApiContent]] = None, env: Env = Live): ApiPressedContent = {
-    val maybeTimer: Option[Context] = metrics.map(_.defaultRegistry.timer("PressedContentService.convert").time())
+    val timer: Context = metrics.defaultRegistry.timer("PressedContentService.convert").time()
     val maybeRelatedPressedContent: Option[Seq[ApiPressedContent]] = maybeRelatedContent
       .map(related ⇒ related.map(content ⇒ pressSingleApiContent(content, env = env)))
 
@@ -82,7 +83,7 @@ class PressedContentServiceImpl @Inject()(contentService: ContentService,
         related = maybeRelatedPressedContent
       )
     }
-    maybeTimer.map(_.stop)
+    timer.stop
     content
   }
 

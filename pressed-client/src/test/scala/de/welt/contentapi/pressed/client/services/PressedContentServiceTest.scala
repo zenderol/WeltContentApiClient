@@ -3,18 +3,19 @@ package de.welt.contentapi.pressed.client.services
 import java.util.concurrent.TimeUnit
 
 import akka.util.Timeout
+import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.contentapi.ContentService
 import de.welt.contentapi.core.models.{ApiContent, ApiResponse, ApiSectionData}
 import de.welt.contentapi.pressed.client.converter.RawToApiConverter
 import de.welt.contentapi.pressed.models.ApiPressedContent
+import de.welt.contentapi.raw.client.services.RawTreeService
 import de.welt.testing.testHelper.raw.channel._
 import de.welt.testing.testHelper.raw.configuration._
-import de.welt.contentapi.raw.client.services.RawTreeService
+import org.mockito.Matchers.any
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.words.MustVerb
 import org.scalatest.{FlatSpec, Matchers}
-import org.mockito.Mockito._
-import org.mockito.Matchers.any
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -37,7 +38,9 @@ class PressedContentServiceTest extends FlatSpec
     val root = emptyWithIdAndChildren(0, Seq(node10))
 
     root.updateParentRelations()
+
     import de.welt.contentapi.core.models.testImplicits.pathUpdater
+
     root.updatePaths()
 
     val apiContent: ApiContent = ApiContent(
@@ -69,8 +72,11 @@ class PressedContentServiceTest extends FlatSpec
   // Setup
   val contentService: ContentService = mock[ContentService]
   val converter: RawToApiConverter = new RawToApiConverter()
-  val rawTreeService: RawTreeService= mock[RawTreeService]
-  val pressedContentService: PressedContentService = new PressedContentServiceImpl(contentService, converter, rawTreeService, None)
+  val rawTreeService: RawTreeService = mock[RawTreeService]
+  val metricsMock: Metrics = mock[Metrics]
+  when(metricsMock.defaultRegistry).thenReturn(new com.codahale.metrics.MetricRegistry())
+
+  val pressedContentService: PressedContentService = new PressedContentServiceImpl(contentService, converter, rawTreeService, metricsMock)
 
   // Test Content
 
