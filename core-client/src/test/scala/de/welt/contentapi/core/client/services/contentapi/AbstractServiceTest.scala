@@ -2,11 +2,11 @@ package de.welt.contentapi.core.client.services.contentapi
 
 import com.codahale.metrics.Timer.Context
 import com.kenshoo.play.metrics.Metrics
-import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpServerErrorException}
+import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
+import org.mockito.Matchers
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.{verify, when}
-import org.mockito.{Matchers, Mockito}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
@@ -58,7 +58,6 @@ class AbstractServiceTest extends PlaySpec
       "credentials.username" → "user",
       "credentials.password" → "pass"
     ))
-//    val config = ServiceConfiguration("test", configuration)
   }
 
   "AbstractService" should {
@@ -100,21 +99,36 @@ class AbstractServiceTest extends PlaySpec
       result1 mustBe "the result"
     }
 
-    "will throw a NotFoundException when WS status is 404" in new TestScope {
-      when(responseMock.status).thenReturn(NOT_FOUND)
+    "will throw a RedirectErrorException when WS status is 301" in new TestScope {
+      when(responseMock.status).thenReturn(MOVED_PERMANENTLY)
 
       val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
-      intercept[HttpClientErrorException] {
+      the[HttpRedirectException] thrownBy {
         Await.result(result, 10.second)
+      } must matchPattern {
+        case HttpRedirectException(MOVED_PERMANENTLY, _, _) ⇒
       }
     }
 
-    "will throw a ServerError when WS status is neither 200 nor 404" in new TestScope {
+    "will throw a ClientErrorException when WS status is 404" in new TestScope {
+      when(responseMock.status).thenReturn(NOT_FOUND)
+
+      val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
+      the[HttpClientErrorException] thrownBy {
+        Await.result(result, 10.second)
+      } must matchPattern {
+        case HttpClientErrorException(NOT_FOUND, _, _) ⇒
+      }
+    }
+
+    "will throw a ServerErrorException when WS status is 504" in new TestScope {
       when(responseMock.status).thenReturn(GATEWAY_TIMEOUT)
 
       val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
-      intercept[HttpServerErrorException] {
+      the[HttpServerErrorException] thrownBy {
         Await.result(result, 10.second)
+      } must matchPattern {
+        case HttpServerErrorException(GATEWAY_TIMEOUT, _, _) ⇒
       }
     }
 

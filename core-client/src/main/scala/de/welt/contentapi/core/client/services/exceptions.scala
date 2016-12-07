@@ -13,6 +13,7 @@ object exceptions {
     override def toString: String = super.toString
   }
 
+  case class HttpRedirectException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException (statusCode, statusPhrase, url)
   case class HttpClientErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
   case class HttpServerErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
 

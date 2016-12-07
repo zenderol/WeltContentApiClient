@@ -3,7 +3,7 @@ package de.welt.contentapi.core.client.services.contentapi
 import com.codahale.metrics.{MetricRegistry, Timer}
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.configuration.ServiceConfiguration
-import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpServerErrorException}
+import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
@@ -78,6 +78,7 @@ trait AbstractService[T] extends Loggable with Status {
 
       response.status match {
         case OK ⇒ parseJson(response.json.result)
+        case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(status, response.statusText, url)
         case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url)
         case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
       }
