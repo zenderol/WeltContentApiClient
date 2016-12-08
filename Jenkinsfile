@@ -1,4 +1,4 @@
-node {
+node('large') {
 
     try {
         if (env.BRANCH_NAME == 'master') {
