@@ -13,6 +13,7 @@ object RawFormats {
   implicit lazy val rawChannelMetadataFormat = Format[RawChannelMetadata](rawChannelMetadataReads, rawChannelMetadataWrites)
   implicit lazy val rawSectionReferenceFormat = Format[RawSectionReference](rawSectionReferenceReads, rawSectionReferenceWrites)
   implicit lazy val rawChannelHeaderFormat = Format[RawChannelHeader](rawChannelHeaderReads, rawChannelHeaderWrites)
+  implicit lazy val rawChannelContentConfigurationFormat = Format[RawChannelContentConfiguration](rawChannelContentConfigurationReads, rawChannelContentConfigurationWrites)
   implicit lazy val rawChannelCommercialFormat = Format[RawChannelCommercial](rawChannelCommercialReads, rawChannelCommercialWrites)
 
   implicit lazy val rawChannelStageContentFormat = Format[RawChannelStageCustomModule](rawChannelStageContentReads, rawChannelStageCustomModuleWrites)
@@ -31,6 +32,7 @@ object RawReads {
   implicit lazy val rawChannelMetadataReads = Json.reads[RawChannelMetadata]
   implicit lazy val rawSectionReferenceReads = Json.reads[RawSectionReference]
   implicit lazy val rawChannelHeaderReads = Json.reads[RawChannelHeader]
+  implicit lazy val rawChannelContentConfigurationReads = Json.reads[RawChannelContentConfiguration]
   implicit lazy val rawChannelCommercialReads = Json.reads[RawChannelCommercial]
 
   implicit lazy val rawChannelStageContentReads = Json.reads[RawChannelStageCustomModule]
@@ -61,6 +63,7 @@ object RawWrites {
   implicit lazy val rawChannelMetadataWrites = Json.writes[RawChannelMetadata]
   implicit lazy val rawSectionReferenceWrites = Json.writes[RawSectionReference]
   implicit lazy val rawChannelHeaderWrites = Json.writes[RawChannelHeader]
+  implicit lazy val rawChannelContentConfigurationWrites = Json.writes[RawChannelContentConfiguration]
   implicit lazy val rawChannelCommercialWrites = Json.writes[RawChannelCommercial]
 
   implicit lazy val rawChannelStageCustomModuleWrites = Json.writes[RawChannelStageCustomModule]

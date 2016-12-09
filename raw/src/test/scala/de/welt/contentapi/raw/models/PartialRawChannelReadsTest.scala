@@ -12,7 +12,7 @@ class PartialRawChannelReadsTest extends PlaySpec {
         RawChannelStageCustomModule(
           index = 1,
           module = "module",
-          sourceOverride = Some("source-override")))(RawWrites.rawChannelStageCustomModuleWrites))
+          overrides = Some(Map("section" → "/foo/"))))(RawWrites.rawChannelStageCustomModuleWrites))
       val j = JsObject(Map(
         "id" → JsObject(Map(
           "path" → JsString("le-path"),
@@ -31,7 +31,7 @@ class PartialRawChannelReadsTest extends PlaySpec {
 
       ch.id.path must be("le-path")
       val Some(stages) = ch.stages
-      stages must be(Seq(RawChannelStageCustomModule(index = 1, module = "module", sourceOverride = Some("source-override"))))
+      stages must be(Seq(RawChannelStageCustomModule(index = 1, module = "module", overrides = Some(Map("section" → "/foo/")))))
 
     }
   }

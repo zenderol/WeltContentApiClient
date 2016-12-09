@@ -2,7 +2,7 @@ package de.welt.contentapi.raw.models
 
 import java.time.Instant
 
-import play.api.libs.json.{JsError, JsResult, JsSuccess, JsValue, Json}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.annotation.tailrec
 
@@ -85,6 +85,18 @@ case class RawChannel(id: RawChannelId,
     }
   }
 
+  def getMaybeContentOverrides: Option[RawChannelContentConfiguration] = parent match {
+    // has own config
+    case _ if this.config.content.isDefined ⇒ this.config.content
+    // has a parent with config -> use parent's config
+    case Some(configuredParent) if configuredParent.config.content.isDefined ⇒ configuredParent.config.content
+    //  go up in tree one level and retry
+    case Some(notConfiguredParent) ⇒ notConfiguredParent.getMaybeContentOverrides
+    // nothing found -> None
+    case _ ⇒ None
+  }
+
+
   override def toString: String = s"Channel(id='${id.path}', ece=${id.escenicId}'')"
 
   /**
@@ -135,7 +147,8 @@ case class RawChannelId(var path: String,
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
                                    theme: Option[RawChannelTheme] = None,
-                                   commercial: RawChannelCommercial = RawChannelCommercial())
+                                   commercial: RawChannelCommercial = RawChannelCommercial(),
+                                   content: Option[RawChannelContentConfiguration] = None)
 
 /**
   * The (ASMI) ad tag is a string with the root section and type of the page (section or content page).
@@ -227,6 +240,19 @@ case class RawChannelHeader(sponsoring: Option[String] = None,
 case class RawMetadata(changedBy: String = "system",
                        lastModifiedDate: Long = Instant.now.toEpochMilli)
 
+/**
+  * Some sections only contain content with particular subTypes or Types e.g. "/regionales/" have subType "ticker"
+  *
+  * @param subTypeQueryForText SubTypes used for stages with text articles e.g. "-ticker,-live" or "ticker"
+  * @param typeQueryForText Types used for stages with text articles e.g. "article"
+  * @param subTypeQueryForVideo SubTypes used for stages with video articles e.g. "video,broadcast"
+  * @param typeQueryForVideo Types used for stages with video articles e.g. "video"
+  */
+case class RawChannelContentConfiguration(subTypeQueryForText: Option[String] = None,
+                                          typeQueryForText: Option[String] = None,
+                                          subTypeQueryForVideo: Option[String] = None,
+                                          typeQueryForVideo: Option[String] = None) {
+}
 
 sealed trait RawChannelStage {
   val `type`: String
@@ -257,23 +283,15 @@ object RawChannelStage {
 /**
   * @param index          index of the stage (ordering)
   * @param module         identifier for the used Module, e.g. ChannelHero
-  * @param labelOverride          display name of the stage
   * @param references     optional section references. Example: Link to Mediathek A-Z.
-  * @param teaserLimitOverride    todo harry
-  * @param sourceOverride the default source is always the current channel path. This is a override.
-  * @param desktopLayoutOverride  mapping string for a (desktop) layout name. The mapping is for Digger and Clients.
-  *                       Why desktop and not mobile?
-  *                       On a mobile device all teasers inside a stage are among each another. Only the desktop
-  *                       breakpoint need some 'hints' to structure the teasers. Example: 1/3 1/3 1/3 teaser row.
+  * @param overrides      optional overrides for the Stage, e.g. type, subType, sectionPath
+  *                       Currently allowed/mapped values are: `sectionPath`, `limit`, `layout`, `label`
   */
 case class RawChannelStageCustomModule(index: Int,
                                        module: String,
                                        hidden: Boolean = false,
                                        references: Option[Seq[RawSectionReference]] = None,
-                                       labelOverride: Option[String] = None,
-                                       teaserLimitOverride: Option[Int] = None,
-                                       sourceOverride: Option[String] = None,
-                                       desktopLayoutOverride: Option[String] = None,
+                                       overrides: Option[Map[String, String]] = None,
                                        `type`: String = RawChannelStage.customModule
                                        ) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
