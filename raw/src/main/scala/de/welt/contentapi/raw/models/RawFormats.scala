@@ -33,7 +33,24 @@ object RawReads {
   implicit lazy val rawSectionReferenceReads = Json.reads[RawSectionReference]
   implicit lazy val rawChannelHeaderReads = Json.reads[RawChannelHeader]
   implicit lazy val rawChannelContentConfigurationReads = Json.reads[RawChannelContentConfiguration]
-  implicit lazy val rawChannelCommercialReads = Json.reads[RawChannelCommercial]
+
+  implicit lazy val rawChannelCommercialReads = new Reads[RawChannelCommercial] {
+    lazy val defaults: RawChannelCommercial = RawChannelCommercial()
+    override def reads(json: JsValue): JsResult[RawChannelCommercial] = json match {
+      case JsObject(underlying) ⇒ (for {
+        definesAdTag ← underlying.get("definesAdTag").map(_.as[Boolean]).orElse(Some(defaults.definesAdTag))
+        definesVideoAdTag ← underlying.get("definesVideoAdTag").map(_.as[Boolean]).orElse(Some(defaults.definesVideoAdTag))
+        showBiallo ← underlying.get("showBiallo").map(_.as[Boolean]).orElse(Some(defaults.showBiallo))
+      } yield JsSuccess(
+        RawChannelCommercial(
+        definesAdTag = definesAdTag,
+        definesVideoAdTag = definesVideoAdTag,
+        showBiallo = showBiallo
+        )))
+        .getOrElse(JsError("RawChannelCommercial - Could not validate json [a constructor parameter is missing]. " + Json.prettyPrint(json)))
+      case err@_ ⇒ JsError(s"expected js-object, but was $err")
+    }
+  }
 
   implicit lazy val rawChannelStageContentReads = Json.reads[RawChannelStageCustomModule]
   implicit lazy val rawChannelStageModuleReads = Json.reads[RawChannelStageModule]

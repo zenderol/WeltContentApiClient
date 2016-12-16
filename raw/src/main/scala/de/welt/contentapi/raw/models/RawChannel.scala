@@ -19,12 +19,13 @@ import scala.annotation.tailrec
   *
   * }}}
   *
-  * @param id       mandatory id with the channel path. E.g. /sport/fussball/
-  * @param config   channel configuration for the clients. Used by Funkotron.
-  * @param stages   stage configuration for the channel. Used by Digger.
-  * @param metadata meta data for CMCF and Janus. Needed for some merge/update/locking logic.
-  * @param parent   the maybe parent of the current channel. Root channel has no parent. (no shit sherlock!)
-  * @param children all children of the current channel
+  * @param id          mandatory id with the channel path. E.g. /sport/fussball/
+  * @param config      channel configuration for the clients. Used by Funkotron.
+  * @param stages      stage configuration for the channel. Used by Digger.
+  * @param metadata    meta data for CMCF and Janus. Needed for some merge/update/locking logic.
+  * @param parent      the maybe parent of the current channel. Root channel has no parent. (no shit sherlock!)
+  * @param children    all children of the current channel
+  * @param hasChildren flag if channel has children
   */
 case class RawChannel(id: RawChannelId,
                       var config: RawChannelConfiguration = RawChannelConfiguration(),
@@ -32,8 +33,7 @@ case class RawChannel(id: RawChannelId,
                       var metadata: RawMetadata = RawMetadata(),
                       var parent: Option[RawChannel] = None,
                       var children: Seq[RawChannel] = Nil,
-                      var hasChildren: Boolean = false
-                     ) {
+                      var hasChildren: Boolean = false) {
   hasChildren = children.nonEmpty
   lazy val unwrappedStages: Seq[RawChannelStage] = stages.getOrElse(Nil)
 
@@ -85,6 +85,9 @@ case class RawChannel(id: RawChannelId,
     }
   }
 
+  /**
+    * Find inherited or self configured overrides for ApiContentSearches
+    */
   def getMaybeContentOverrides: Option[RawChannelContentConfiguration] = parent match {
     // has own config
     case _ if this.config.content.isDefined ⇒ this.config.content
@@ -143,6 +146,7 @@ case class RawChannelId(var path: String,
   * @param header     content header (not the real page header) configuration.
   * @param theme      the optional theme for the channel. This is a developer configuration.
   * @param commercial commercial configuration for the channel. Used some override logic.
+  * @param content    content query configuration for the whole channel and all sub-channel (children).
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
@@ -157,9 +161,11 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
   *
   * @param definesAdTag      overrides the (ASMI) ad tag for the channel
   * @param definesVideoAdTag overrides the (ASMI) video ad tag for the channel
+  * @param showBiallo        Show the Biallo commercial on the channel. Default = `true`
   */
 case class RawChannelCommercial(definesAdTag: Boolean = false,
-                                definesVideoAdTag: Boolean = false)
+                                definesVideoAdTag: Boolean = false,
+                                showBiallo: Boolean = true)
 
 /**
   * What is a "Channel Theme"?
@@ -243,10 +249,10 @@ case class RawMetadata(changedBy: String = "system",
 /**
   * Some sections only contain content with particular subTypes or Types e.g. "/regionales/" have subType "ticker"
   *
-  * @param subTypeQueryForText SubTypes used for stages with text articles e.g. "-ticker,-live" or "ticker"
-  * @param typeQueryForText Types used for stages with text articles e.g. "article"
+  * @param subTypeQueryForText  SubTypes used for stages with text articles e.g. "-ticker,-live" or "ticker"
+  * @param typeQueryForText     Types used for stages with text articles e.g. "article"
   * @param subTypeQueryForVideo SubTypes used for stages with video articles e.g. "video,broadcast"
-  * @param typeQueryForVideo Types used for stages with video articles e.g. "video"
+  * @param typeQueryForVideo    Types used for stages with video articles e.g. "video"
   */
 case class RawChannelContentConfiguration(subTypeQueryForText: Option[String] = None,
                                           typeQueryForText: Option[String] = None,
@@ -267,7 +273,8 @@ object RawChannelStage {
   val commercial = "commercial"
 
   import de.welt.contentapi.raw.models.RawFormats.{rawChannelStageCommercialFormat, rawChannelStageContentFormat, rawChannelStageModuleFormat}
-// this is only used by tests
+
+  // this is only used by tests
   def apply(data: JsValue): RawChannelStage = {
     ((data \ "type").as[String] match {
       case RawChannelStage.customModule => Json.fromJson[RawChannelStageCustomModule](data)
@@ -281,11 +288,11 @@ object RawChannelStage {
 }
 
 /**
-  * @param index          index of the stage (ordering)
-  * @param module         identifier for the used Module, e.g. ChannelHero
-  * @param references     optional section references. Example: Link to Mediathek A-Z.
-  * @param overrides      optional overrides for the Stage, e.g. type, subType, sectionPath
-  *                       Currently allowed/mapped values are: `sectionPath`, `limit`, `layout`, `label`
+  * @param index      index of the stage (ordering)
+  * @param module     identifier for the used Module, e.g. ChannelHero
+  * @param references optional section references. Example: Link to Mediathek A-Z.
+  * @param overrides  optional overrides for the Stage, e.g. type, subType, sectionPath
+  *                   Currently allowed/mapped values are: `sectionPath`, `limit`, `layout`, `label`
   */
 case class RawChannelStageCustomModule(index: Int,
                                        module: String,
@@ -293,27 +300,27 @@ case class RawChannelStageCustomModule(index: Int,
                                        references: Option[Seq[RawSectionReference]] = None,
                                        overrides: Option[Map[String, String]] = None,
                                        `type`: String = RawChannelStage.customModule
-                                       ) extends RawChannelStage {
+                                      ) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 }
 
 /**
   * todo harry: WTF is a module?
   *
-  * @param index       index of the stage (ordering)
-  * @param module      name used for matching existing Modules in Digger
+  * @param index  index of the stage (ordering)
+  * @param module name used for matching existing Modules in Digger
   */
 case class RawChannelStageModule(index: Int,
                                  module: String,
                                  hidden: Boolean = false,
                                  `type`: String = RawChannelStage.module
-                                 ) extends RawChannelStage {
+                                ) extends RawChannelStage {
 }
 
 /**
-  * @param index      index of the stage (ordering)
-  * @param format     identifier of Advertorial, e.g. Billboard
+  * @param index  index of the stage (ordering)
+  * @param format identifier of Advertorial, e.g. Billboard
   */
-case class RawChannelStageCommercial(index: Int, format: String, hidden: Boolean = false,`type`: String = RawChannelStage.commercial) extends RawChannelStage {
+case class RawChannelStageCommercial(index: Int, format: String, hidden: Boolean = false, `type`: String = RawChannelStage.commercial) extends RawChannelStage {
 }
 
