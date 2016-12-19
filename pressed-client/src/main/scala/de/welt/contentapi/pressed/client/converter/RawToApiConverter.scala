@@ -6,7 +6,8 @@ import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChann
 
 class RawToApiConverter {
 
-  /** Converter method that takes a rawChannel and returns an ApiChannel from its data
+  /**
+    * Converter method that takes a rawChannel and returns an ApiChannel from its data
     *
     * @param rawChannel the rawChannel produced by ConfigMcConfigFace
     * @return a new ApiChannel with the data from the rawChannel
@@ -24,9 +25,10 @@ class RawToApiConverter {
     )
   }
 
-  private[converter] def getBreadcrumb(raw: RawChannel): Seq[ApiReference] = raw.getBreadcrumb.map(b⇒ ApiReference(Some(b.id.label), Some(b.id.path)))
+  private[converter] def getBreadcrumb(raw: RawChannel): Seq[ApiReference] = raw.getBreadcrumb.map(b ⇒ ApiReference(Some(b.id.label), Some(b.id.path)))
 
-  /** Converter method that takes a rawChannel and returns an ApiConfiguration from its data
+  /**
+    * Converter method that takes a rawChannel and returns an ApiConfiguration from its data
     *
     * @param rawChannel the rawChannel produced by ConfigMcConfigface
     * @return a new ApiConfiguration Object with the data from the rawChannel
@@ -77,7 +79,8 @@ class RawToApiConverter {
   private[converter] def apiMetaRobotsFromRawChannelMetaRobotsTag(rawChannelMetaRobotsTag: RawChannelMetaRobotsTag): ApiMetaRobots =
     ApiMetaRobots(noIndex = rawChannelMetaRobotsTag.noIndex, noFollow = rawChannelMetaRobotsTag.noFollow)
 
-  /** Always calculates adTags, in doubt 'sonstiges' -> not optional
+  /**
+    * Always calculates adTags, in doubt 'sonstiges' -> not optional
     *
     * @param rawChannel source Channel to take the data from
     * @return a resolved 'ApiCommercialConfiguration' containing a videoAdTag and an adTag
@@ -85,7 +88,8 @@ class RawToApiConverter {
   private[converter] def apiCommercialConfigurationFromRawChannel(rawChannel: RawChannel): ApiCommercialConfiguration = {
     ApiCommercialConfiguration(
       pathForAdTag = Some(calculatePathForAdTag(rawChannel)),
-      pathForVideoAdTag = Some(calculatePathForVideoAdTag(rawChannel))
+      pathForVideoAdTag = Some(calculatePathForVideoAdTag(rawChannel)),
+      thirdParty = thirdPartyCommercialFromRawChannelCommercial(rawChannel.config.commercial)
     )
   }
 
@@ -106,8 +110,9 @@ class RawToApiConverter {
       sectionReferences = Some(apiSectionReferences)
     )
   }
-  /** Simple Raw Reference -> Api Reference Converter
-  */
+  /**
+    * Simple Raw Reference -> Api Reference Converter
+    */
   def mapReferences(references: Seq[RawSectionReference]): Seq[ApiReference] = {
     references.map(ref ⇒ ApiReference(ref.label, ref.path))
   }
@@ -115,4 +120,13 @@ class RawToApiConverter {
   private[converter] def apiThemeFromRawChannel(rawChannel: RawChannel): Option[ApiThemeConfiguration] =
     rawChannel.config.theme.map(t ⇒ ApiThemeConfiguration(t.name, t.fields))
 
+  private[converter] def thirdPartyCommercialFromRawChannelCommercial(rawChannelCommercial: RawChannelCommercial) =
+    ApiCommercial3rdPartyConfiguration(
+      showBiallo = rawChannelCommercial.showBiallo,
+      contentTaboola = ApiCommercialTaboolaConfiguration(
+        showNews = rawChannelCommercial.contentTaboola.showNews,
+        showWeb = rawChannelCommercial.contentTaboola.showWeb,
+        showNetwork = rawChannelCommercial.contentTaboola.showNetwork
+      )
+    )
 }

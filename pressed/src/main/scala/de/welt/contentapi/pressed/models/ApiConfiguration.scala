@@ -49,8 +49,36 @@ case class ApiMetaRobots(noIndex: Option[Boolean] = None, noFollow: Option[Boole
   *
   * @param pathForAdTag      path used to build the ad tag in client
   * @param pathForVideoAdTag path used to build the video ad tag in client
+  * @param thirdParty        controls 3rd-party commercial scripts
   */
-case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None, pathForVideoAdTag: Option[String] = None)
+case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
+                                      pathForVideoAdTag: Option[String] = None,
+                                      thirdParty: ApiCommercial3rdPartyConfiguration)
+
+/**
+  * Enable/Disable 3rd-Party commercial scripts on section/content pages.
+  *
+  * CARE:
+  * All Default values are defined by CMCF.
+  *
+  * @param showBiallo     Show/hide the Biallo commercial on the section page. The Default value is defined by CMCF.
+  *                       Do not set the Default-value here.
+  * @param contentTaboola Controls Taboola Scripts below the article text.
+  */
+case class ApiCommercial3rdPartyConfiguration(showBiallo: Boolean,
+                                              contentTaboola: ApiCommercialTaboolaConfiguration)
+
+/**
+  * Enable/Disable Taboola scripts on each content page of the channel. All Default values are defined by CMCF.
+  * Do not set Default values here.
+  *
+  * @param showNews    "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
+  * @param showWeb     "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
+  * @param showNetwork "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
+  */
+case class ApiCommercialTaboolaConfiguration(showNews: Boolean,
+                                             showWeb: Boolean,
+                                             showNetwork: Boolean)
 
 /**
   * Branding or sponsoring of section and content pages. This is only the name of the branding. The impl is part of
