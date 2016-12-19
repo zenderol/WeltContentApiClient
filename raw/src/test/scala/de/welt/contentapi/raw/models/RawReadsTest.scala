@@ -6,24 +6,33 @@ import play.api.libs.json.Json
 class RawReadsTest extends PlaySpec {
   import RawReads._
 
-  "rawChannelCommercialReads" must {
+  private final val emptyJson = "{}"
 
-    "add new field `showBiallo` with default value, automatically" in {
+  "RawChannelCommercialReads" must {
 
-      val missingBialloSettingJson = """{"definesAdTag": true, "definesVideoAdTag": true}"""
-
-      Json.parse(missingBialloSettingJson)
-        .validate[RawChannelCommercial](rawChannelCommercialReads)
-        .asOpt
-        .map(_.showBiallo) mustBe Some(RawChannelCommercial().showBiallo)
-    }
-
-    "empty RawChannelCommercial json config leads to default constructor values" in {
-      val emptyJson = "{}"
-
+    "create RawChannelCommercial from empty json by using default constructor values" in {
       Json.parse(emptyJson)
         .validate[RawChannelCommercial](rawChannelCommercialReads)
         .asOpt mustBe Some(RawChannelCommercial())
     }
+
+    "add new field `showBiallo` with default value, automatically" in {
+      val missingBialloJson = """{"definesAdTag": true, "definesVideoAdTag": true}"""
+      Json.parse(missingBialloJson)
+      .validate[RawChannelCommercial](rawChannelCommercialReads)
+      .asOpt
+      .map(_.showBiallo) mustBe Some(RawChannelCommercial().showBiallo)
+    }
+
+  }
+
+  "RawChannelTaboolaCommercialReads" must {
+
+    "create RawChannelTaboolaCommercialReads from empty json by using default constructor values" in {
+      Json.parse(emptyJson)
+        .validate[RawChannelTaboolaCommercial](rawChannelTaboolaCommercialReads)
+        .asOpt mustBe Some(RawChannelTaboolaCommercial())
+    }
+
   }
 }

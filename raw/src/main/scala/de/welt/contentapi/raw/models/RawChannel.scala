@@ -159,13 +159,27 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
   * When a channel defines an ad tag we override the root section with its own section.
   * We need this for some channel targeting. E.g. '/sport/formel1/' needs his own ad tag.
   *
-  * @param definesAdTag      overrides the (ASMI) ad tag for the channel
-  * @param definesVideoAdTag overrides the (ASMI) video ad tag for the channel
-  * @param showBiallo        Show the Biallo commercial on the channel. Default = `true`
+  * @param definesAdTag      Overrides the (ASMI) ad tag for the channel
+  * @param definesVideoAdTag Overrides the (ASMI) video ad tag for the channel
+  * @param showBiallo        Show/hide the Biallo commercial on the section page. Default = `true`
+  * @param contentTaboola    Controls Taboola commercials on all content pages of the channel.
   */
 case class RawChannelCommercial(definesAdTag: Boolean = false,
                                 definesVideoAdTag: Boolean = false,
-                                showBiallo: Boolean = true)
+                                showBiallo: Boolean = true,
+                                contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial())
+
+/**
+  * Enable/Disable Taboola scripts on content pages below the article text. Some Channel do not want
+  * all Taboola scripts -- e.g. /icon/
+  *
+  * @param showNews    "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
+  * @param showWeb     "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
+  * @param showNetwork "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
+  */
+case class RawChannelTaboolaCommercial(showNews: Boolean = true,
+                                       showWeb: Boolean = true,
+                                       showNetwork: Boolean = true)
 
 /**
   * What is a "Channel Theme"?
