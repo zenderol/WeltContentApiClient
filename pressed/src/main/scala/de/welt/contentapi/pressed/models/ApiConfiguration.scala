@@ -53,7 +53,7 @@ case class ApiMetaRobots(noIndex: Option[Boolean] = None, noFollow: Option[Boole
   */
 case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
                                       pathForVideoAdTag: Option[String] = None,
-                                      thirdParty: ApiCommercial3rdPartyConfiguration)
+                                      thirdParty: Option[ApiCommercial3rdPartyConfiguration] = None)
 
 /**
   * Enable/Disable 3rd-Party commercial scripts on section/content pages.
@@ -65,8 +65,8 @@ case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
   *                       Do not set the Default-value here.
   * @param contentTaboola Controls Taboola Scripts below the article text.
   */
-case class ApiCommercial3rdPartyConfiguration(showBiallo: Boolean,
-                                              contentTaboola: ApiCommercialTaboolaConfiguration)
+case class ApiCommercial3rdPartyConfiguration(showBiallo: Option[Boolean] = None,
+                                              contentTaboola: Option[ApiCommercialTaboolaConfiguration] = None)
 
 /**
   * Enable/Disable Taboola scripts on each content page of the channel. All Default values are defined by CMCF.
@@ -76,9 +76,9 @@ case class ApiCommercial3rdPartyConfiguration(showBiallo: Boolean,
   * @param showWeb     "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
   * @param showNetwork "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
   */
-case class ApiCommercialTaboolaConfiguration(showNews: Boolean,
-                                             showWeb: Boolean,
-                                             showNetwork: Boolean)
+case class ApiCommercialTaboolaConfiguration(showNews: Option[Boolean] = None,
+                                             showWeb: Option[Boolean] = None,
+                                             showNetwork: Option[Boolean] = None)
 
 /**
   * Branding or sponsoring of section and content pages. This is only the name of the branding. The impl is part of

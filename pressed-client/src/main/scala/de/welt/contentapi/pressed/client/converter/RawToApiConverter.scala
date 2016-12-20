@@ -89,7 +89,7 @@ class RawToApiConverter {
     ApiCommercialConfiguration(
       pathForAdTag = Some(calculatePathForAdTag(rawChannel)),
       pathForVideoAdTag = Some(calculatePathForVideoAdTag(rawChannel)),
-      thirdParty = thirdPartyCommercialFromRawChannelCommercial(rawChannel.config.commercial)
+      thirdParty = Some(thirdPartyCommercialFromRawChannelCommercial(rawChannel.config.commercial))
     )
   }
 
@@ -122,11 +122,11 @@ class RawToApiConverter {
 
   private[converter] def thirdPartyCommercialFromRawChannelCommercial(rawChannelCommercial: RawChannelCommercial) =
     ApiCommercial3rdPartyConfiguration(
-      showBiallo = rawChannelCommercial.showBiallo,
-      contentTaboola = ApiCommercialTaboolaConfiguration(
-        showNews = rawChannelCommercial.contentTaboola.showNews,
-        showWeb = rawChannelCommercial.contentTaboola.showWeb,
-        showNetwork = rawChannelCommercial.contentTaboola.showNetwork
-      )
+      showBiallo = Some(rawChannelCommercial.showBiallo),
+      contentTaboola = Some(ApiCommercialTaboolaConfiguration(
+        showNews = Some(rawChannelCommercial.contentTaboola.showNews),
+        showWeb = Some(rawChannelCommercial.contentTaboola.showWeb),
+        showNetwork = Some(rawChannelCommercial.contentTaboola.showNetwork)
+      ))
     )
 }

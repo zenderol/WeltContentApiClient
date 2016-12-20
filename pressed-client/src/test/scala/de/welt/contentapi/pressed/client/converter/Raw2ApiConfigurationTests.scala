@@ -1,6 +1,6 @@
 package de.welt.contentapi.pressed.client.converter
 
-import de.welt.contentapi.pressed.models.{ApiConfiguration, ApiMetaConfiguration, ApiMetaRobots}
+import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models._
 import de.welt.testing.testHelper.raw.channel._
 import org.scalatest.words.MustVerb
@@ -65,12 +65,13 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers with MustVerb {
 
   "ApiCommercialConfiguration" must "have 3rd-Party configuration with default values from Raw Constructor" in new TestScopeConfiguration {
     val apiConfiguration: ApiConfiguration = converter.apiConfigurationFromRawChannel(node100) // node has no explicit configuration
-    val apiThirdParty = apiConfiguration.commercial.map(_.thirdParty).getOrElse(throw new RuntimeException("Test failed!"))
+    val apiThirdParty: ApiCommercial3rdPartyConfiguration = apiConfiguration.commercial.flatMap(_.thirdParty).getOrElse(throw new RuntimeException("Test failed!"))
+    val apiTaboola: ApiCommercialTaboolaConfiguration = apiThirdParty.contentTaboola.getOrElse(throw new RuntimeException("Test failed!"))
     val defaultsFromRaw = RawChannelCommercial()
-    apiThirdParty.showBiallo shouldBe defaultsFromRaw.showBiallo
-    apiThirdParty.contentTaboola.showNews shouldBe defaultsFromRaw.contentTaboola.showNews
-    apiThirdParty.contentTaboola.showWeb shouldBe defaultsFromRaw.contentTaboola.showWeb
-    apiThirdParty.contentTaboola.showNetwork shouldBe defaultsFromRaw.contentTaboola.showNetwork
+    apiThirdParty.showBiallo shouldBe Some(defaultsFromRaw.showBiallo)
+    apiTaboola.showNews shouldBe Some(defaultsFromRaw.contentTaboola.showNews)
+    apiTaboola.showWeb shouldBe Some(defaultsFromRaw.contentTaboola.showWeb)
+    apiTaboola.showNetwork shouldBe Some(defaultsFromRaw.contentTaboola.showNetwork)
   }
 
   // this is a high level test - expected values are tested above
