@@ -122,7 +122,6 @@ class RawToApiConverter {
 
   private[converter] def thirdPartyCommercialFromRawChannelCommercial(rawChannelCommercial: RawChannelCommercial) =
     ApiCommercial3rdPartyConfiguration(
-      showBiallo = Some(rawChannelCommercial.showBiallo),
       contentTaboola = Some(ApiCommercialTaboolaConfiguration(
         showNews = Some(rawChannelCommercial.contentTaboola.showNews),
         showWeb = Some(rawChannelCommercial.contentTaboola.showWeb),

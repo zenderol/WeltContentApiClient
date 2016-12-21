@@ -161,12 +161,10 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
   *
   * @param definesAdTag      Overrides the (ASMI) ad tag for the channel
   * @param definesVideoAdTag Overrides the (ASMI) video ad tag for the channel
-  * @param showBiallo        Show/hide the Biallo commercial on the section page. Default = `true`
   * @param contentTaboola    Controls Taboola commercials on all content pages of the channel.
   */
 case class RawChannelCommercial(definesAdTag: Boolean = false,
                                 definesVideoAdTag: Boolean = false,
-                                showBiallo: Boolean = true,
                                 contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial())
 
 /**

@@ -16,12 +16,11 @@ class RawReadsTest extends PlaySpec {
         .asOpt mustBe Some(RawChannelCommercial())
     }
 
-    "add new field `showBiallo` with default value, automatically" in {
-      val missingBialloJson = """{"definesAdTag": true, "definesVideoAdTag": true}"""
-      Json.parse(missingBialloJson)
-      .validate[RawChannelCommercial](rawChannelCommercialReads)
-      .asOpt
-      .map(_.showBiallo) mustBe Some(RawChannelCommercial().showBiallo)
+    "ignore obsolete fields" in {
+      val json: String = """{ "showBiallo": true }"""
+      Json.parse(json)
+        .validate[RawChannelCommercial](rawChannelCommercialReads)
+        .asOpt mustBe Some(RawChannelCommercial())
     }
 
   }

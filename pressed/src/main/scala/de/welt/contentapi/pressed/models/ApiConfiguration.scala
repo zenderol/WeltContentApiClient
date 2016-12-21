@@ -61,12 +61,9 @@ case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
   * CARE:
   * All Default values are defined by CMCF.
   *
-  * @param showBiallo     Show/hide the Biallo commercial on the section page. The Default value is defined by CMCF.
-  *                       Do not set the Default-value here.
   * @param contentTaboola Controls Taboola Scripts below the article text.
   */
-case class ApiCommercial3rdPartyConfiguration(showBiallo: Option[Boolean] = None,
-                                              contentTaboola: Option[ApiCommercialTaboolaConfiguration] = None)
+case class ApiCommercial3rdPartyConfiguration(contentTaboola: Option[ApiCommercialTaboolaConfiguration] = None)
 
 /**
   * Enable/Disable Taboola scripts on each content page of the channel. All Default values are defined by CMCF.

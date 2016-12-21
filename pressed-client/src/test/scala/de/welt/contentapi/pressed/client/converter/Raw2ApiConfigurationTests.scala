@@ -68,7 +68,6 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers with MustVerb {
     val apiThirdParty: ApiCommercial3rdPartyConfiguration = apiConfiguration.commercial.flatMap(_.thirdParty).getOrElse(throw new RuntimeException("Test failed!"))
     val apiTaboola: ApiCommercialTaboolaConfiguration = apiThirdParty.contentTaboola.getOrElse(throw new RuntimeException("Test failed!"))
     val defaultsFromRaw = RawChannelCommercial()
-    apiThirdParty.showBiallo shouldBe Some(defaultsFromRaw.showBiallo)
     apiTaboola.showNews shouldBe Some(defaultsFromRaw.contentTaboola.showNews)
     apiTaboola.showWeb shouldBe Some(defaultsFromRaw.contentTaboola.showWeb)
     apiTaboola.showNetwork shouldBe Some(defaultsFromRaw.contentTaboola.showNetwork)
