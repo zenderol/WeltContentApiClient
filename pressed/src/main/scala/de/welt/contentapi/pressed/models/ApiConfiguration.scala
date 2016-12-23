@@ -50,10 +50,12 @@ case class ApiMetaRobots(noIndex: Option[Boolean] = None, noFollow: Option[Boole
   * @param pathForAdTag      path used to build the ad tag in client
   * @param pathForVideoAdTag path used to build the video ad tag in client
   * @param thirdParty        controls 3rd-party commercial scripts
+  * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
   */
 case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
                                       pathForVideoAdTag: Option[String] = None,
-                                      thirdParty: Option[ApiCommercial3rdPartyConfiguration] = None)
+                                      thirdParty: Option[ApiCommercial3rdPartyConfiguration] = None,
+                                      adIndicator: Option[Boolean] = None)
 
 /**
   * Enable/Disable 3rd-Party commercial scripts on section/content pages.
@@ -92,12 +94,15 @@ case class ApiSponsoringConfiguration(name: Option[String] = None)
   * @param logo              mapping name for the client. When a logo is configured by janus/cmcf it overrides the label
   * @param slogan            optional slogan for the label/logo
   * @param sectionReferences section refs for linking
+  * @param hidden            Hide the complete channel header. Default == `false`
   */
 case class ApiHeaderConfiguration(label: Option[String] = None,
                                   logo: Option[String] = None,
                                   slogan: Option[String] = None,
-                                  sectionReferences: Option[Seq[ApiReference]] = None) {
+                                  sectionReferences: Option[Seq[ApiReference]] = None,
+                                  hidden: Option[Boolean] = None) {
   lazy val unwrappedSectionReferences: Seq[ApiReference] = sectionReferences.getOrElse(Nil)
+  lazy val isHidden: Boolean = hidden.getOrElse(false)
 }
 
 /**

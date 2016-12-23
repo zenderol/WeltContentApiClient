@@ -27,10 +27,27 @@ class RawReadsTest extends PlaySpec {
 
   "RawChannelTaboolaCommercialReads" must {
 
-    "create RawChannelTaboolaCommercialReads from empty json by using default constructor values" in {
+    "create RawChannelTaboolaCommercial from empty json by using default constructor values" in {
       Json.parse(emptyJson)
         .validate[RawChannelTaboolaCommercial](rawChannelTaboolaCommercialReads)
         .asOpt mustBe Some(RawChannelTaboolaCommercial())
+    }
+
+  }
+
+  "RawChannelHeaderReads" must {
+
+    "create RawChannelHeader from empty json by using default constructor values" in {
+      Json.parse(emptyJson)
+        .validate[RawChannelHeader](rawChannelHeaderReads)
+        .asOpt mustBe Some(RawChannelHeader())
+    }
+
+    "fill optional fields" in {
+      val json: String = """{ "logo": "foo", "slogan": "foo", "label": "foo", "sponsoring": "foo" }"""
+      Json.parse(json)
+        .validate[RawChannelHeader](rawChannelHeaderReads)
+        .asOpt mustBe Some(RawChannelHeader(logo = Some("foo"), slogan = Some("foo"), label = Some("foo"), sponsoring = Some("foo")))
     }
 
   }

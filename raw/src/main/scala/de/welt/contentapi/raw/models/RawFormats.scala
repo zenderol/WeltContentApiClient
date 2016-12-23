@@ -40,7 +40,26 @@ object RawReads {
   implicit lazy val rawChannelMetaRobotsTagReads: Reads[RawChannelMetaRobotsTag] = Json.reads[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataReads: Reads[RawChannelMetadata] = Json.reads[RawChannelMetadata]
   implicit lazy val rawSectionReferenceReads: Reads[RawSectionReference] = Json.reads[RawSectionReference]
-  implicit lazy val rawChannelHeaderReads: Reads[RawChannelHeader] = Json.reads[RawChannelHeader]
+  implicit lazy val rawChannelHeaderReads: Reads[RawChannelHeader] = new Reads[RawChannelHeader] {
+    private lazy val defaults: RawChannelHeader = RawChannelHeader()
+    override def reads(json: JsValue): JsResult[RawChannelHeader] = json match {
+      case JsObject(underlying) ⇒ (for {
+        hidden ← underlying.get("hidden").map(_.as[Boolean]).orElse(Some(defaults.hidden))
+        adIndicator ← underlying.get("adIndicator").map(_.as[Boolean]).orElse(Some(defaults.adIndicator))
+      } yield JsSuccess(
+        RawChannelHeader(
+          sponsoring = underlying.get("sponsoring").map(_.as[String]),
+          logo = underlying.get("logo").map(_.as[String]),
+          slogan = underlying.get("slogan").map(_.as[String]),
+          label = underlying.get("label").map(_.as[String]),
+          sectionReferences = underlying.get("sectionReferences").map(_.as[Seq[RawSectionReference]]),
+          hidden = hidden,
+          adIndicator = adIndicator
+        )
+      )).getOrElse(jsErrorInvalidData("RawChannelHeader", json))
+      case err@_ ⇒ jsErrorInvalidJson(err)
+    }
+  }
   implicit lazy val rawChannelContentConfigurationReads: Reads[RawChannelContentConfiguration] = Json.reads[RawChannelContentConfiguration]
 
   implicit lazy val rawChannelTaboolaCommercialReads: Reads[RawChannelTaboolaCommercial] = new Reads[RawChannelTaboolaCommercial] {

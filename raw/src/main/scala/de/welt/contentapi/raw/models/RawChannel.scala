@@ -240,12 +240,17 @@ case class RawSectionReference(label: Option[String] = None, path: Option[String
   * @param slogan            slogan for the channel. E.g. /kmpkt: 'NEWS TO GO. EINZIGARTIG ANDERS.'
   * @param label             display name of the channel. The fallback label is always the [[RawChannelId.label]]
   * @param sectionReferences some optional links inside the header. Example: Link to a sub-channel.
+  * @param hidden            Hide the complete channel header. Default = `false`
+  * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
+  *                          Default = `false`
   */
 case class RawChannelHeader(sponsoring: Option[String] = None,
                             logo: Option[String] = None,
                             slogan: Option[String] = None,
                             label: Option[String] = None,
-                            sectionReferences: Option[Seq[RawSectionReference]] = None) {
+                            sectionReferences: Option[Seq[RawSectionReference]] = None,
+                            hidden: Boolean = false,
+                            adIndicator: Boolean = false) {
   lazy val unwrappedSectionReferences: Seq[RawSectionReference] = sectionReferences.getOrElse(Nil)
 }
 
