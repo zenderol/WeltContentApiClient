@@ -19,6 +19,9 @@ trait AdminSectionService extends RawTreeService {
                     user: String,
                     updatedStages: Option[Seq[RawChannelStage]])(implicit env: Env): Option[RawChannel]
 
+  /**
+    * Syncs the current rawTree with the tree from Static Dump Provider to get new or changed Channels
+    */
   def syncWithLegacy(): Unit
 
 }

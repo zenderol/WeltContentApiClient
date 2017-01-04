@@ -1,5 +1,7 @@
 package de.welt.contentapi.raw.models
 
+import java.time.Instant
+
 import org.scalatestplus.play.PlaySpec
 
 class RawInheritenceTest extends PlaySpec {
@@ -20,6 +22,82 @@ class RawInheritenceTest extends PlaySpec {
 
     "inherit over more than one level for /sport/fussball/bundesliga/" in new TestScope {
       bundesliga.getMaybeContentOverrides mustBe sport.config.content
+    }
+  }
+
+  "Active Inheritance with CMCF" should {
+
+    "set the same RawChannelStageConfiguration Object for all children" in new TestScope {
+      // Given
+      private val template = RawChannelStageConfiguration(
+        templateName = Some("default")
+      )
+      // When
+      root.batchInheritRawChannelStageConfigurationToAllChildren(template, "user")
+
+      // Then
+      root.stageConfiguration mustBe None
+      sport.stageConfiguration mustBe Some(template)
+      fussball.stageConfiguration mustBe Some(template)
+      bundesliga.stageConfiguration mustBe Some(template)
+    }
+
+    "set the RawChannelHeader for all children" in new TestScope {
+      // Given
+      val newHeader = RawChannelHeader(
+        sponsoring = Some("sponsoring"),
+        logo = Some("logo")
+      )
+      // When
+      root.batchInheritRawChannelHeaderToAllChildren(newHeader, "user")
+
+      // Then
+      root.config.header mustBe None
+      sport.config.header mustBe Some(newHeader)
+      fussball.config.header mustBe Some(newHeader)
+      bundesliga.config.header mustBe Some(newHeader)
+    }
+
+    "set a Taboola Config for all children" in new TestScope {
+      // Given
+      val newTaboola = RawChannelTaboolaCommercial(
+        showNews = false,
+        showWeb = false,
+        showNetwork = false
+      )
+      // When
+      root.batchInheritRawChannelTaboolaCommercialToAllChildren(newTaboola, "user")
+
+      // Then
+      root.config.commercial.contentTaboola mustBe RawChannelTaboolaCommercial()
+      sport.config.commercial.contentTaboola mustBe newTaboola
+      fussball.config.commercial.contentTaboola mustBe newTaboola
+      bundesliga.config.commercial.contentTaboola mustBe newTaboola
+    }
+
+    "set a RawChannelTheme for all children" in new TestScope {
+      // Given
+      val newTheme = RawChannelTheme(name = Some("theme"))
+
+      // When
+      root.batchInheritRawChannelThemeToAllChildren(newTheme = newTheme, "user")
+
+      // Then
+      root.config.theme mustBe None
+      sport.config.theme mustBe Some(newTheme)
+      fussball.config.theme mustBe Some(newTheme)
+      bundesliga.config.theme mustBe Some(newTheme)
+    }
+
+    "sets the user and lastMod date after inheritance actions" in new TestScope {
+      private val now = 55555555L
+      root.batchInheritGenericToAllChildren((rawChannel: RawChannel) ⇒ log.debug(s"${rawChannel.id.label}"), "user", now)
+      root.metadata.changedBy mustNot be("user")
+      sport.metadata.changedBy mustBe "user"
+      fussball.metadata.changedBy mustBe "user"
+      bundesliga.metadata.changedBy mustBe "user"
+
+      bundesliga.metadata.lastModifiedDate mustBe now
     }
   }
 

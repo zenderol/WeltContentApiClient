@@ -19,17 +19,19 @@ import scala.annotation.tailrec
   *
   * }}}
   *
-  * @param id          mandatory id with the channel path. E.g. /sport/fussball/
-  * @param config      channel configuration for the clients. Used by Funkotron.
-  * @param stages      stage configuration for the channel. Used by Digger.
-  * @param metadata    meta data for CMCF and Janus. Needed for some merge/update/locking logic.
-  * @param parent      the maybe parent of the current channel. Root channel has no parent. (no shit sherlock!)
-  * @param children    all children of the current channel
-  * @param hasChildren flag if channel has children
+  * @param id                 mandatory id with the channel path. E.g. /sport/fussball/
+  * @param config             channel configuration for the clients. Used by Funkotron.
+  * @param stages             @deprecated stage configuration for the channel. Used by Digger.
+  * @param stageConfiguration Object that either holds a template name or a seq of manually configured Stages. Used by Digger.
+  * @param metadata           meta data for CMCF and Janus. Needed for some merge/update/locking logic.
+  * @param parent             the maybe parent of the current channel. Root channel has no parent. (no shit sherlock!)
+  * @param children           all children of the current channel
+  * @param hasChildren        flag if channel has children
   */
 case class RawChannel(id: RawChannelId,
                       var config: RawChannelConfiguration = RawChannelConfiguration(),
-                      var stages: Option[Seq[RawChannelStage]] = None,
+                      @deprecated var stages: Option[Seq[RawChannelStage]] = None,
+                      var stageConfiguration: Option[RawChannelStageConfiguration] = None,
                       var metadata: RawMetadata = RawMetadata(),
                       var parent: Option[RawChannel] = None,
                       var children: Seq[RawChannel] = Nil,
@@ -117,12 +119,62 @@ case class RawChannel(id: RawChannelId,
 
   /** equals solely on the ```ChannelId``` */
   override def equals(obj: Any): Boolean = obj match {
-    case RawChannel(otherId, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
+    case RawChannel(otherId, _, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
     case _ ⇒ false
   }
 
   override def hashCode: Int = this.id.hashCode
+
+  /**
+    * set the same RawChannelStageConfiguration for all Sub-Channels but not the channel itself
+    *
+    * @param newStageConfig New config to inherit
+    */
+  def batchInheritRawChannelStageConfigurationToAllChildren(newStageConfig: RawChannelStageConfiguration, user: String): Unit =
+    batchInheritGenericToAllChildren({_.stageConfiguration = Some(newStageConfig)}, user)
+
+  /**
+    * set the same RawChannelTheme for all Sub-Channels but not the channel itself
+    *
+    * @param newTheme New theme to inherit
+    */
+  def batchInheritRawChannelThemeToAllChildren(newTheme: RawChannelTheme, user: String): Unit =
+    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(theme = Some(newTheme))}, user)
+
+  /**
+    * set the same RawChannelHeader for all Sub-Channels but not the channel itself
+    *
+    * @param newHeader New header to inherit
+    */
+  def batchInheritRawChannelHeaderToAllChildren(newHeader: RawChannelHeader, user: String): Unit =
+    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(header = Some(newHeader))}, user)
+
+  /**
+    * set the same RawChannelTaboolaCommercial for all Sub-Channels but not the channel itself
+    *
+    * @param newTaboolaConfig New header to inherit
+    */
+  def batchInheritRawChannelTaboolaCommercialToAllChildren(newTaboolaConfig: RawChannelTaboolaCommercial, user: String): Unit = {
+    batchInheritGenericToAllChildren((rawChannel: RawChannel) ⇒ rawChannel.config.commercial.contentTaboola = newTaboolaConfig, user)
+  }
+
+  private[models] def batchInheritGenericToAllChildren(applyInheritanceAction: RawChannel ⇒ Unit,
+                                                       user: String,
+                                                       timestamp: Long = Instant.now.toEpochMilli): Unit = this.children.foreach { child ⇒
+    applyInheritanceAction(child)
+    child.metadata = child.metadata.copy(changedBy = user, lastModifiedDate = timestamp)
+    // enter recursion
+    child.batchInheritGenericToAllChildren(applyInheritanceAction, user, timestamp)
+  }
 }
+
+/**
+  * Wrapper object. Either manually configured stages or use a template for the channel like "default" or "mediathek"
+  * @param stages manually configured stages from CMCF. Used in Digger.
+  * @param templateName name of the template to use instead of manually configured stages. Used in Digger.
+  */
+case class RawChannelStageConfiguration(stages: Option[Seq[RawChannelStage]] = None,
+                                        templateName: Option[String] = None)
 
 /**
   * @param path      unique path of the channel. Always with a trailing slash. E.g. '/sport/fussball/'
@@ -165,7 +217,7 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
   */
 case class RawChannelCommercial(definesAdTag: Boolean = false,
                                 definesVideoAdTag: Boolean = false,
-                                contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial())
+                                var contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial())
 
 /**
   * Enable/Disable Taboola scripts on content pages below the article text. Some Channel do not want

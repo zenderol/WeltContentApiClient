@@ -14,6 +14,7 @@ object RawFormats {
   implicit lazy val rawSectionReferenceFormat: Format[RawSectionReference] = Format[RawSectionReference](rawSectionReferenceReads, rawSectionReferenceWrites)
   implicit lazy val rawChannelHeaderFormat: Format[RawChannelHeader] = Format[RawChannelHeader](rawChannelHeaderReads, rawChannelHeaderWrites)
   implicit lazy val rawChannelContentConfigurationFormat: Format[RawChannelContentConfiguration] = Format[RawChannelContentConfiguration](rawChannelContentConfigurationReads, rawChannelContentConfigurationWrites)
+  implicit lazy val rawChannelStageConfigurationFormat: Format[RawChannelStageConfiguration] = Format[RawChannelStageConfiguration](rawChannelStageConfigurationFormat, rawChannelStageConfigurationFormat)
   implicit lazy val rawChannelCommercialFormat: Format[RawChannelCommercial] = Format[RawChannelCommercial](rawChannelCommercialReads, rawChannelCommercialWrites)
 
   implicit lazy val rawChannelStageContentFormat: Format[RawChannelStageCustomModule] = Format[RawChannelStageCustomModule](rawChannelStageContentReads, rawChannelStageCustomModuleWrites)
@@ -61,6 +62,7 @@ object RawReads {
     }
   }
   implicit lazy val rawChannelContentConfigurationReads: Reads[RawChannelContentConfiguration] = Json.reads[RawChannelContentConfiguration]
+  implicit lazy val rawChannelStageConfigurationReads: Reads[RawChannelStageConfiguration] = Json.reads[RawChannelStageConfiguration]
 
   implicit lazy val rawChannelTaboolaCommercialReads: Reads[RawChannelTaboolaCommercial] = new Reads[RawChannelTaboolaCommercial] {
     private lazy val defaults: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial()
@@ -127,6 +129,7 @@ object RawWrites {
   implicit lazy val rawSectionReferenceWrites: Writes[RawSectionReference] = Json.writes[RawSectionReference]
   implicit lazy val rawChannelHeaderWrites: Writes[RawChannelHeader] = Json.writes[RawChannelHeader]
   implicit lazy val rawChannelContentConfigurationWrites: Writes[RawChannelContentConfiguration] = Json.writes[RawChannelContentConfiguration]
+  implicit lazy val rawChannelStageConfigurationWrites: Writes[RawChannelStageConfiguration] = Json.writes[RawChannelStageConfiguration]
   implicit lazy val rawChannelTaboolaCommercialWrites: Writes[RawChannelTaboolaCommercial] = Json.writes[RawChannelTaboolaCommercial]
   implicit lazy val rawChannelCommercialWrites: Writes[RawChannelCommercial] = Json.writes[RawChannelCommercial]
 
@@ -158,6 +161,7 @@ object FullRawChannelWrites {
     (__ \ "id").write[RawChannelId] and
       (__ \ "config").write[RawChannelConfiguration] and
       (__ \ "stages").writeNullable[Seq[RawChannelStage]] and
+      (__ \ "stageConfiguration").writeNullable[RawChannelStageConfiguration] and
       (__ \ "metadata").write[RawMetadata] and
       (__ \ "parent").lazyWrite(Writes.optionWithNull(PartialRawChannelWrites.writeChannelAsNull)) and // avoid loops
       (__ \ "children").lazyWrite(Writes.seq[RawChannel](channelWrites)) and
@@ -178,7 +182,9 @@ object PartialRawChannelWrites {
         "hasChildren" → JsBoolean(o.hasChildren),
         "config" → Json.toJson(o.config),
         "metadata" → Json.toJson(o.metadata)
-      ) ++ o.stages.map { stages ⇒ "stages" → Json.toJson(stages) }
+      )
+        ++ o.stages.map { stages ⇒ "stages" → Json.toJson(stages) }
+        ++ o.stageConfiguration.map {stageConfiguration ⇒ "stageConfiguration" → Json.toJson(stageConfiguration)}
       )
     }
   }
@@ -187,6 +193,7 @@ object PartialRawChannelWrites {
     (__ \ "id").write[RawChannelId] and
       (__ \ "config").write[RawChannelConfiguration] and
       (__ \ "stages").writeNullable[Seq[RawChannelStage]] and
+      (__ \ "stageConfiguration").writeNullable[RawChannelStageConfiguration] and
       (__ \ "metadata").write[RawMetadata] and
       (__ \ "parent").lazyWrite(Writes.optionWithNull(noChildrenWrites)) and
       (__ \ "children").lazyWrite(Writes.seq[RawChannel](noChildrenWrites)) and
@@ -208,14 +215,20 @@ object PartialRawChannelReads {
         id ← underlying.get("id").map(_.as[RawChannelId])
         config ← underlying.get("config").map(_.as[RawChannelConfiguration])
         metadata ← underlying.get("metadata").map(_.as[RawMetadata])
-      } yield JsSuccess(
-        RawChannel(
-          id = id,
-          config = config,
-          metadata = metadata,
-          stages = underlying.get("stages").flatMap(_.asOpt[Seq[RawChannelStage]]),
-          children = Seq.empty
-        )))
+      } yield {
+        val maybeDeprecatedStages = underlying.get("stages").flatMap(_.asOpt[Seq[RawChannelStage]])
+        JsSuccess(
+            RawChannel(
+            id = id,
+            config = config,
+            metadata = metadata,
+            stageConfiguration = underlying.get("stageConfiguration")
+              .map(_.as[RawChannelStageConfiguration])
+              .orElse(Some(RawChannelStageConfiguration(maybeDeprecatedStages))),
+            stages = maybeDeprecatedStages,
+            children = Seq.empty
+          ))
+      })
         .getOrElse(jsErrorInvalidData("RawChannel[noChildren]", json))
       case err@_ ⇒ jsErrorInvalidJson(err)
     }
