@@ -30,7 +30,8 @@ import scala.annotation.tailrec
   */
 case class RawChannel(id: RawChannelId,
                       var config: RawChannelConfiguration = RawChannelConfiguration(),
-                      @deprecated var stages: Option[Seq[RawChannelStage]] = None,
+                      @deprecated("Restructure (inheritance). Use stageConfiguration instead.", since = "01/2017")
+                      var stages: Option[Seq[RawChannelStage]] = None,
                       var stageConfiguration: Option[RawChannelStageConfiguration] = None,
                       var metadata: RawMetadata = RawMetadata(),
                       var parent: Option[RawChannel] = None,
@@ -196,12 +197,14 @@ case class RawChannelId(var path: String,
 /**
   * @param metadata   `<meta>` tag overrides of the channel.
   * @param header     content header (not the real page header) configuration.
+  * @param sponsoring sponsoring mapping configuration for the channel.
   * @param theme      the optional theme for the channel. This is a developer configuration.
   * @param commercial commercial configuration for the channel. Used some override logic.
   * @param content    content query configuration for the whole channel and all sub-channel (children).
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
+                                   sponsoring: RawChannelSponsoring = RawChannelSponsoring(),
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
                                    content: Option[RawChannelContentConfiguration] = None)
@@ -283,20 +286,19 @@ case class RawSectionReference(label: Option[String] = None, path: Option[String
 
 /**
   *
-  * @param sponsoring        only a mapping string for the client. Used for a svg/image logo. E.g. 'tagheuer'
+  * @param sponsoring        Only a mapping string for the client.
+  *                          Used for a svg/image logo. E.g. 'tagheuer'
   * @param logo              only a mapping string for the client. Used for a svg/image logo to replace the label.
-  *                          The logo could be a channel logo like '/icon' or a ressort logo like '/kmpk'.
-  *                          What's the different? Ask UI/UX!
-  *                          Display-Logic:
-  *                          channelLogo.orElse(ressortLogo).getOrElse(label)
+  *                          Display-Logic: `logo.getOrElse(label)`
   * @param slogan            slogan for the channel. E.g. /kmpkt: 'NEWS TO GO. EINZIGARTIG ANDERS.'
   * @param label             display name of the channel. The fallback label is always the [[RawChannelId.label]]
   * @param sectionReferences some optional links inside the header. Example: Link to a sub-channel.
-  * @param hidden            Hide the complete channel header. Default = `false`
+  * @param hidden            hide only the channel header. (Not affected: Sponsoring, References). Default = `false`
   * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
   *                          Default = `false`
   */
-case class RawChannelHeader(sponsoring: Option[String] = None,
+case class RawChannelHeader(@deprecated("Restructure (more sponsoring options). Use RawChannelSponsoring instead.", since = "01/2017")
+                            sponsoring: Option[String] = None,
                             logo: Option[String] = None,
                             slogan: Option[String] = None,
                             label: Option[String] = None,
@@ -305,6 +307,17 @@ case class RawChannelHeader(sponsoring: Option[String] = None,
                             adIndicator: Boolean = false) {
   lazy val unwrappedSectionReferences: Seq[RawSectionReference] = sectionReferences.getOrElse(Nil)
 }
+
+/**
+  * A channel can be sponsored by a partner or brand with a special logo + slogan. This is mostly part of the
+  * page-sub-header.
+  *
+  * @param logo   only a mapping string for the client. Used for a svg/image logo e.g. 'Commerzbank' or 'Philips'
+  * @param slogan partner slogan for the channel sponsoring.
+  *               E.g. "Philips - Es gibt immer einen Weg, das Leben besser zu machen"
+  * @param hidden hide only the sponsoring. Default = `false`
+  */
+case class RawChannelSponsoring(logo: Option[String] = None, slogan: Option[String] = None, hidden: Boolean = false)
 
 /**
   * Stored values for CMCF and Janus2. Should not be used by any clients.

@@ -12,6 +12,7 @@ object RawFormats {
   implicit lazy val rawChannelMetaRobotsTagFormat: Format[RawChannelMetaRobotsTag] = Format[RawChannelMetaRobotsTag](rawChannelMetaRobotsTagReads, rawChannelMetaRobotsTagWrites)
   implicit lazy val rawChannelMetadataFormat: Format[RawChannelMetadata] = Format[RawChannelMetadata](rawChannelMetadataReads, rawChannelMetadataWrites)
   implicit lazy val rawSectionReferenceFormat: Format[RawSectionReference] = Format[RawSectionReference](rawSectionReferenceReads, rawSectionReferenceWrites)
+  implicit lazy val rawChannelSponsoringFormat: Format[RawChannelSponsoring] = Format[RawChannelSponsoring](rawChannelSponsoringReads, rawChannelSponsoringWrites)
   implicit lazy val rawChannelHeaderFormat: Format[RawChannelHeader] = Format[RawChannelHeader](rawChannelHeaderReads, rawChannelHeaderWrites)
   implicit lazy val rawChannelContentConfigurationFormat: Format[RawChannelContentConfiguration] = Format[RawChannelContentConfiguration](rawChannelContentConfigurationReads, rawChannelContentConfigurationWrites)
   implicit lazy val rawChannelStageConfigurationFormat: Format[RawChannelStageConfiguration] = Format[RawChannelStageConfiguration](rawChannelStageConfigurationFormat, rawChannelStageConfigurationFormat)
@@ -41,6 +42,17 @@ object RawReads {
   implicit lazy val rawChannelMetaRobotsTagReads: Reads[RawChannelMetaRobotsTag] = Json.reads[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataReads: Reads[RawChannelMetadata] = Json.reads[RawChannelMetadata]
   implicit lazy val rawSectionReferenceReads: Reads[RawSectionReference] = Json.reads[RawSectionReference]
+  implicit lazy val rawChannelSponsoringReads: Reads[RawChannelSponsoring] = new Reads[RawChannelSponsoring] {
+    private lazy val defaults: RawChannelSponsoring = RawChannelSponsoring()
+    override def reads(json: JsValue): JsResult[RawChannelSponsoring] = json match {
+      case JsObject(underlying) ⇒ JsSuccess(RawChannelSponsoring(
+        logo = underlying.get("logo").map(_.as[String]),
+        slogan = underlying.get("slogan").map(_.as[String]),
+        hidden = underlying.get("hidden").map(_.as[Boolean]).getOrElse(defaults.hidden)
+      ))
+      case err@_ ⇒ jsErrorInvalidJson(err)
+    }
+  }
   implicit lazy val rawChannelHeaderReads: Reads[RawChannelHeader] = new Reads[RawChannelHeader] {
     private lazy val defaults: RawChannelHeader = RawChannelHeader()
     override def reads(json: JsValue): JsResult[RawChannelHeader] = json match {
@@ -118,7 +130,25 @@ object RawReads {
   implicit lazy val rawChannelThemeReads: Reads[RawChannelTheme] = Json.reads[RawChannelTheme]
 
   implicit lazy val rawMetadataReads: Reads[RawMetadata] = Json.reads[RawMetadata]
-  implicit lazy val rawChannelConfigurationReads: Reads[RawChannelConfiguration] = Json.reads[RawChannelConfiguration]
+  implicit lazy val rawChannelConfigurationReads: Reads[RawChannelConfiguration] = new Reads[RawChannelConfiguration] {
+    private lazy val defaults: RawChannelConfiguration = RawChannelConfiguration()
+    override def reads(json: JsValue): JsResult[RawChannelConfiguration] = json match {
+      case JsObject(underlying) ⇒
+        val maybeRawChannelHeader: Option[RawChannelHeader] = underlying.get("header").map(_.as[RawChannelHeader])
+        JsSuccess(RawChannelConfiguration(
+          metadata = underlying.get("metadata").map(_.as[RawChannelMetadata]),
+          header = maybeRawChannelHeader,
+          sponsoring = underlying.get("sponsoring")
+            .map(_.as[RawChannelSponsoring])
+            .orElse(maybeRawChannelHeader.map(rawChannelHeader ⇒ RawChannelSponsoring(logo = rawChannelHeader.sponsoring)))
+            .getOrElse(defaults.sponsoring),
+          theme = underlying.get("theme").map(_.as[RawChannelTheme]),
+          commercial = underlying.get("commercial").map(_.as[RawChannelCommercial]).getOrElse(defaults.commercial),
+          content = underlying.get("content").map(_.as[RawChannelContentConfiguration])
+        ))
+      case err@_ ⇒ jsErrorInvalidJson(err)
+    }
+  }
   implicit lazy val rawChannelReads: Reads[RawChannel] = Json.reads[RawChannel]
 }
 
@@ -127,6 +157,7 @@ object RawWrites {
   implicit lazy val rawChannelMetaRobotsTagWrites: Writes[RawChannelMetaRobotsTag] = Json.writes[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataWrites: Writes[RawChannelMetadata] = Json.writes[RawChannelMetadata]
   implicit lazy val rawSectionReferenceWrites: Writes[RawSectionReference] = Json.writes[RawSectionReference]
+  implicit lazy val rawChannelSponsoringWrites: Writes[RawChannelSponsoring] = Json.writes[RawChannelSponsoring]
   implicit lazy val rawChannelHeaderWrites: Writes[RawChannelHeader] = Json.writes[RawChannelHeader]
   implicit lazy val rawChannelContentConfigurationWrites: Writes[RawChannelContentConfiguration] = Json.writes[RawChannelContentConfiguration]
   implicit lazy val rawChannelStageConfigurationWrites: Writes[RawChannelStageConfiguration] = Json.writes[RawChannelStageConfiguration]

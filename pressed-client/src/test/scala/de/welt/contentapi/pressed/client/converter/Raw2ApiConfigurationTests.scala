@@ -6,7 +6,6 @@ import de.welt.testing.testHelper.raw.channel._
 import org.scalatest.words.MustVerb
 import org.scalatest.{FlatSpec, Matchers}
 
-
 class Raw2ApiConfigurationTests extends FlatSpec with Matchers with MustVerb {
 
   trait TestScopeConfiguration {
@@ -29,6 +28,10 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers with MustVerb {
           sponsoring = Some("sponsoring"),
           sectionReferences = Some(Seq(RawSectionReference(Some("Label"), Some("/Path/"))))
         )
+      ),
+      sponsoring = RawChannelSponsoring(
+//        logo = Some("logo"), // add this line when the test fails (removed attr `header.sponsoring`).
+        slogan = Some("slogan")
       ),
       theme = Some(
         rawChannelTheme
@@ -81,6 +84,16 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers with MustVerb {
     apiConfiguration.header.flatMap(_.label).isDefined shouldBe true
     apiConfiguration.meta.flatMap(_.title).isDefined shouldBe true
     apiConfiguration.sponsoring.flatMap(_.name).isDefined shouldBe true
+  }
+
+  "ApiSponsoringConfiguration" must "have 'logo', 'slogan' and 'hidden'" in new TestScopeConfiguration {
+    private val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(node100)
+
+    apiSponsoringConfiguration.name shouldBe Some("sponsoring") // testing copied value
+    apiSponsoringConfiguration.logo shouldBe Some("sponsoring") // remove this line when test fails (removed `name` attr)
+//    apiSponsoringConfiguration.logo shouldBe Some("logo") // add this line when test fails (removed `name` attr)
+    apiSponsoringConfiguration.slogan shouldBe Some("slogan")
+    apiSponsoringConfiguration.hidden shouldBe Some(false)
   }
 
   "ApiTheme" must "have label and fields from the RawChannelTheme" in new TestScopeConfiguration {

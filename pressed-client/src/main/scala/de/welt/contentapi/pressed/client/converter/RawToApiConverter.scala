@@ -36,7 +36,7 @@ class RawToApiConverter {
   def apiConfigurationFromRawChannel(rawChannel: RawChannel) = ApiConfiguration(
     meta = apiMetaConfigurationFromRawChannel(rawChannel),
     commercial = Some(apiCommercialConfigurationFromRawChannel(rawChannel)),
-    sponsoring = apiSponsoringConfigurationFromRawChannel(rawChannel),
+    sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
     header = Some(apiHeaderConfigurationFromRawChannel(rawChannel)),
     theme = apiThemeFromRawChannel(rawChannel)
   )
@@ -93,10 +93,13 @@ class RawToApiConverter {
     )
   }
 
-  private[converter] def apiSponsoringConfigurationFromRawChannel(rawChannel: RawChannel): Option[ApiSponsoringConfiguration] = {
-    rawChannel.config.header.map {
-      header => ApiSponsoringConfiguration(header.sponsoring)
-    }
+  private[converter] def apiSponsoringConfigurationFromRawChannel(rawChannel: RawChannel): ApiSponsoringConfiguration = {
+    ApiSponsoringConfiguration(
+      name = rawChannel.config.sponsoring.logo.orElse(rawChannel.config.header.flatMap(_.sponsoring)),
+      logo = rawChannel.config.sponsoring.logo.orElse(rawChannel.config.header.flatMap(_.sponsoring)),
+      slogan = rawChannel.config.sponsoring.slogan,
+      hidden = Some(rawChannel.config.sponsoring.hidden)
+    )
   }
 
   private[converter] def apiHeaderConfigurationFromRawChannel(rawChannel: RawChannel) = {

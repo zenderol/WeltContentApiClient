@@ -80,12 +80,20 @@ case class ApiCommercialTaboolaConfiguration(showNews: Option[Boolean] = None,
                                              showNetwork: Option[Boolean] = None)
 
 /**
-  * Branding or sponsoring of section and content pages. This is only the name of the branding. The impl is part of
-  * the client.
+  * Sponsoring of section and content pages. The impl is part of the client.
   *
-  * @param name name of the branding. Need for mapping.
+  * @param name   name of the branding. Need for mapping.
+  * @param logo   name of the sponsoring logo. Need for mapping. Not a real image path.
+  * @param slogan optional slogan of the sponsoring.
+  * @param hidden name of the branding. Need for mapping.
   */
-case class ApiSponsoringConfiguration(name: Option[String] = None)
+case class ApiSponsoringConfiguration(@deprecated("Renaming. Use logo instead", since = "01/2017")
+                                      name: Option[String] = None,
+                                      logo: Option[String] = None,
+                                      slogan: Option[String] = None,
+                                      hidden: Option[Boolean] = None) {
+  lazy val isHidden: Boolean = hidden.getOrElse(false)
+}
 
 /**
   * Some configuration for the section or content page header. Not the real page header.

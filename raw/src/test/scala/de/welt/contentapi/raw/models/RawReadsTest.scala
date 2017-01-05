@@ -4,9 +4,38 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
 class RawReadsTest extends PlaySpec {
+
   import RawReads._
 
   private final val emptyJson = "{}"
+
+  "RawChannelConfigurationReads" must {
+
+    "create RawChannelConfiguration from empty json by using default constructor values" in {
+      Json.parse(emptyJson)
+        .validate[RawChannelConfiguration](rawChannelConfigurationReads)
+        .asOpt mustBe Some(RawChannelConfiguration())
+    }
+
+    "copy old sponsoring string value to new model [[RawChannelSponsoring.logo]]" in {
+      val json: String =
+        """
+          {
+            "header": {
+              "sponsoring": "dick-butt"
+            }
+          }
+          """
+
+      val rawChannelConfiguration: RawChannelConfiguration = Json.parse(json)
+        .validate[RawChannelConfiguration](rawChannelConfigurationReads)
+        .get
+
+      rawChannelConfiguration.header.get.sponsoring mustBe Some("dick-butt")
+      rawChannelConfiguration.sponsoring.logo mustBe Some("dick-butt")
+    }
+
+  }
 
   "RawChannelCommercialReads" must {
 
