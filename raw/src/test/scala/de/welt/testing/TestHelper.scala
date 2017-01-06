@@ -1,8 +1,8 @@
 package de.welt.testing
 
-import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelConfiguration, RawChannelId, RawChannelMetadata}
+import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelConfiguration, RawChannelId, RawChannelMetadata, RawMetadata}
 
-object testHelper {
+object TestHelper {
 
   object raw {
 
@@ -13,13 +13,24 @@ object testHelper {
       def emptyWithIdAndConfig(id: Long, config: RawChannelConfiguration) =
         RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), config = config)
 
+      def emptyWithIdAndMetadata(id: Long, metadata: RawMetadata) =
+        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), metadata = metadata)
+
       def emptyWithIdAndChildren(id: Long, children: Seq[RawChannel]) =
         RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), children = children)
 
       def emptyWithIdAndChildrenAndConfig(id: Long, children: Seq[RawChannel], config: RawChannelConfiguration) =
         RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), children = children, config = config)
+
+      def emptyWithIdAndChildrenAndMetadata(id: Long, children: Seq[RawChannel], metadata: RawMetadata) =
+        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), children = children, metadata = metadata)
     }
 
+    object metadata {
+      def withChangedBy(changedBy: String) = RawMetadata(
+        changedBy = changedBy
+      )
+    }
 
     object configuration {
 
@@ -32,6 +43,9 @@ object testHelper {
         commercial = RawChannelCommercial(definesAdTag = adsEnabled, definesVideoAdTag = adsEnabled)
       )
 
+      def withBrand(brand: Boolean) = RawChannelConfiguration(
+        brand = brand
+      )
 
     }
 

@@ -1,12 +1,11 @@
 package de.welt.contentapi.pressed.client.converter
 
-import de.welt.testing.testHelper.raw.channel._
-import de.welt.testing.testHelper.raw.configuration._
-import org.scalatest.words.MustVerb
+import de.welt.testing.TestHelper.raw.channel._
+import de.welt.testing.TestHelper.raw.configuration._
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class Raw2ApiAdTagTests extends FlatSpec with Matchers with MustVerb {
+class Raw2ApiAdTagTests extends FlatSpec with Matchers {
 
   trait TestScopeAds {
     /**

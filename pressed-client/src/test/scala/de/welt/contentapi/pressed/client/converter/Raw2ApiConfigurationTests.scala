@@ -2,11 +2,10 @@ package de.welt.contentapi.pressed.client.converter
 
 import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models._
-import de.welt.testing.testHelper.raw.channel._
-import org.scalatest.words.MustVerb
+import de.welt.testing.TestHelper.raw.channel._
 import org.scalatest.{FlatSpec, Matchers}
 
-class Raw2ApiConfigurationTests extends FlatSpec with Matchers with MustVerb {
+class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
 
   trait TestScopeConfiguration {
     val rawChannelMetadata = RawChannelMetadata(

@@ -4,7 +4,13 @@ import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag, RawSectionReference}
 
-class RawToApiConverter {
+
+class RawToApiConverter(inheritanceCalculator: InheritanceCalculator = new InheritanceCalculator()) {
+  private val pathForAdTagAction: InheritanceAction[String] = InheritanceAction[String](
+    forRoot = c ⇒ "home", // root has a unique adTag
+    forFallback = c ⇒ "sonstiges", // fallback value for First-Level-Sections with no own adTag
+    forMatching = c ⇒ trimPathForAdTag(c.id.path)
+  )
 
   /**
     * Converter method that takes a rawChannel and returns an ApiChannel from its data
@@ -38,31 +44,28 @@ class RawToApiConverter {
     commercial = Some(apiCommercialConfigurationFromRawChannel(rawChannel)),
     sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
     header = Some(apiHeaderConfigurationFromRawChannel(rawChannel)),
-    theme = apiThemeFromRawChannel(rawChannel)
+    theme = apiThemeFromRawChannel(rawChannel),
+    brand = Some(calculateBrand(rawChannel))
   )
 
-  def calculatePathForVideoAdTag(rawChannel: RawChannel) = calcAdTag(rawChannel, c ⇒ c.definesVideoAdTag)
-  def calculatePathForAdTag(rawChannel: RawChannel) = calcAdTag(rawChannel, c ⇒ c.definesAdTag)
+  private[converter] def calculatePathForVideoAdTag(rawChannel: RawChannel): String =
+    inheritanceCalculator.forChannel[String](rawChannel, pathForAdTagAction, c ⇒ c.config.commercial.definesVideoAdTag)
 
-  private def calcAdTag(rawChannel: RawChannel, predicate: RawChannelCommercial ⇒ Boolean): String =
-
-    rawChannel.parent match {
-      // root
-      case None ⇒
-        "home"
-      // channel is advertised -> calculate Tag
-      case Some(parent) if predicate.apply(rawChannel.config.commercial) ⇒ trimPathForAdTag(rawChannel.id.path)
-      // is root channel but not advertised, so use fallback
-      case Some(parent) if parent == rawChannel.root && !predicate.apply(rawChannel.config.commercial) ⇒
-        "sonstiges"
-      // channel is not advertised but has parents that may be, so go up in tree
-      case Some(parent) ⇒
-        calcAdTag(parent, predicate)
-    }
+  private[converter] def calculatePathForAdTag(rawChannel: RawChannel): String =
+    inheritanceCalculator.forChannel[String](rawChannel, pathForAdTagAction, c ⇒ c.config.commercial.definesAdTag)
 
   private[converter] def trimPathForAdTag(path: String): String = {
     val pathWithoutLeadingAndTrailingSlashes = path.stripPrefix("/").stripSuffix("/").trim
     Option(pathWithoutLeadingAndTrailingSlashes).filter(_.nonEmpty).getOrElse("sonstiges")
+  }
+
+  private[converter] def calculateBrand(rawChannel: RawChannel): Boolean = {
+    val brandInheritanceAction: InheritanceAction[Boolean] = InheritanceAction[Boolean](
+      forRoot = c ⇒ false, // root is never a brand
+      forFallback = c ⇒ false, // last channel before root with brand == false
+      forMatching = c ⇒ true // ignore `c` -- it's always `true`
+    )
+    inheritanceCalculator.forChannel[Boolean](rawChannel, brandInheritanceAction, c ⇒ c.config.brand)
   }
 
   private[converter] def apiMetaConfigurationFromRawChannel(rawChannel: RawChannel): Option[ApiMetaConfiguration] = {
@@ -72,8 +75,7 @@ class RawToApiConverter {
       tags = metadata.keywords,
       contentMetaRobots = metadata.contentRobots.map(apiMetaRobotsFromRawChannelMetaRobotsTag),
       sectionMetaRobots = metadata.sectionRobots.map(apiMetaRobotsFromRawChannelMetaRobotsTag)
-    )
-    )
+    ))
   }
 
   private[converter] def apiMetaRobotsFromRawChannelMetaRobotsTag(rawChannelMetaRobotsTag: RawChannelMetaRobotsTag): ApiMetaRobots =

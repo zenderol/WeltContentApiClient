@@ -9,8 +9,8 @@ import de.welt.contentapi.core.models.{ApiContent, ApiResponse, ApiSectionData}
 import de.welt.contentapi.pressed.client.converter.RawToApiConverter
 import de.welt.contentapi.pressed.models.ApiPressedContent
 import de.welt.contentapi.raw.client.services.RawTreeService
-import de.welt.testing.testHelper.raw.channel._
-import de.welt.testing.testHelper.raw.configuration._
+import de.welt.testing.TestHelper.raw.channel._
+import de.welt.testing.TestHelper.raw.configuration._
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar

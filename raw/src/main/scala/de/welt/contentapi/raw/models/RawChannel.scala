@@ -140,7 +140,7 @@ case class RawChannel(id: RawChannelId,
     * @param newTheme New theme to inherit
     */
   def batchInheritRawChannelThemeToAllChildren(newTheme: RawChannelTheme, user: String): Unit =
-    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(theme = Some(newTheme))}, user)
+    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(theme = Some(newTheme)) }, user)
 
   /**
     * set the same RawChannelHeader for all Sub-Channels but not the channel itself
@@ -148,7 +148,7 @@ case class RawChannel(id: RawChannelId,
     * @param newHeader New header to inherit
     */
   def batchInheritRawChannelHeaderToAllChildren(newHeader: RawChannelHeader, user: String): Unit =
-    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(header = Some(newHeader))}, user)
+    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(header = Some(newHeader)) }, user)
 
   /**
     * set the same RawChannelTaboolaCommercial for all Sub-Channels but not the channel itself
@@ -171,7 +171,8 @@ case class RawChannel(id: RawChannelId,
 
 /**
   * Wrapper object. Either manually configured stages or use a template for the channel like "default" or "mediathek"
-  * @param stages manually configured stages from CMCF. Used in Digger.
+  *
+  * @param stages       manually configured stages from CMCF. Used in Digger.
   * @param templateName name of the template to use instead of manually configured stages. Used in Digger.
   */
 case class RawChannelStageConfiguration(stages: Option[Seq[RawChannelStage]] = None,
@@ -201,13 +202,16 @@ case class RawChannelId(var path: String,
   * @param theme      the optional theme for the channel. This is a developer configuration.
   * @param commercial commercial configuration for the channel. Used some override logic.
   * @param content    content query configuration for the whole channel and all sub-channel (children).
+  * @param brand      flags a channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
+  *                   like Icon ('/icon/') with different UI elements or layouts.
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
                                    sponsoring: RawChannelSponsoring = RawChannelSponsoring(),
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
-                                   content: Option[RawChannelContentConfiguration] = None)
+                                   content: Option[RawChannelContentConfiguration] = None,
+                                   brand: Boolean = false)
 
 /**
   * The (ASMI) ad tag is a string with the root section and type of the page (section or content page).

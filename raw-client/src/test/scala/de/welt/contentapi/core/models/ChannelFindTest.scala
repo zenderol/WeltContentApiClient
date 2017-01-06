@@ -1,7 +1,7 @@
 package de.welt.contentapi.core.models
 
 import de.welt.contentapi.raw.models.RawChannel
-import de.welt.testing.testHelper
+import de.welt.testing.TestHelper
 import org.scalatestplus.play.PlaySpec
 
 class ChannelFindTest extends PlaySpec {
@@ -19,9 +19,9 @@ class ChannelFindTest extends PlaySpec {
       *      (2)
       * }}}
       */
-    val node2 = testHelper.raw.channel.emptyWithId(2)
-    val node1 = testHelper.raw.channel.emptyWithIdAndChildren(1, Seq(node2))
-    val root = testHelper.raw.channel.emptyWithIdAndChildren(0, Seq(node1))
+    val node2 = TestHelper.raw.channel.emptyWithId(2)
+    val node1 = TestHelper.raw.channel.emptyWithIdAndChildren(1, Seq(node2))
+    val root = TestHelper.raw.channel.emptyWithIdAndChildren(0, Seq(node1))
 
     root.updateParentRelations()
     root.updatePaths()

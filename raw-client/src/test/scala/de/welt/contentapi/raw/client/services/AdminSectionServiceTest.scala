@@ -5,7 +5,7 @@ import de.welt.contentapi.raw.models.FullRawChannelWrites.channelWrites
 import de.welt.contentapi.raw.models.RawChannelConfiguration
 import de.welt.contentapi.utils.Env.Live
 import de.welt.testing.DisabledCache
-import de.welt.testing.testHelper.raw.channel.emptyWithId
+import de.welt.testing.TestHelper.raw.channel.emptyWithId
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.{verify, when}
 import org.mockito.{Matchers, Mockito}

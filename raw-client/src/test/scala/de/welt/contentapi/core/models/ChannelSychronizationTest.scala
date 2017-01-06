@@ -2,7 +2,7 @@ package de.welt.contentapi.core.models
 
 import de.welt.contentapi.raw.models.{ChannelUpdate, RawChannel, RawChannelCommercial}
 import de.welt.contentapi.raw.client.services.ChannelTools
-import de.welt.testing.testHelper
+import de.welt.testing.TestHelper
 import org.scalatestplus.play.PlaySpec
 
 //noinspection TypeAnnotation
@@ -13,16 +13,16 @@ class ChannelSyncTest extends PlaySpec {
   trait Fixture {
 
     /** CHILD 1 */
-    val child1Config = testHelper.raw.configuration.withAds(adsEnabled = true)
-    val child1 = testHelper.raw.channel.emptyWithIdAndConfig(1, child1Config)
+    val child1Config = TestHelper.raw.configuration.withAds(adsEnabled = true)
+    val child1 = TestHelper.raw.channel.emptyWithIdAndConfig(1, child1Config)
 
     /** CHILD 2 */
-    val child2Config = testHelper.raw.configuration.withAds(adsEnabled = true)
-    val child2 = testHelper.raw.channel.emptyWithIdAndConfig(2, child2Config)
+    val child2Config = TestHelper.raw.configuration.withAds(adsEnabled = true)
+    val child2 = TestHelper.raw.channel.emptyWithIdAndConfig(2, child2Config)
 
     /** CHILD 2 */
-    val child3Config = testHelper.raw.configuration.withAds(adsEnabled = true)
-    val child3 = testHelper.raw.channel.emptyWithIdAndConfig(3, child3Config)
+    val child3Config = TestHelper.raw.configuration.withAds(adsEnabled = true)
+    val child3 = TestHelper.raw.channel.emptyWithIdAndConfig(3, child3Config)
 
     object twoChildren {
 
@@ -32,11 +32,11 @@ class ChannelSyncTest extends PlaySpec {
         * (1) (2)
         *
         */
-      val root = testHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, child2))
+      val root = TestHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, child2))
       root.updateParentRelations()
 
       // data node for root
-      val rootData = testHelper.raw.configuration.withAds(adsEnabled = true)
+      val rootData = TestHelper.raw.configuration.withAds(adsEnabled = true)
       root.config = rootData
     }
 
@@ -48,18 +48,18 @@ class ChannelSyncTest extends PlaySpec {
         *
         */
       /** CHILD 1 */
-      val child1Config = testHelper.raw.configuration.withAds(adsEnabled = true)
-      val modifiedChild1 = testHelper.raw.channel.emptyWithIdAndConfig(1, child1Config)
+      val child1Config = TestHelper.raw.configuration.withAds(adsEnabled = true)
+      val modifiedChild1 = TestHelper.raw.channel.emptyWithIdAndConfig(1, child1Config)
 
       /** CHILD 2 */
-      val child2Config = testHelper.raw.configuration.withAds(adsEnabled = false)
-      val modifiedChild2 = testHelper.raw.channel.emptyWithIdAndConfig(2, child2Config)
+      val child2Config = TestHelper.raw.configuration.withAds(adsEnabled = false)
+      val modifiedChild2 = TestHelper.raw.channel.emptyWithIdAndConfig(2, child2Config)
 
-      val root = testHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(modifiedChild1, modifiedChild2))
+      val root = TestHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(modifiedChild1, modifiedChild2))
       root.updateParentRelations()
 
       // data node for root
-      val rootConfig = testHelper.raw.configuration.withAds(adsEnabled = false)
+      val rootConfig = TestHelper.raw.configuration.withAds(adsEnabled = false)
       root.config = rootConfig
     }
 
@@ -71,11 +71,11 @@ class ChannelSyncTest extends PlaySpec {
         * (1)   (2)   (3)*
         *
         */
-      val root = testHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, child2, child3))
+      val root = TestHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, child2, child3))
       root.updateParentRelations()
 
       // data node for root
-      val rootData = testHelper.raw.configuration.withAds(adsEnabled = true)
+      val rootData = TestHelper.raw.configuration.withAds(adsEnabled = true)
       root.config = rootData
     }
 
@@ -91,11 +91,11 @@ class ChannelSyncTest extends PlaySpec {
         * |
         * (3)*
         */
-      val root = testHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, copyOf2))
+      val root = TestHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, copyOf2))
       root.updateParentRelations()
 
       // data node for root
-      val rootConfig = testHelper.raw.configuration.withAds(adsEnabled = true)
+      val rootConfig = TestHelper.raw.configuration.withAds(adsEnabled = true)
       root.config = rootConfig
     }
 
