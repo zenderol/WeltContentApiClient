@@ -48,7 +48,7 @@ class Raw2BrandTests extends FlatSpec with Matchers {
   it must "calculate `true` when one of ancestors (except root) is flagged as a brand" in new TestScopeAds {
     converter.calculateBrand(node1000) shouldBe true
   }
-  it must "calculate 'false' when the current channel is not flagged as a brand and its a First-Level-Section" in new TestScopeAds {
+  it must "calculate `false` when the current channel is not flagged as a brand and its a First-Level-Section" in new TestScopeAds {
     converter.calculateBrand(node11) shouldBe false
   }
 

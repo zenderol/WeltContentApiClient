@@ -48,7 +48,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     commercial = Some(apiCommercialConfigurationFromRawChannel(rawChannel)),
     sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
     header = Some(apiHeaderConfigurationFromRawChannel(rawChannel)),
-    theme = apiThemeFromRawChannel(rawChannel)
+    theme = calculateTheme(rawChannel)
   )
 
   private[converter] def calculatePathForVideoAdTag(rawChannel: RawChannel): String =
@@ -69,6 +69,16 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
       forMatching = c ⇒ true // ignore `c` -- it's always `true`
     )
     inheritanceCalculator.forChannel[Boolean](rawChannel, brandInheritanceAction, c ⇒ c.config.brand)
+  }
+
+  private[converter] def calculateTheme(rawChannel: RawChannel): Option[ApiThemeConfiguration] = {
+    val maybeThemeMapping: RawChannel ⇒ Option[ApiThemeConfiguration] = c ⇒ c.config.theme.map(t ⇒ ApiThemeConfiguration(t.name, t.fields))
+    val themeInheritanceAction: InheritanceAction[Option[ApiThemeConfiguration]] = InheritanceAction[Option[ApiThemeConfiguration]](
+      forRoot = c => None, // The Frontpage has never a theme
+      forFallback = maybeThemeMapping,
+      forMatching = maybeThemeMapping
+    )
+    inheritanceCalculator.forChannel[Option[ApiThemeConfiguration]](rawChannel, themeInheritanceAction, c ⇒ c.config.theme.exists(_.name.isDefined))
   }
 
   private[converter] def apiMetaConfigurationFromRawChannel(rawChannel: RawChannel): Option[ApiMetaConfiguration] = {

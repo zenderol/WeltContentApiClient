@@ -1,6 +1,6 @@
 package de.welt.testing
 
-import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelConfiguration, RawChannelId, RawChannelMetadata, RawMetadata}
+import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelConfiguration, RawChannelId, RawChannelMetadata, RawChannelTheme, RawMetadata}
 
 object TestHelper {
 
@@ -47,6 +47,9 @@ object TestHelper {
         brand = brand
       )
 
+      def withTheme(name: String) = RawChannelConfiguration(
+        theme = Some(RawChannelTheme(name = Some(name)))
+      )
     }
 
   }

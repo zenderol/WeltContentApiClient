@@ -17,8 +17,8 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
     )
     val rawChannelTheme: RawChannelTheme = RawChannelTheme(
       name = Some("theme"),
-      fields = Some(Map("key1" -> "value2",
-        "key2" -> "value2")))
+      fields = Some(Map("key1" -> "value2", "key2" -> "value2"))
+    )
     val rawChannelConfiguration = RawChannelConfiguration(
       metadata = Some(rawChannelMetadata),
       header = Some(
@@ -29,12 +29,10 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
         )
       ),
       sponsoring = RawChannelSponsoring(
-//        logo = Some("logo"), // add this line when the test fails (removed attr `header.sponsoring`).
+        //        logo = Some("logo"), // add this line when the test fails (removed attr `header.sponsoring`).
         slogan = Some("slogan")
       ),
-      theme = Some(
-        rawChannelTheme
-      ),
+      theme = Some(rawChannelTheme),
       commercial = RawChannelCommercial(definesAdTag = true, definesVideoAdTag = true)
     )
     val node100 = emptyWithIdAndConfig(100, rawChannelConfiguration)
@@ -66,7 +64,8 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
   }
 
   "ApiCommercialConfiguration" must "have 3rd-Party configuration with default values from Raw Constructor" in new TestScopeConfiguration {
-    val apiConfiguration: ApiConfiguration = converter.apiConfigurationFromRawChannel(node100) // node has no explicit configuration
+    val apiConfiguration: ApiConfiguration = converter.apiConfigurationFromRawChannel(node100)
+    // node has no explicit configuration
     val apiThirdParty: ApiCommercial3rdPartyConfiguration = apiConfiguration.commercial.flatMap(_.thirdParty).getOrElse(throw new RuntimeException("Test failed!"))
     val apiTaboola: ApiCommercialTaboolaConfiguration = apiThirdParty.contentTaboola.getOrElse(throw new RuntimeException("Test failed!"))
     val defaultsFromRaw = RawChannelCommercial()
@@ -79,7 +78,7 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
   "ApiConfiguration" must "have 'commercial', 'theme', 'header', 'metadata' and 'sponsoring'" in new TestScopeConfiguration {
     val apiConfiguration: ApiConfiguration = converter.apiConfigurationFromRawChannel(node100)
     apiConfiguration.commercial.flatMap(_.pathForAdTag).isDefined shouldBe true
-    apiConfiguration.theme.flatMap(_.name).isDefined shouldBe true
+    apiConfiguration.theme shouldBe None
     apiConfiguration.header.flatMap(_.label).isDefined shouldBe true
     apiConfiguration.meta.flatMap(_.title).isDefined shouldBe true
     apiConfiguration.sponsoring.flatMap(_.name).isDefined shouldBe true
@@ -90,7 +89,7 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
 
     apiSponsoringConfiguration.name shouldBe Some("sponsoring") // testing copied value
     apiSponsoringConfiguration.logo shouldBe Some("sponsoring") // remove this line when test fails (removed `name` attr)
-//    apiSponsoringConfiguration.logo shouldBe Some("logo") // add this line when test fails (removed `name` attr)
+    //    apiSponsoringConfiguration.logo shouldBe Some("logo") // add this line when test fails (removed `name` attr)
     apiSponsoringConfiguration.slogan shouldBe Some("slogan")
     apiSponsoringConfiguration.hidden shouldBe Some(false)
   }
