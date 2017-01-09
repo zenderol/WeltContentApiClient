@@ -18,11 +18,10 @@ class PressedS3ClientTest extends PlaySpec with MockitoSugar {
   trait TestScope {
     val path = "/foo/bar/"
     val s3Client: S3Client = mock[S3Client]
-    val configuration = Configuration.from(
-      Map(
-        "welt.aws.s3.pressed.bucket" → "bucket/for/pressed",
-        "welt.aws.s3.pressed.file" → "filename.json")
-    )
+    val configuration = Configuration.from(Map(
+      "welt.aws.s3.pressed.bucket" → "bucket/for/pressed",
+      "welt.aws.s3.pressed.file" → "filename.json"
+    ))
     val pressedS3Client: PressedS3Client = PressedS3ClientImpl(s3Client, configuration)
 
     val simpleSection = ApiPressedSection(

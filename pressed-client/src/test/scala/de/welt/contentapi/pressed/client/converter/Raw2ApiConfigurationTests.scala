@@ -40,7 +40,7 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
     val node100 = emptyWithIdAndConfig(100, rawChannelConfiguration)
   }
 
-  val converter: RawToApiConverter = new RawToApiConverter()
+  val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
 
   "ApiMetaConfiguration" must "have 'title', 'tags'(from keywords) and 'description'" in new TestScopeConfiguration {
     val maybeApiMetaConfiguration: Option[ApiMetaConfiguration] = converter.apiMetaConfigurationFromRawChannel(rawChannel = node100)

@@ -1,11 +1,13 @@
 package de.welt.contentapi.pressed.client.converter
 
+import javax.inject.Inject
+
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag, RawSectionReference}
 
 
-class RawToApiConverter(inheritanceCalculator: InheritanceCalculator = new InheritanceCalculator()) {
+class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) {
   private val pathForAdTagAction: InheritanceAction[String] = InheritanceAction[String](
     forRoot = c ⇒ "home", // root has a unique adTag
     forFallback = c ⇒ "sonstiges", // fallback value for First-Level-Sections with no own adTag
@@ -21,7 +23,9 @@ class RawToApiConverter(inheritanceCalculator: InheritanceCalculator = new Inher
   def apiChannelFromRawChannel(rawChannel: RawChannel): ApiChannel = {
     ApiChannel(
       section = Some(getApiSectionReferenceFromRawChannel(rawChannel)),
-      breadcrumb = Some(getBreadcrumb(rawChannel)))
+      breadcrumb = Some(getBreadcrumb(rawChannel)),
+      brand = Some(calculateBrand(rawChannel))
+    )
   }
 
   private[converter] def getApiSectionReferenceFromRawChannel(rawChannel: RawChannel): ApiReference = {
@@ -44,8 +48,7 @@ class RawToApiConverter(inheritanceCalculator: InheritanceCalculator = new Inher
     commercial = Some(apiCommercialConfigurationFromRawChannel(rawChannel)),
     sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
     header = Some(apiHeaderConfigurationFromRawChannel(rawChannel)),
-    theme = apiThemeFromRawChannel(rawChannel),
-    brand = Some(calculateBrand(rawChannel))
+    theme = apiThemeFromRawChannel(rawChannel)
   )
 
   private[converter] def calculatePathForVideoAdTag(rawChannel: RawChannel): String =

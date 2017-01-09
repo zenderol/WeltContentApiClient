@@ -30,7 +30,7 @@ class Raw2ApiAdTagTests extends FlatSpec with Matchers {
     root.updatePaths()
   }
 
-  val converter: RawToApiConverter = new RawToApiConverter()
+  val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
 
   "AdTag Calculator" must "calculate 'home' for root section (frontpage with path=='/' )" in new TestScopeAds {
     converter.calculatePathForVideoAdTag(root) shouldBe "home"

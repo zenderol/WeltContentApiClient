@@ -34,7 +34,7 @@ class Raw2BrandTests extends FlatSpec with Matchers {
     root.updatePaths()
   }
 
-  val converter: RawToApiConverter = new RawToApiConverter()
+  val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
 
   "Brand Calculator" must "calculate `false` for the root channel. The Frontpage is never a Brand." in new TestScopeAds {
     converter.calculateBrand(root) shouldBe false

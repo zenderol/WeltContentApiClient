@@ -6,7 +6,7 @@ import akka.util.Timeout
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.contentapi.ContentService
 import de.welt.contentapi.core.models.{ApiContent, ApiResponse, ApiSectionData}
-import de.welt.contentapi.pressed.client.converter.RawToApiConverter
+import de.welt.contentapi.pressed.client.converter.{InheritanceCalculator, RawToApiConverter}
 import de.welt.contentapi.pressed.models.ApiPressedContent
 import de.welt.contentapi.raw.client.services.RawTreeService
 import de.welt.testing.TestHelper.raw.channel._
@@ -71,7 +71,7 @@ class PressedContentServiceTest extends FlatSpec
 
   // Setup
   val contentService: ContentService = mock[ContentService]
-  val converter: RawToApiConverter = new RawToApiConverter()
+  val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
   val rawTreeService: RawTreeService = mock[RawTreeService]
   val metricsMock: Metrics = mock[Metrics]
   when(metricsMock.defaultRegistry).thenReturn(new com.codahale.metrics.MetricRegistry())

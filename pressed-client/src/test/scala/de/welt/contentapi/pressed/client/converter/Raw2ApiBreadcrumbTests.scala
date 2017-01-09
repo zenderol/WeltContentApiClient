@@ -32,7 +32,7 @@ class Raw2ApiBreadcrumbTests extends FlatSpec with Matchers {
 
   trait TestScopeConfiguration
 
-  val converter: RawToApiConverter = new RawToApiConverter()
+  val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
     "Breadcrumb" must "must be sorted from root to leafs with all 3 levels" in new TestScopeHierarchy {
       val result: ApiChannel = converter.apiChannelFromRawChannel(rawChannel = node111)
       val breadcrumb: Seq[ApiReference] = result.breadcrumb.getOrElse(Seq.empty)

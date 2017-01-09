@@ -1,8 +1,10 @@
 package de.welt.contentapi.pressed.client.converter
 
+import javax.inject.Inject
+
 import de.welt.contentapi.raw.models.RawChannel
 
-class InheritanceCalculator {
+class InheritanceCalculator @Inject()() {
 
   /**
     * Generic Top-Down Inheritance.

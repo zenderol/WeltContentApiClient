@@ -12,17 +12,12 @@ import de.welt.contentapi.core.models.ApiReference
   * @param sponsoring sponsoring is part of the page header. E.g. Formel1
   * @param header     (content) page header configuration. Not the real page header.
   * @param theme      theme of the page. This contains only a mapping value.
-  * @param brand      flags a channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
-  *                   like Icon ('/icon/') with different UI elements or layouts.
   */
 case class ApiConfiguration(meta: Option[ApiMetaConfiguration] = None,
                             commercial: Option[ApiCommercialConfiguration] = None,
                             sponsoring: Option[ApiSponsoringConfiguration] = None,
                             header: Option[ApiHeaderConfiguration] = None,
-                            theme: Option[ApiThemeConfiguration] = None,
-                            brand: Option[Boolean] = None) {
-  lazy val isBrand: Boolean = brand.getOrElse(false)
-}
+                            theme: Option[ApiThemeConfiguration] = None)
 
 /**
   * <meta> configuration for content or section pages
