@@ -150,7 +150,36 @@ object RawReads {
       case err@_ ⇒ jsErrorInvalidJson(err)
     }
   }
-  implicit lazy val rawChannelReads: Reads[RawChannel] = Json.reads[RawChannel]
+
+  implicit lazy val rawChannelReads: Reads[RawChannel] = new Reads[RawChannel] {
+    override def reads(json: JsValue): JsResult[RawChannel] = json match {
+      case JsObject(underlying) ⇒ (for {
+        id ← underlying.get("id").map(_.as[RawChannelId])
+        config ← underlying.get("config").map(_.as[RawChannelConfiguration])
+        metadata ← underlying.get("metadata").map(_.as[RawMetadata])
+      } yield {
+        val maybeDeprecatedStages = underlying.get("stages").flatMap(_.asOpt[Seq[RawChannelStage]])
+        JsSuccess(
+          RawChannel(
+            id = id,
+            config = config,
+            stages = maybeDeprecatedStages,
+            stageConfiguration = underlying.get("stageConfiguration")
+              .map(_.as[RawChannelStageConfiguration])
+              .orElse(maybeDeprecatedStages.map(stages => RawChannelStageConfiguration(stages = Some(stages)))),
+            metadata = metadata,
+            parent = None,
+            children = underlying.get("children").flatMap(_.asOpt[Seq[RawChannel]](seqRawChannelReads)).getOrElse(Nil)
+          )
+        )
+      }
+        )
+        .getOrElse(jsErrorInvalidData("RawChannel[noChildren]", json))
+      case err@_ ⇒ jsErrorInvalidJson(err)
+    }
+  }
+
+  implicit lazy val seqRawChannelReads: Reads[Seq[RawChannel]] = Reads.seq(rawChannelReads)
 }
 
 object RawWrites {
@@ -256,7 +285,7 @@ object PartialRawChannelReads {
             metadata = metadata,
             stageConfiguration = underlying.get("stageConfiguration")
               .map(_.as[RawChannelStageConfiguration])
-              .orElse(Some(RawChannelStageConfiguration(maybeDeprecatedStages))),
+              .orElse(maybeDeprecatedStages.map(stages => RawChannelStageConfiguration(stages = Some(stages)))),
             stages = maybeDeprecatedStages,
             children = Seq.empty
           ))

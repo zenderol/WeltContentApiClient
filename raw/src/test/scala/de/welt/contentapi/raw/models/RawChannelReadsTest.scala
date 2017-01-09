@@ -3,9 +3,9 @@ package de.welt.contentapi.raw.models
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json}
 
-class PartialRawChannelReadsTest extends PlaySpec {
+class RawChannelReadsTest extends PlaySpec {
 
-  "PartialRawChannelReads" should {
+  "RawChannelReads" should {
 
     trait Fixture {
       private val channelStage = RawChannelStage(Json.toJson(
@@ -26,8 +26,8 @@ class PartialRawChannelReadsTest extends PlaySpec {
       ))
     }
 
-    "read json with the no children reads" in new Fixture {
-      val ch: RawChannel = j.result.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
+    "read json" in new Fixture {
+      val ch: RawChannel = j.result.validate[RawChannel](RawReads.rawChannelReads).get
 
       ch.id.path must be("le-path")
       val Some(stages) = ch.stages
@@ -38,14 +38,13 @@ class PartialRawChannelReadsTest extends PlaySpec {
     "have the data of the deprecated field stages in field stageConfiguration by using the Reads and Writes" in new Fixture {
 
       // JsObject -> RawChannel with only deprecated field "stages"
-      val ch: RawChannel = j.result.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
+      val ch: RawChannel = j.result.validate[RawChannel](RawReads.rawChannelReads).get
       ch.stageConfiguration.flatMap(_.stages) must be(ch.stages)
 
 
       // RawChannel -> Json -> RawChannel with duplicated stages in stageConfiguration object
-      import PartialRawChannelWrites._
-      private val json = Json.toJson(ch)(oneLevelOfChildren)
-      private val reReadChannel = json.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
+      private val json = Json.toJson(ch)(PartialRawChannelWrites.oneLevelOfChildren)
+      private val reReadChannel = json.validate[RawChannel](RawReads.rawChannelReads).get
       reReadChannel.stageConfiguration.flatMap(_.stages) mustBe reReadChannel.stages
     }
   }

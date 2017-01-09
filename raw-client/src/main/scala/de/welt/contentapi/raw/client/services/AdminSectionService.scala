@@ -15,9 +15,8 @@ import play.api.{Configuration, Environment}
 trait AdminSectionService extends RawTreeService {
 
   def updateChannel(channel: RawChannel,
-                    updatedChannelData: RawChannelConfiguration,
-                    user: String,
-                    updatedStages: Option[Seq[RawChannelStage]])(implicit env: Env): Option[RawChannel]
+                    channelWithUpdates: RawChannel,
+                    user: String)(implicit env: Env): Option[RawChannel]
 
   /**
     * Syncs the current rawTree with the tree from Static Dump Provider to get new or changed Channels
@@ -34,24 +33,19 @@ class AdminSectionServiceImpl @Inject()(config: Configuration,
                                         cache: CacheApi)
   extends RawTreeServiceImpl(s3, config, environment, cache) with AdminSectionService with Loggable {
 
-  override def updateChannel(channel: RawChannel, updatedChannelData: RawChannelConfiguration, user: String, updatedStages: Option[Seq[RawChannelStage]] = None)
+  override def updateChannel(channel: RawChannel, channelWithUpdates: RawChannel, user: String)
                             (implicit env: Env): Option[RawChannel] = {
 
     // update channel
-    channel.config = channel.config.copy(
-      commercial = updatedChannelData.commercial,
-      header = updatedChannelData.header,
-      theme = updatedChannelData.theme,
-      metadata = updatedChannelData.metadata,
-      content = updatedChannelData.content
-    )
-    // update meta data
+    channel.config = channelWithUpdates.config
+    // modify meta data
     channel.metadata = channel.metadata.copy(
       lastModifiedDate = Instant.now.toEpochMilli,
       changedBy = user
     )
     // update the stages/modules
-    channel.stages = updatedStages
+    channel.stages = channelWithUpdates.stages // deprecated, remove in next version
+    channel.stageConfiguration = channelWithUpdates.stageConfiguration
 
     log.info(s"$channel changed by $user")
 
