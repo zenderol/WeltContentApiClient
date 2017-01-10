@@ -87,14 +87,12 @@ class AdminSectionServiceTest extends PlaySpec with MockitoSugar {
       asService.updateChannel(
         testChannel,
         testChannel.copy(
-          stages = expectedModules,
           stageConfiguration = expectedStageConfig
         ),
         "le-user"
       )
       
       // then
-      testChannel.stages mustBe expectedModules
       testChannel.stageConfiguration mustBe expectedStageConfig
     }
   }

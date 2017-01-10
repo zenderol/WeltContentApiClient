@@ -1,10 +1,8 @@
 package de.welt.contentapi.raw.models
 
-import java.time.Instant
-
 import org.scalatestplus.play.PlaySpec
 
-class RawInheritenceTest extends PlaySpec {
+class RawInheritanceTest extends PlaySpec {
 
   "ContentConfiguration" should {
 
@@ -45,7 +43,6 @@ class RawInheritenceTest extends PlaySpec {
     "set the RawChannelHeader for all children" in new TestScope {
       // Given
       val newHeader = RawChannelHeader(
-        sponsoring = Some("sponsoring"),
         logo = Some("logo")
       )
       // When
@@ -87,6 +84,23 @@ class RawInheritenceTest extends PlaySpec {
       sport.config.theme mustBe Some(newTheme)
       fussball.config.theme mustBe Some(newTheme)
       bundesliga.config.theme mustBe Some(newTheme)
+    }
+
+    "set a RawChannelSponsoring for all children" in new TestScope {
+      // Given
+      val newSponsoring = RawChannelSponsoring(
+        logo = Some("EA SPORTS"),
+        slogan = Some("zin ze game")
+      )
+
+      // When
+      root.batchInheritRawChannelSponsoringToAllChildren(newSponsoring = newSponsoring, "user")
+
+      // Then
+      root.config.sponsoring mustBe RawChannelSponsoring()
+      sport.config.sponsoring mustBe newSponsoring
+      fussball.config.sponsoring mustBe newSponsoring
+      bundesliga.config.sponsoring mustBe newSponsoring
     }
 
     "sets the user and lastMod date after inheritance actions" in new TestScope {

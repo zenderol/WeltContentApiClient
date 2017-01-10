@@ -21,8 +21,9 @@ class PartialRawChannelReadsTest extends PlaySpec {
         )),
         "config" → Json.toJson(RawChannelConfiguration())(RawWrites.rawChannelConfigurationWrites),
         "metadata" → Json.toJson(RawMetadata())(RawWrites.rawMetadataWrites),
-        "stages" → JsArray(Seq(
-          Json.toJson(channelStage)(RawWrites.rawChannelStageWrites)))
+        "stageConfiguration" → Json.toJson(RawChannelStageConfiguration(
+          stages = Some(Seq(channelStage))
+        ))(RawWrites.rawChannelStageConfigurationWrites)
       ))
     }
 
@@ -30,24 +31,11 @@ class PartialRawChannelReadsTest extends PlaySpec {
       val ch: RawChannel = j.result.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
 
       ch.id.path must be("le-path")
-      val Some(stages) = ch.stages
+      val Some(stages) = ch.stageConfiguration.flatMap(_.stages)
       stages must be(Seq(RawChannelStageCustomModule(index = 1, module = "module", overrides = Some(Map("section" → "/foo/")))))
 
     }
 
-    "have the data of the deprecated field stages in field stageConfiguration by using the Reads and Writes" in new Fixture {
-
-      // JsObject -> RawChannel with only deprecated field "stages"
-      val ch: RawChannel = j.result.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
-      ch.stageConfiguration.flatMap(_.stages) must be(ch.stages)
-
-
-      // RawChannel -> Json -> RawChannel with duplicated stages in stageConfiguration object
-      import PartialRawChannelWrites._
-      private val json = Json.toJson(ch)(oneLevelOfChildren)
-      private val reReadChannel = json.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
-      reReadChannel.stageConfiguration.flatMap(_.stages) mustBe reReadChannel.stages
-    }
   }
 
 }

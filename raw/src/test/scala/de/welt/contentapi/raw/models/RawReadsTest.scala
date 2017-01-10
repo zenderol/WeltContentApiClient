@@ -16,25 +16,6 @@ class RawReadsTest extends PlaySpec {
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
         .asOpt mustBe Some(RawChannelConfiguration())
     }
-
-    "copy old sponsoring string value to new model [[RawChannelSponsoring.logo]]" in {
-      val json: String =
-        """
-          {
-            "header": {
-              "sponsoring": "dick-butt"
-            }
-          }
-          """
-
-      val rawChannelConfiguration: RawChannelConfiguration = Json.parse(json)
-        .validate[RawChannelConfiguration](rawChannelConfigurationReads)
-        .get
-
-      rawChannelConfiguration.header.get.sponsoring mustBe Some("dick-butt")
-      rawChannelConfiguration.sponsoring.logo mustBe Some("dick-butt")
-    }
-
   }
 
   "RawChannelCommercialReads" must {
@@ -73,10 +54,10 @@ class RawReadsTest extends PlaySpec {
     }
 
     "fill optional fields" in {
-      val json: String = """{ "logo": "foo", "slogan": "foo", "label": "foo", "sponsoring": "foo" }"""
+      val json: String = """{ "logo": "foo", "slogan": "foo", "label": "foo" }"""
       Json.parse(json)
         .validate[RawChannelHeader](rawChannelHeaderReads)
-        .asOpt mustBe Some(RawChannelHeader(logo = Some("foo"), slogan = Some("foo"), label = Some("foo"), sponsoring = Some("foo")))
+        .asOpt mustBe Some(RawChannelHeader(logo = Some("foo"), slogan = Some("foo"), label = Some("foo")))
     }
 
   }

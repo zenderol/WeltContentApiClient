@@ -24,12 +24,11 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
       header = Some(
         RawChannelHeader(
           label = Some("label"),
-          sponsoring = Some("sponsoring"),
           sectionReferences = Some(Seq(RawSectionReference(Some("Label"), Some("/Path/"))))
         )
       ),
       sponsoring = RawChannelSponsoring(
-        //        logo = Some("logo"), // add this line when the test fails (removed attr `header.sponsoring`).
+        logo = Some("logo"),
         slogan = Some("slogan")
       ),
       theme = Some(rawChannelTheme),
@@ -87,9 +86,8 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
   "ApiSponsoringConfiguration" must "have 'logo', 'slogan' and 'hidden'" in new TestScopeConfiguration {
     private val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(node100)
 
-    apiSponsoringConfiguration.name shouldBe Some("sponsoring") // testing copied value
-    apiSponsoringConfiguration.logo shouldBe Some("sponsoring") // remove this line when test fails (removed `name` attr)
-    //    apiSponsoringConfiguration.logo shouldBe Some("logo") // add this line when test fails (removed `name` attr)
+    apiSponsoringConfiguration.name shouldBe Some("logo") // testing copied deprecated value from `logo`
+    apiSponsoringConfiguration.logo shouldBe Some("logo")
     apiSponsoringConfiguration.slogan shouldBe Some("slogan")
     apiSponsoringConfiguration.hidden shouldBe Some(false)
   }

@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.google.common.base.Stopwatch
 import de.welt.contentapi.core.client.services.s3.S3Client
-import de.welt.contentapi.raw.models.{ChannelUpdate, RawChannel, RawChannelConfiguration, RawChannelStage}
+import de.welt.contentapi.raw.models.{ChannelUpdate, RawChannel}
 import de.welt.contentapi.utils.Env.{Env, Live, Preview}
 import de.welt.contentapi.utils.Loggable
 import play.api.cache.CacheApi
@@ -44,7 +44,6 @@ class AdminSectionServiceImpl @Inject()(config: Configuration,
       changedBy = user
     )
     // update the stages/modules
-    channel.stages = channelWithUpdates.stages // deprecated, remove in next version
     channel.stageConfiguration = channelWithUpdates.stageConfiguration
 
     log.info(s"$channel changed by $user")

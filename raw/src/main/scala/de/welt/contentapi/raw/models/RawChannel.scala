@@ -21,7 +21,6 @@ import scala.annotation.tailrec
   *
   * @param id                 mandatory id with the channel path. E.g. /sport/fussball/
   * @param config             channel configuration for the clients. Used by Funkotron.
-  * @param stages             @deprecated stage configuration for the channel. Used by Digger.
   * @param stageConfiguration Object that either holds a template name or a seq of manually configured Stages. Used by Digger.
   * @param metadata           meta data for CMCF and Janus. Needed for some merge/update/locking logic.
   * @param parent             the maybe parent of the current channel. Root channel has no parent. (no shit sherlock!)
@@ -30,15 +29,13 @@ import scala.annotation.tailrec
   */
 case class RawChannel(id: RawChannelId,
                       var config: RawChannelConfiguration = RawChannelConfiguration(),
-                      @deprecated("Restructure (inheritance). Use stageConfiguration instead.", since = "01/2017")
-                      var stages: Option[Seq[RawChannelStage]] = None,
                       var stageConfiguration: Option[RawChannelStageConfiguration] = None,
                       var metadata: RawMetadata = RawMetadata(),
                       var parent: Option[RawChannel] = None,
                       var children: Seq[RawChannel] = Nil,
                       var hasChildren: Boolean = false) {
   hasChildren = children.nonEmpty
-  lazy val unwrappedStages: Seq[RawChannelStage] = stages.getOrElse(Nil)
+  lazy val unwrappedStages: Seq[RawChannelStage] = stageConfiguration.flatMap(_.stages).getOrElse(Nil)
 
   /**
     * @param search channel path. E.g. '/sport/fussball/'
@@ -120,7 +117,7 @@ case class RawChannel(id: RawChannelId,
 
   /** equals solely on the ```ChannelId``` */
   override def equals(obj: Any): Boolean = obj match {
-    case RawChannel(otherId, _, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
+    case RawChannel(otherId, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
     case _ ⇒ false
   }
 
@@ -135,9 +132,17 @@ case class RawChannel(id: RawChannelId,
     batchInheritGenericToAllChildren({_.stageConfiguration = Some(newStageConfig)}, user)
 
   /**
+    * set the same RawChannelSponsoring for all Sub-Channels but not the channel itself
+    *
+    * @param newSponsoring New Sponsoring to inherit
+    */
+  def batchInheritRawChannelSponsoringToAllChildren(newSponsoring: RawChannelSponsoring, user: String): Unit =
+    batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(sponsoring = newSponsoring) }, user)
+
+  /**
     * set the same RawChannelTheme for all Sub-Channels but not the channel itself
     *
-    * @param newTheme New theme to inherit
+    * @param newTheme New RawChannelTheme to inherit
     */
   def batchInheritRawChannelThemeToAllChildren(newTheme: RawChannelTheme, user: String): Unit =
     batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(theme = Some(newTheme)) }, user)
@@ -290,8 +295,6 @@ case class RawSectionReference(label: Option[String] = None, path: Option[String
 
 /**
   *
-  * @param sponsoring        Only a mapping string for the client.
-  *                          Used for a svg/image logo. E.g. 'tagheuer'
   * @param logo              only a mapping string for the client. Used for a svg/image logo to replace the label.
   *                          Display-Logic: `logo.getOrElse(label)`
   * @param slogan            slogan for the channel. E.g. /kmpkt: 'NEWS TO GO. EINZIGARTIG ANDERS.'
@@ -301,9 +304,7 @@ case class RawSectionReference(label: Option[String] = None, path: Option[String
   * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
   *                          Default = `false`
   */
-case class RawChannelHeader(@deprecated("Restructure (more sponsoring options). Use RawChannelSponsoring instead.", since = "01/2017")
-                            sponsoring: Option[String] = None,
-                            logo: Option[String] = None,
+case class RawChannelHeader(logo: Option[String] = None,
                             slogan: Option[String] = None,
                             label: Option[String] = None,
                             sectionReferences: Option[Seq[RawSectionReference]] = None,

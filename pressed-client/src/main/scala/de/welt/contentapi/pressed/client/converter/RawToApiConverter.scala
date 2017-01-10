@@ -110,8 +110,8 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
 
   private[converter] def apiSponsoringConfigurationFromRawChannel(rawChannel: RawChannel): ApiSponsoringConfiguration = {
     ApiSponsoringConfiguration(
-      name = rawChannel.config.sponsoring.logo.orElse(rawChannel.config.header.flatMap(_.sponsoring)),
-      logo = rawChannel.config.sponsoring.logo.orElse(rawChannel.config.header.flatMap(_.sponsoring)),
+      name = rawChannel.config.sponsoring.logo,
+      logo = rawChannel.config.sponsoring.logo,
       slogan = rawChannel.config.sponsoring.slogan,
       hidden = Some(rawChannel.config.sponsoring.hidden)
     )

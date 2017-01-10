@@ -61,7 +61,6 @@ object RawReads {
         adIndicator ← underlying.get("adIndicator").map(_.as[Boolean]).orElse(Some(defaults.adIndicator))
       } yield JsSuccess(
         RawChannelHeader(
-          sponsoring = underlying.get("sponsoring").map(_.as[String]),
           logo = underlying.get("logo").map(_.as[String]),
           slogan = underlying.get("slogan").map(_.as[String]),
           label = underlying.get("label").map(_.as[String]),
@@ -134,13 +133,11 @@ object RawReads {
     private lazy val defaults: RawChannelConfiguration = RawChannelConfiguration()
     override def reads(json: JsValue): JsResult[RawChannelConfiguration] = json match {
       case JsObject(underlying) ⇒
-        val maybeRawChannelHeader: Option[RawChannelHeader] = underlying.get("header").map(_.as[RawChannelHeader])
         JsSuccess(RawChannelConfiguration(
           metadata = underlying.get("metadata").map(_.as[RawChannelMetadata]),
-          header = maybeRawChannelHeader,
+          header = underlying.get("header").map(_.as[RawChannelHeader]),
           sponsoring = underlying.get("sponsoring")
             .map(_.as[RawChannelSponsoring])
-            .orElse(maybeRawChannelHeader.map(rawChannelHeader ⇒ RawChannelSponsoring(logo = rawChannelHeader.sponsoring)))
             .getOrElse(defaults.sponsoring),
           theme = underlying.get("theme").map(_.as[RawChannelTheme]),
           commercial = underlying.get("commercial").map(_.as[RawChannelCommercial]).getOrElse(defaults.commercial),
@@ -158,15 +155,12 @@ object RawReads {
         config ← underlying.get("config").map(_.as[RawChannelConfiguration])
         metadata ← underlying.get("metadata").map(_.as[RawMetadata])
       } yield {
-        val maybeDeprecatedStages = underlying.get("stages").flatMap(_.asOpt[Seq[RawChannelStage]])
         JsSuccess(
           RawChannel(
             id = id,
             config = config,
-            stages = maybeDeprecatedStages,
             stageConfiguration = underlying.get("stageConfiguration")
-              .map(_.as[RawChannelStageConfiguration])
-              .orElse(maybeDeprecatedStages.map(stages => RawChannelStageConfiguration(stages = Some(stages)))),
+              .map(_.as[RawChannelStageConfiguration]),
             metadata = metadata,
             parent = None,
             children = underlying.get("children").flatMap(_.asOpt[Seq[RawChannel]](seqRawChannelReads)).getOrElse(Nil)
@@ -221,7 +215,6 @@ object FullRawChannelWrites {
   implicit lazy val channelWrites: Writes[RawChannel] = (
     (__ \ "id").write[RawChannelId] and
       (__ \ "config").write[RawChannelConfiguration] and
-      (__ \ "stages").writeNullable[Seq[RawChannelStage]] and
       (__ \ "stageConfiguration").writeNullable[RawChannelStageConfiguration] and
       (__ \ "metadata").write[RawMetadata] and
       (__ \ "parent").lazyWrite(Writes.optionWithNull(PartialRawChannelWrites.writeChannelAsNull)) and // avoid loops
@@ -244,7 +237,6 @@ object PartialRawChannelWrites {
         "config" → Json.toJson(o.config),
         "metadata" → Json.toJson(o.metadata)
       )
-        ++ o.stages.map { stages ⇒ "stages" → Json.toJson(stages) }
         ++ o.stageConfiguration.map {stageConfiguration ⇒ "stageConfiguration" → Json.toJson(stageConfiguration)}
       )
     }
@@ -253,7 +245,6 @@ object PartialRawChannelWrites {
   implicit lazy val oneLevelOfChildren: Writes[RawChannel] = (
     (__ \ "id").write[RawChannelId] and
       (__ \ "config").write[RawChannelConfiguration] and
-      (__ \ "stages").writeNullable[Seq[RawChannelStage]] and
       (__ \ "stageConfiguration").writeNullable[RawChannelStageConfiguration] and
       (__ \ "metadata").write[RawMetadata] and
       (__ \ "parent").lazyWrite(Writes.optionWithNull(noChildrenWrites)) and
@@ -277,16 +268,13 @@ object PartialRawChannelReads {
         config ← underlying.get("config").map(_.as[RawChannelConfiguration])
         metadata ← underlying.get("metadata").map(_.as[RawMetadata])
       } yield {
-        val maybeDeprecatedStages = underlying.get("stages").flatMap(_.asOpt[Seq[RawChannelStage]])
         JsSuccess(
             RawChannel(
             id = id,
             config = config,
             metadata = metadata,
             stageConfiguration = underlying.get("stageConfiguration")
-              .map(_.as[RawChannelStageConfiguration])
-              .orElse(maybeDeprecatedStages.map(stages => RawChannelStageConfiguration(stages = Some(stages)))),
-            stages = maybeDeprecatedStages,
+              .map(_.as[RawChannelStageConfiguration]),
             children = Seq.empty
           ))
       })
