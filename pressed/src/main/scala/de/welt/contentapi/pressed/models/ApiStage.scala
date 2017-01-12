@@ -7,7 +7,13 @@ import de.welt.contentapi.core.models.ApiReference
   * @param configuration Configuration for that Stage, with layout, label etc.
   */
 case class ApiStage(teasers: Seq[ApiTeaser],
-                    configuration: Option[ApiStageConfiguration] = None)
+                    configuration: Option[ApiStageConfiguration] = None) {
+  // stages with content are always valid
+  lazy val hasContent = teasers.nonEmpty
+  // no content, but has a Commercial? => CommercialStage
+  lazy val hasCommercial = configuration.exists(_.commercials.getOrElse(Nil).nonEmpty)
+  lazy val isValidStage = hasContent || hasCommercial
+}
 
 /**
   * @param layout      Name of the layout for the stage, e.g. 'channel-hero', 'multimedia' or 'hidden'
