@@ -2,6 +2,7 @@ package de.welt.contentapi.core.client.services.contentapi
 
 import com.codahale.metrics.Timer.Context
 import com.kenshoo.play.metrics.Metrics
+import de.welt.contentapi.core.client.models.{ApiContentSearch, MainTypeParam}
 import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import org.mockito.Matchers
@@ -69,32 +70,53 @@ class AbstractServiceTest extends PlaySpec
 
     "forward the X-Unique-Id header" in new TestScope {
       val headers = Seq(("X-Unique-Id", "0xdeadbeef"))
-      new TestService().get(Seq("fake-id"), Seq.empty)(Some(headers), defaultContext)
+      new TestService().get(Seq("fake-id"), Seq.empty)(headers, defaultContext)
       verify(mockRequest).withHeaders(("X-Unique-Id", "0xdeadbeef"))
     }
 
     "forward the auth data" in new TestScope {
       private val service = new TestService()
-      service.get(Seq("fake-id"), Seq("foo" -> "bar"))
+      service.get(Seq("fake-id"), Seq("foo" → "bar"))
       verify(mockRequest).withAuth(service.config.username, service.config.password, WSAuthScheme.BASIC)
     }
 
     "forward the query string data" in new TestScope {
-      new TestService().get(Seq("fake-id"), Seq("foo" -> "bar"))
+      new TestService().get(Seq("fake-id"), Seq("foo" → "bar"))
       verify(mockRequest).withQueryString(("foo", "bar"))
     }
 
     "forward the headers" in new TestScope {
-      implicit val requestHeaders: Option[RequestHeaders] = Some(Seq("X-Unique-Id" -> "bar"))
+      implicit val requestHeaders: RequestHeaders = Seq("X-Unique-Id" → "bar")
       new TestService().get(Seq("fake-id"), Seq.empty)
       verify(mockRequest).withHeaders(("X-Unique-Id", "bar"))
+    }
+
+    "strip whitespaces and newline from the parameter" in new TestScope {
+      new TestService().get(Seq("with-whitespace \n"))
+      verify(mockWsClient).url("http://www.example.com/test/with-whitespace")
+    }
+
+    "strip nonbreaking whitespace from parameters" in new TestScope {
+      new TestService().get(Seq("strange-whitespaces"), ApiContentSearch(MainTypeParam(List("\u00A0", " ", "\t", "\n"))).getAllParamsUnwrapped)
+      verify(mockRequest).withQueryString()
+    }
+
+    "not strip valid parameters" in new TestScope {
+      val parameters = ApiContentSearch(MainTypeParam(List("param1", "\u00A0param2\u00A0", "\u00A0"))).getAllParamsUnwrapped
+      new TestService().get(Seq("strange-whitespaces"), parameters)
+      verify(mockRequest).withQueryString("type" → Seq("param1", "param2").mkString(MainTypeParam().operator))
+    }
+
+    "strip empty elements from the query string" in new TestScope {
+      new TestService().get(Seq("x"), Seq("spaces" → " \n", "trim" → "   value   "))
+      verify(mockRequest).withQueryString(("trim", "value"))
     }
 
     "will return the expected result" in new TestScope {
       when(responseMock.status).thenReturn(OK)
       when(responseMock.json).thenReturn(JsString("the result"))
 
-      val result: Future[String] = new TestService().get(Seq(""), Seq.empty)
+      val result: Future[String] = new TestService().get(Seq("x"), Seq.empty)
       val result1 = Await.result(result, 10.second)
       result1 mustBe "the result"
     }
@@ -136,7 +158,7 @@ class AbstractServiceTest extends PlaySpec
       when(responseMock.status).thenReturn(OK)
       when(responseMock.json).thenReturn(JsString(""))
 
-      val result: Future[String] = new TestService().get(Seq(""))
+      val result: Future[String] = new TestService().get(Seq("x"))
       Await.result(result, 10.second)
       verify(mockTimerContext).stop()
     }

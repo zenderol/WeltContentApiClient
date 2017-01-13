@@ -23,7 +23,7 @@ class PressedSectionServiceTest extends FlatSpec
   with Matchers with MustVerb with MockitoSugar {
 
   implicit val ec = ExecutionContext.global
-  implicit val requestHeaders: Option[RequestHeaders] = None
+  implicit val requestHeaders: RequestHeaders = Seq.empty
 
   trait TestScope {
     val mockedS3Client: PressedS3Client = mock[PressedS3Client]

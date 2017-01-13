@@ -84,12 +84,12 @@ class PressedContentServiceTest extends FlatSpec
   "PressedContentService" must "enrich an ApiResponse based on its home section" in new TestScope {
     // Given
     when(contentService
-      .find(id = "1234567890", showRelated = true)(None, executionContext))
+      .find(id = "1234567890", showRelated = true)(Seq.empty, executionContext))
       .thenReturn(eventualApiResponse)
     when(rawTreeService.root(any())).thenReturn(Some(root))
 
     // When
-    val eventualPressedContent: Future[ApiPressedContent] = pressedContentService.find("1234567890", showRelated = true)(None, executionContext)
+    val eventualPressedContent: Future[ApiPressedContent] = pressedContentService.find("1234567890", showRelated = true)(Seq.empty, executionContext)
     val apiPressedContent: ApiPressedContent = Await.result(eventualPressedContent, Timeout(30L, TimeUnit.SECONDS).duration)
 
     // Then

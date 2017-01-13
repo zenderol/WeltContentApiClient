@@ -43,7 +43,7 @@ trait ContentService {
     * @param executionContext Play [[scala.concurrent.ExecutionContext]] for [[scala.concurrent.Future]]'s
     */
   def find(id: String, showRelated: Boolean = true)
-          (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiResponse]
+          (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiResponse]
 }
 
 @Singleton
@@ -59,7 +59,7 @@ class ContentServiceImpl @Inject()(override val ws: WSClient,
   override val jsonValidate: JsLookupResult ⇒ JsResult[ApiResponse] = _.validate[ApiResponse]
 
   override def find(id: String, showRelated: Boolean = true)
-                   (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiResponse] = {
+                   (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiResponse] = {
 
     val parameters = if (showRelated) {
       Seq("show-related" → "true")

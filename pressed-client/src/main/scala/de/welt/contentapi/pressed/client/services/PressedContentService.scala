@@ -26,7 +26,7 @@ trait PressedContentService {
     * @return a Future[ApiPressedContent]
     */
   def find(id: String, showRelated: Boolean = true)
-          (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent]
+          (implicit requestHeaders: RequestHeaders = Nil, executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent]
 
   /**
     * Wraps ApiContent as ApiPressedContent with its Channel as ApiChannel and configuration data
@@ -54,7 +54,7 @@ class PressedContentServiceImpl @Inject()(contentService: ContentService,
   extends PressedContentService with Loggable {
 
   override def find(id: String, showRelated: Boolean = true)
-                   (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent] = {
+                   (implicit requestHeaders: RequestHeaders = Nil, executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent] = {
     contentService
       .find(id, showRelated)
       .map(response ⇒ {

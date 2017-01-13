@@ -90,7 +90,7 @@ node('large') {
             stage('Check') {
                 wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
                     sh """#!/bin/bash
-                    ./activator test
+                    ./activator clean test
                 """
                 }
             }

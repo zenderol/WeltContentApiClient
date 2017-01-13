@@ -19,7 +19,7 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LegacySectionService {
-  def getByPath(path: String)(implicit requestHeaders: Option[RequestHeaders] = None,
+  def getByPath(path: String)(implicit requestHeaders: RequestHeaders = Seq.empty,
                               executionContext: ExecutionContext): Future[ApiLegacyPressedSection]
 }
 
@@ -38,7 +38,7 @@ class LegacySectionServiceImpl @Inject()(pressedContentService: PressedContentSe
   override val jsonValidate: (JsLookupResult) ⇒ JsResult[ApiLegacySection] = json => json.validate[ApiLegacySection]
 
   override def getByPath(path: String)
-                        (implicit requestHeaders: Option[RequestHeaders] = None,
+                        (implicit requestHeaders: RequestHeaders  = Seq.empty,
                          executionContext: ExecutionContext): Future[ApiLegacyPressedSection] = {
 
     val maybeRawChannel: Option[RawChannel] = findChannelForSection(path)

@@ -22,7 +22,7 @@ sealed trait PressedDiggerClient {
     * @param env  Live/Preview, default = Live
     */
   def findByPath(path: String, env: Env = Live)
-                (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiPressedSection]
+                (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSection]
 }
 
 case class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
@@ -37,7 +37,7 @@ case class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
     jsLookupResult.validate[ApiPressedSection](apiPressedSectionReads)
 
   override def findByPath(path: String, env: Env = Live)
-                         (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[ApiPressedSection] = {
+                         (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSection] = {
     get(urlArguments = Seq(env.toString, path), parameters = Nil)
   }
 

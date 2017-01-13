@@ -5,6 +5,7 @@ import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.configuration.ServiceConfiguration
 import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
+import de.welt.contentapi.core.client.utilities.Strings
 import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
 import play.api.http.Status
@@ -14,7 +15,7 @@ import play.api.mvc.Headers
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AbstractService[T] extends Loggable with Status {
+trait AbstractService[T] extends Strings with Loggable with Status {
 
   /** these need to be provided by the implementing services */
   val ws: WSClient
@@ -54,7 +55,7 @@ trait AbstractService[T] extends Loggable with Status {
     */
   def get(urlArguments: Seq[String] = Nil,
           parameters: Seq[(String, String)] = Nil)
-         (implicit forwardedRequestHeaders: Option[RequestHeaders] = None, executionContext: ExecutionContext): Future[T] = {
+         (implicit forwardedRequestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[T] = {
 
     def parseJson(json: JsLookupResult): T = jsonValidate(json) match {
       case JsSuccess(value, _) => value
@@ -63,10 +64,12 @@ trait AbstractService[T] extends Loggable with Status {
 
     val context = initializeMetricsContext(config.serviceName)
 
-    val url: String = config.host + config.endpoint.format(urlArguments: _*)
+    val url: String = config.host + config.endpoint.format(urlArguments.map(stripWhiteSpaces).filter(_.nonEmpty): _*)
+
+    val filteredParameters = parameters.map { case (k, v) ⇒ k → stripWhiteSpaces(v) }.filter(_._2.nonEmpty)
 
     val getRequest: WSRequest = ws.url(url)
-      .withQueryString(parameters: _*)
+      .withQueryString(filteredParameters: _*)
       .withHeaders(forwardHeaders(forwardedRequestHeaders): _*)
       .withAuth(config.username, config.password, WSAuthScheme.BASIC)
 
@@ -91,12 +94,8 @@ trait AbstractService[T] extends Loggable with Status {
     * @param maybeHeaders [[Headers]] from the incoming [[play.api.mvc.Request]]
     * @return tuples of type String for headers to be forwarded
     */
-  def forwardHeaders(maybeHeaders: Option[RequestHeaders]): RequestHeaders = {
-    maybeHeaders.map(_.toMap[String, String]).flatMap(_.get("X-Unique-Id"))
-    match {
-      case Some(value) ⇒ Seq(("X-Unique-Id", value))
-      case _ ⇒ Nil
-    }
+  def forwardHeaders(maybeHeaders: RequestHeaders): RequestHeaders = {
+    maybeHeaders.collect { case tuple@("X-Unique-Id", _) ⇒ tuple }
   }
 
   protected def initializeMetricsContext(name: String): Timer.Context = {

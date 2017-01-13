@@ -45,7 +45,7 @@ sealed trait ContentSearchService {
     * @param executionContext Play [[scala.concurrent.ExecutionContext]] for [[scala.concurrent.Future]]'s
     */
   def search(query: ApiContentSearch)
-            (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[Seq[ApiContent]]
+            (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[Seq[ApiContent]]
 
 
   /**
@@ -72,7 +72,7 @@ class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
   override val jsonValidate: (JsLookupResult) ⇒ JsResult[Seq[ApiContent]] = json ⇒ json.validate[Seq[ApiContent]]
 
   override def search(apiContentSearch: ApiContentSearch)
-                     (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[Seq[ApiContent]] = {
+                     (implicit requestHeaders: RequestHeaders  = Seq.empty, executionContext: ExecutionContext): Future[Seq[ApiContent]] = {
     super.get(urlArguments = Nil, parameters = apiContentSearch.getAllParamsUnwrapped)
   }
 
