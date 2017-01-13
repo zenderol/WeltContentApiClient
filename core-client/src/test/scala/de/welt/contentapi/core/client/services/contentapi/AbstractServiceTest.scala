@@ -106,7 +106,7 @@ class AbstractServiceTest extends PlaySpec
       the[HttpRedirectException] thrownBy {
         Await.result(result, 10.second)
       } must matchPattern {
-        case HttpRedirectException(MOVED_PERMANENTLY, _, _) ⇒
+        case HttpRedirectException(_, _, _) ⇒
       }
     }
 

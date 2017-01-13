@@ -78,7 +78,7 @@ trait AbstractService[T] extends Loggable with Status {
 
       response.status match {
         case OK ⇒ parseJson(response.json.result)
-        case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(status, response.statusText, url)
+        case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
         case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url)
         case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
       }

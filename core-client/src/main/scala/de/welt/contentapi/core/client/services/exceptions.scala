@@ -1,8 +1,9 @@
 package de.welt.contentapi.core.client.services
 
 import play.api.PlayException
+import play.api.http.Status
 
-object exceptions {
+object exceptions extends Status {
 
   abstract class HttpStatusCodeException(statusCode: Int, statusPhrase: String, url: String)
     extends PlayException(s"HttpStatusCodeException[$statusCode]", statusPhrase) {
@@ -13,7 +14,8 @@ object exceptions {
     override def toString: String = super.toString
   }
 
-  case class HttpRedirectException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException (statusCode, statusPhrase, url)
+  case class HttpRedirectException(url: String, statusPhrase: String, statusCode: Int = MOVED_PERMANENTLY)
+    extends HttpStatusCodeException (statusCode, statusPhrase, url)
   case class HttpClientErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
   case class HttpServerErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
 
