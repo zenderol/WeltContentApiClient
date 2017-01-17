@@ -9,8 +9,8 @@ import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChann
 
 class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) {
   private val pathForAdTagAction: InheritanceAction[String] = InheritanceAction[String](
-    forRoot = c ⇒ "home", // root has a unique adTag
-    forFallback = c ⇒ "sonstiges", // fallback value for First-Level-Sections with no own adTag
+    forRoot = _ ⇒ "home", // root has a unique adTag
+    forFallback = _ ⇒ "sonstiges", // fallback value for First-Level-Sections with no own adTag
     forMatching = c ⇒ trimPathForAdTag(c.id.path)
   )
 
@@ -23,6 +23,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
   def apiChannelFromRawChannel(rawChannel: RawChannel): ApiChannel = {
     ApiChannel(
       section = Some(getApiSectionReferenceFromRawChannel(rawChannel)),
+      master = calculateMaster(rawChannel),
       breadcrumb = Some(getBreadcrumb(rawChannel)),
       brand = Some(calculateBrand(rawChannel))
     )
@@ -62,11 +63,21 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     Option(pathWithoutLeadingAndTrailingSlashes).filter(_.nonEmpty).getOrElse("sonstiges")
   }
 
+  private[converter] def calculateMaster(rawChannel: RawChannel): Option[ApiReference] = {
+    val rawChannelToApiReference: RawChannel ⇒ Option[ApiReference] = c ⇒ Some(ApiReference(label = Some(c.id.label), href = Some(c.id.path)))
+    val themeInheritanceAction: InheritanceAction[Option[ApiReference]] = InheritanceAction[Option[ApiReference]](
+      forRoot = c ⇒ rawChannelToApiReference.apply(c.root),
+      forFallback = _ ⇒ None,
+      forMatching = rawChannelToApiReference
+    )
+    inheritanceCalculator.forChannel[Option[ApiReference]](rawChannel, themeInheritanceAction, c ⇒ c.parent.contains(c.root))
+  }
+
   private[converter] def calculateBrand(rawChannel: RawChannel): Boolean = {
     val brandInheritanceAction: InheritanceAction[Boolean] = InheritanceAction[Boolean](
-      forRoot = c ⇒ false, // root is never a brand
-      forFallback = c ⇒ false, // last channel before root with brand == false
-      forMatching = c ⇒ true // ignore `c` -- it's always `true`
+      forRoot = _ ⇒ false, // root is never a brand
+      forFallback = _ ⇒ false, // last channel before root with brand == false
+      forMatching = _ ⇒ true // ignore `c` -- it's always `true`
     )
     inheritanceCalculator.forChannel[Boolean](rawChannel, brandInheritanceAction, c ⇒ c.config.brand)
   }
@@ -74,7 +85,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
   private[converter] def calculateTheme(rawChannel: RawChannel): Option[ApiThemeConfiguration] = {
     val maybeThemeMapping: RawChannel ⇒ Option[ApiThemeConfiguration] = c ⇒ c.config.theme.map(t ⇒ ApiThemeConfiguration(t.name, t.fields))
     val themeInheritanceAction: InheritanceAction[Option[ApiThemeConfiguration]] = InheritanceAction[Option[ApiThemeConfiguration]](
-      forRoot = c => None, // The Frontpage has never a theme
+      forRoot = _ ⇒ None, // The Frontpage has never a theme
       forFallback = maybeThemeMapping,
       forMatching = maybeThemeMapping
     )

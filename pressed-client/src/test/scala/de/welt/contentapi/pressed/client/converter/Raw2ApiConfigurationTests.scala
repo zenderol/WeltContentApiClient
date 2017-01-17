@@ -52,8 +52,8 @@ class Raw2ApiConfigurationTests extends PlaySpec {
     )
 
     private val rawChannelId = 100
-    private val rawChannel: RawChannel = emptyWithIdAndConfig(rawChannelId, rawChannelConfiguration)
     private val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+    val rawChannel: RawChannel = emptyWithIdAndConfig(rawChannelId, rawChannelConfiguration)
     val apiChannel: ApiChannel = converter.apiChannelFromRawChannel(rawChannel)
     val apiHeaderConfiguration: ApiHeaderConfiguration = converter.apiHeaderConfigurationFromRawChannel(rawChannel)
     val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(rawChannel)
@@ -67,7 +67,19 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       .getOrElse(throw new scala.Error("Test failed. ThemeConfig must be defined."))
   }
 
-  "RawChannelConfiguration to ApiConfiguration" must {
+  "RawChannel to ApiChannel" must {
+
+    "convert `section`" in new TestScopeConfiguration {
+      apiChannel.section.map(s ⇒ s.label ++ s.href) mustBe Some(List(rawChannel.id.label, rawChannel.id.path))
+    }
+
+    "calculate `master`" in new TestScopeConfiguration {
+      apiChannel.master mustBe defined
+    }
+
+    "convert `breadcrumb`" in new TestScopeConfiguration {
+      apiChannel.unwrappedBreadcrumb.size mustBe 1
+    }
 
     "calculate `brand`" in new TestScopeConfiguration {
       apiChannel.brand mustBe defined

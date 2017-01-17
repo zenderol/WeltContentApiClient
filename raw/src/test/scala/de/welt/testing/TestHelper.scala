@@ -8,22 +8,22 @@ object TestHelper {
 
     object channel {
       def emptyWithId(id: Long) =
-        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString))
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString))
 
       def emptyWithIdAndConfig(id: Long, config: RawChannelConfiguration) =
-        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), config = config)
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), config = config)
 
       def emptyWithIdAndMetadata(id: Long, metadata: RawMetadata) =
-        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), metadata = metadata)
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), metadata = metadata)
 
       def emptyWithIdAndChildren(id: Long, children: Seq[RawChannel]) =
-        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), children = children)
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), children = children)
 
       def emptyWithIdAndChildrenAndConfig(id: Long, children: Seq[RawChannel], config: RawChannelConfiguration) =
-        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), children = children, config = config)
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), children = children, config = config)
 
       def emptyWithIdAndChildrenAndMetadata(id: Long, children: Seq[RawChannel], metadata: RawMetadata) =
-        RawChannel(RawChannelId(path = "", escenicId = id, label = id.toString), children = children, metadata = metadata)
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), children = children, metadata = metadata)
     }
 
     object metadata {
