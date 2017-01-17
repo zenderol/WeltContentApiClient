@@ -3,9 +3,9 @@ package de.welt.contentapi.pressed.client.converter
 import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models._
 import de.welt.testing.TestHelper.raw.channel._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatestplus.play.PlaySpec
 
-class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
+class Raw2ApiConfigurationTests extends PlaySpec {
 
   trait TestScopeConfiguration {
     val rawChannelMetadata = RawChannelMetadata(
@@ -19,87 +19,164 @@ class Raw2ApiConfigurationTests extends FlatSpec with Matchers {
       name = Some("theme"),
       fields = Some(Map("key1" -> "value2", "key2" -> "value2"))
     )
+    val rawChannelHeader = RawChannelHeader(
+      label = Some("label"),
+      logo = Some("logo"),
+      slogan = Some("slogan"),
+      hidden = true,
+      sectionReferences = Some(Seq(RawSectionReference(Some("Label"), Some("/Path/")))),
+      adIndicator = true
+    )
+    val rawChannelSponsoring = RawChannelSponsoring(
+      logo = Some("logo"),
+      slogan = Some("slogan"),
+      hidden = true
+    )
+    val rawChannelCommercial = RawChannelCommercial(
+      definesAdTag = true,
+      definesVideoAdTag = true,
+      contentTaboola = RawChannelTaboolaCommercial(
+        showNetwork = false,
+        showNews = false,
+        showWeb = false
+      )
+    )
+
     val rawChannelConfiguration = RawChannelConfiguration(
       metadata = Some(rawChannelMetadata),
-      header = Some(
-        RawChannelHeader(
-          label = Some("label"),
-          sectionReferences = Some(Seq(RawSectionReference(Some("Label"), Some("/Path/")))),
-          adIndicator = true
-        )
-      ),
-      sponsoring = RawChannelSponsoring(
-        logo = Some("logo"),
-        slogan = Some("slogan")
-      ),
+      header = Some(rawChannelHeader),
+      sponsoring = rawChannelSponsoring,
       theme = Some(rawChannelTheme),
-      commercial = RawChannelCommercial(definesAdTag = true, definesVideoAdTag = true)
+      commercial = rawChannelCommercial,
+      brand = true
     )
-    val node100 = emptyWithIdAndConfig(100, rawChannelConfiguration)
+
+    private val rawChannelId = 100
+    private val rawChannel: RawChannel = emptyWithIdAndConfig(rawChannelId, rawChannelConfiguration)
+    private val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+    val apiChannel: ApiChannel = converter.apiChannelFromRawChannel(rawChannel)
+    val apiHeaderConfiguration: ApiHeaderConfiguration = converter.apiHeaderConfigurationFromRawChannel(rawChannel)
+    val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(rawChannel)
+    val apiCommercialConfiguration: ApiCommercialConfiguration = converter.apiCommercialConfigurationFromRawChannel(rawChannel)
+
+    val apiMetaConfiguration: ApiMetaConfiguration = converter.apiMetaConfigurationFromRawChannel(rawChannel = rawChannel)
+      .getOrElse(throw new scala.Error("Test failed. MetaConfiguration must be defined."))
+    val apiCommercial3rdPartyConfiguration: ApiCommercial3rdPartyConfiguration = apiCommercialConfiguration.thirdParty
+      .getOrElse(throw new scala.Error("Test failed. 3rdParty must be defined."))
+    val apiThemeConfiguration: ApiThemeConfiguration = converter.apiThemeFromRawChannel(rawChannel)
+      .getOrElse(throw new scala.Error("Test failed. ThemeConfig must be defined."))
   }
 
-  val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+  "RawChannelConfiguration to ApiConfiguration" must {
 
-  "ApiMetaConfiguration" must "have 'title', 'tags'(from keywords) and 'description'" in new TestScopeConfiguration {
-    val maybeApiMetaConfiguration: Option[ApiMetaConfiguration] = converter.apiMetaConfigurationFromRawChannel(rawChannel = node100)
-    val apiMetaConfiguration = maybeApiMetaConfiguration.getOrElse(throw new RuntimeException("Test failed. Should have been Some."))
-    apiMetaConfiguration.title shouldBe rawChannelMetadata.title
-    apiMetaConfiguration.tags shouldBe rawChannelMetadata.keywords
-    apiMetaConfiguration.description shouldBe rawChannelMetadata.description
+    "calculate `brand`" in new TestScopeConfiguration {
+      apiChannel.brand mustBe defined
+    }
+
   }
 
-  it must "have 'content' and 'section' meta robot tags" in new TestScopeConfiguration {
-    val apiMetaConfiguration: ApiMetaConfiguration = converter
-      .apiMetaConfigurationFromRawChannel(rawChannel = node100)
-      .getOrElse(throw new RuntimeException("Test failed. Should have been Some."))
-    apiMetaConfiguration.contentMetaRobots.flatMap(_.noFollow) shouldBe rawChannelMetadata.contentRobots.flatMap(_.noFollow)
-    apiMetaConfiguration.contentMetaRobots.map(_.noIndex) shouldBe rawChannelMetadata.contentRobots.map(_.noIndex)
+  "RawChannelMetadata to ApiMetaConfiguration" must {
 
-    apiMetaConfiguration.sectionMetaRobots.map(_.noFollow) shouldBe rawChannelMetadata.sectionRobots.map(_.noFollow)
-    apiMetaConfiguration.sectionMetaRobots.map(_.noIndex) shouldBe rawChannelMetadata.sectionRobots.map(_.noIndex)
+    "convert `title`" in new TestScopeConfiguration {
+      apiMetaConfiguration.title mustBe rawChannelMetadata.title
+    }
+
+    "convert `keyword` to `tags`" in new TestScopeConfiguration {
+      apiMetaConfiguration.tags mustBe rawChannelMetadata.keywords
+    }
+
+    "convert `description`" in new TestScopeConfiguration {
+      apiMetaConfiguration.description mustBe rawChannelMetadata.description
+    }
+
+    "convert `contentRobots` to `contentMetaRobots`" in new TestScopeConfiguration {
+      apiMetaConfiguration.contentMetaRobots.flatMap(_.noFollow) mustBe rawChannelMetadata.contentRobots.flatMap(_.noFollow)
+      apiMetaConfiguration.contentMetaRobots.flatMap(_.noIndex) mustBe rawChannelMetadata.contentRobots.flatMap(_.noIndex)
+    }
+
+    "convert `sectionRobots` to `sectionMetaRobots`" in new TestScopeConfiguration {
+      apiMetaConfiguration.sectionMetaRobots.flatMap(_.noFollow) mustBe rawChannelMetadata.sectionRobots.flatMap(_.noFollow)
+      apiMetaConfiguration.sectionMetaRobots.flatMap(_.noIndex) mustBe rawChannelMetadata.sectionRobots.flatMap(_.noIndex)
+    }
+
   }
 
-  "ApiMetaRobots" must "have content tags" in new TestScopeConfiguration {
-    val apiMetaRobots: ApiMetaRobots = converter.apiMetaRobotsFromRawChannelMetaRobotsTag(rawChannelMetadata.contentRobots.get)
+  "RawChannelHeader to ApiHeaderConfiguration" must {
+
+    "convert `label`" in new TestScopeConfiguration {
+      apiHeaderConfiguration.label mustBe rawChannelHeader.label
+    }
+
+    "convert `logo`" in new TestScopeConfiguration {
+      apiHeaderConfiguration.logo mustBe rawChannelHeader.logo
+    }
+
+    "convert `slogan`" in new TestScopeConfiguration {
+      apiHeaderConfiguration.slogan mustBe rawChannelHeader.slogan
+    }
+
+    "convert `hidden`" in new TestScopeConfiguration {
+      apiHeaderConfiguration.hidden mustBe Some(rawChannelHeader.hidden)
+    }
+
+    "convert `references`" in new TestScopeConfiguration {
+      apiHeaderConfiguration
+        .unwrappedSectionReferences
+        .flatMap(r ⇒ r.label ++ r.href) must contain theSameElementsAs rawChannelHeader
+        .unwrappedSectionReferences
+        .flatMap(r ⇒ r.label ++ r.path)
+    }
+
   }
 
-  "ApiCommercialConfiguration" must "have 3rd-Party configuration with default values from Raw Constructor" in new TestScopeConfiguration {
-    val apiConfiguration: ApiConfiguration = converter.apiConfigurationFromRawChannel(node100)
-    // node has no explicit configuration
-    val commercialConfiguration: ApiCommercialConfiguration = apiConfiguration.commercial.getOrElse(throw new RuntimeException("Test failed!"))
-    val apiThirdParty: ApiCommercial3rdPartyConfiguration = commercialConfiguration.thirdParty.getOrElse(throw new RuntimeException("Test failed!"))
-    val apiTaboola: ApiCommercialTaboolaConfiguration = apiThirdParty.contentTaboola.getOrElse(throw new RuntimeException("Test failed!"))
-    val defaultsFromRaw = RawChannelCommercial()
+  "RawChannelSponsoring to ApiSponsoringConfiguration" must {
 
-    commercialConfiguration.adIndicator shouldBe Some(true)
-    apiTaboola.showNews shouldBe Some(defaultsFromRaw.contentTaboola.showNews)
-    apiTaboola.showWeb shouldBe Some(defaultsFromRaw.contentTaboola.showWeb)
-    apiTaboola.showNetwork shouldBe Some(defaultsFromRaw.contentTaboola.showNetwork)
+    "convert `logo`" in new TestScopeConfiguration {
+      apiSponsoringConfiguration.logo mustBe rawChannelSponsoring.logo
+    }
+
+    "convert `slogan`" in new TestScopeConfiguration {
+      apiSponsoringConfiguration.slogan mustBe rawChannelSponsoring.slogan
+    }
+
+    "convert `hidden`" in new TestScopeConfiguration {
+      apiSponsoringConfiguration.hidden mustBe Some(rawChannelSponsoring.hidden)
+    }
+
+    "convert `adIndicator` (FIXME)" in new TestScopeConfiguration {
+      apiCommercialConfiguration.adIndicator mustBe Some(rawChannelHeader.adIndicator)
+    }
+
   }
 
-  // this is a high level test - expected values are tested above
-  "ApiConfiguration" must "have 'commercial', 'theme', 'header', 'metadata' and 'sponsoring'" in new TestScopeConfiguration {
-    val apiConfiguration: ApiConfiguration = converter.apiConfigurationFromRawChannel(node100)
-    apiConfiguration.commercial.flatMap(_.pathForAdTag).isDefined shouldBe true
-    apiConfiguration.theme shouldBe None
-    apiConfiguration.header.flatMap(_.label).isDefined shouldBe true
-    apiConfiguration.meta.flatMap(_.title).isDefined shouldBe true
-    apiConfiguration.sponsoring.flatMap(_.name).isDefined shouldBe true
+  "RawChannelCommercial to ApiCommercialConfiguration" must {
+
+    "calculate `pathForAdTag` from `definesAdTag`" in new TestScopeConfiguration {
+      apiCommercialConfiguration.pathForAdTag mustBe defined
+    }
+
+    "calculate `pathForVideoAdTag` from `definesVideoAdTag`" in new TestScopeConfiguration {
+      apiCommercialConfiguration.pathForVideoAdTag mustBe defined
+    }
+
+    "convert `RawChannelTaboolaCommercial` to `ApiCommercial3rdPartyConfiguration.ApiCommercialTaboolaConfiguration`" in new TestScopeConfiguration {
+      apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showNetwork) mustBe Some(rawChannelCommercial.contentTaboola.showNetwork)
+      apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showWeb) mustBe Some(rawChannelCommercial.contentTaboola.showWeb)
+      apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showNews) mustBe Some(rawChannelCommercial.contentTaboola.showNews)
+    }
+
   }
 
-  "ApiSponsoringConfiguration" must "have 'logo', 'slogan' and 'hidden'" in new TestScopeConfiguration {
-    private val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(node100)
+  "RawChannelTheme to ApiThemeConfiguration (calculated)" must {
 
-    apiSponsoringConfiguration.name shouldBe Some("logo") // testing copied deprecated value from `logo`
-    apiSponsoringConfiguration.logo shouldBe Some("logo")
-    apiSponsoringConfiguration.slogan shouldBe Some("slogan")
-    apiSponsoringConfiguration.hidden shouldBe Some(false)
-  }
+    "convert `name`" in new TestScopeConfiguration {
+      apiThemeConfiguration.name mustBe rawChannelTheme.name
+    }
 
-  "ApiTheme" must "have label and fields from the RawChannelTheme" in new TestScopeConfiguration {
-    val apiThemeConfiguration = converter.apiThemeFromRawChannel(rawChannel = node100).getOrElse(throw new RuntimeException("Test failed!"))
-    apiThemeConfiguration.name shouldBe rawChannelTheme.name
-    apiThemeConfiguration.unwrappedFields shouldBe rawChannelTheme.unwrappedFields
+    "convert `fields`" in new TestScopeConfiguration {
+      apiThemeConfiguration.unwrappedFields mustBe rawChannelTheme.unwrappedFields
+    }
+
   }
 
 }

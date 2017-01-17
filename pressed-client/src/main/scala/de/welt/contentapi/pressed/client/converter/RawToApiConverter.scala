@@ -126,6 +126,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
       label = rawChannel.config.header.flatMap(_.label),
       logo = rawChannel.config.header.flatMap(_.logo),
       slogan = rawChannel.config.header.flatMap(_.slogan),
+      hidden = rawChannel.config.header.map(_.hidden),
       sectionReferences = Some(apiSectionReferences)
     )
   }
