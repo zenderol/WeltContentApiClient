@@ -1,5 +1,7 @@
 package de.welt.contentapi.core.client.models
 
+import java.time.Instant
+
 import de.welt.contentapi.core.client.utilities.Strings._
 import de.welt.contentapi.utils.Loggable
 
@@ -11,11 +13,12 @@ case class ApiContentSearch(`type`: MainTypeParam = MainTypeParam(),
                             section: SectionParam = SectionParam(),
                             homeSection: HomeSectionParam = HomeSectionParam(),
                             sectionExcludes: SectionExcludes = SectionExcludes(),
-                            flags: FlagParam = FlagParam(),
-                            limit: LimitParam = LimitParam(),
-                            page: PageParam = PageParam()
+                            flag: FlagParam = FlagParam(),
+                            page: PageParam = PageParam(),
+                            pageSize: PageSizeParam = PageSizeParam(),
+                            fromDate: FromDateParam = FromDateParam()
                            ) {
-  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flags, limit, page)
+  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, pageSize, page, fromDate)
 
   /**
     * Returns tuples of params ant their respective values {{{type -> news}}}.
@@ -74,11 +77,17 @@ private case class PrimitiveParam[T]() extends Loggable {
     *
     * @return
     */
+  //noinspection ScalaStyle
   def valueToStringOpt: T ⇒ Option[String] = {
     case s: String if containsTextContent(s) ⇒ Some(stripWhiteSpaces(s))
     case _: String ⇒ None
-    case i: Int if i != Int.MinValue ⇒ Some(i.toString)
+
+    case i: Int if Int.MinValue != i ⇒ Some(i.toString)
     case _: Int ⇒ None
+
+    case i: Instant if Instant.MIN != i ⇒ Some(i.toString)
+    case _: Instant ⇒ None
+
     case unknown@_ ⇒
       log.warn(s"Unknown value type: ${unknown.getClass.toString}")
       None
@@ -86,6 +95,7 @@ private case class PrimitiveParam[T]() extends Loggable {
 }
 
 case class MainTypeParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  @deprecated(message = "Use the primary constructor instead", since = "0.8")
   def this(singleValue: String) {
     this(List(singleValue))
   }
@@ -94,6 +104,7 @@ case class MainTypeParam(override val value: List[String] = Nil) extends ListPar
 }
 
 case class SubTypeParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  @deprecated(message = "Use the primary constructor instead", since = "0.8")
   def this(singleValue: String) {
     this(List(singleValue))
   }
@@ -102,6 +113,7 @@ case class SubTypeParam(override val value: List[String] = Nil) extends ListPara
 }
 
 case class SectionParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  @deprecated(message = "Use the primary constructor instead", since = "0.8")
   def this(singleValue: String) {
     this(List(singleValue))
   }
@@ -112,6 +124,7 @@ case class SectionParam(override val value: List[String] = Nil) extends ListPara
 }
 
 case class HomeSectionParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  @deprecated(message = "Use the primary constructor instead", since = "0.8")
   def this(singleValue: String) {
     this(List(singleValue))
   }
@@ -122,6 +135,7 @@ case class HomeSectionParam(override val value: List[String] = Nil) extends List
 }
 
 case class SectionExcludes(override val value: List[String] = Nil) extends ListParam[String](value) {
+  @deprecated(message = "Use the primary constructor instead", since = "0.8")
   def this(singleValue: String) {
     this(List(singleValue))
   }
@@ -130,6 +144,7 @@ case class SectionExcludes(override val value: List[String] = Nil) extends ListP
 }
 
 case class FlagParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  @deprecated(message = "Use the primary constructor instead", since = "0.8")
   def this(singleValue: String) {
     this(List(singleValue))
   }
@@ -137,12 +152,16 @@ case class FlagParam(override val value: List[String] = Nil) extends ListParam[S
   override val name: String = "flag"
 }
 
-case class LimitParam(override val value: Int = Int.MinValue) extends ValueParam[Int](value) {
+case class PageSizeParam(override val value: Int = Int.MinValue) extends ValueParam[Int](value) {
   override val name: String = "pageSize"
 }
 
 case class PageParam(override val value: Int = Int.MinValue) extends ValueParam[Int](value) {
   override val name: String = "page"
+}
+
+case class FromDateParam(override val value: Instant = Instant.MIN) extends ValueParam[Instant](value) {
+  override val name: String = "fromDate"
 }
 
 sealed trait Datasource {

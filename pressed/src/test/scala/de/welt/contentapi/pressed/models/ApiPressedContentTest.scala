@@ -16,7 +16,7 @@ class ApiPressedContentTest extends PlaySpec {
             "type": "bar"
           }
         }
-      """.stripMargin
+      """
 
     // Info:
     // This test fails with Play 2.4

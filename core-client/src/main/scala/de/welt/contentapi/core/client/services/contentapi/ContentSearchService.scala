@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.models.ApiContentSearch
 import de.welt.contentapi.core.client.services.http.RequestHeaders
-import de.welt.contentapi.core.models.ApiContent
+import de.welt.contentapi.core.models.ApiSearchResponse
 import play.api.Configuration
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient
@@ -34,7 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 sealed trait ContentSearchService {
 
   final val defaultResultSize = 12
-  final val maxResultSize = 30
+  final val maxResultSize = 200
 
   /**
     * Search for a specific query against the content-api. WeltN24/underwood (Frank)
@@ -45,7 +45,7 @@ sealed trait ContentSearchService {
     * @param executionContext Play [[scala.concurrent.ExecutionContext]] for [[scala.concurrent.Future]]'s
     */
   def search(query: ApiContentSearch)
-            (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[Seq[ApiContent]]
+            (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiSearchResponse]
 
 
   /**
@@ -64,16 +64,16 @@ sealed trait ContentSearchService {
 class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
                                          override val metrics: Metrics,
                                          override val configuration: Configuration)
-  extends AbstractService[Seq[ApiContent]] with ContentSearchService {
+  extends AbstractService[ApiSearchResponse] with ContentSearchService {
 
-  import de.welt.contentapi.core.models.ApiReads.apiContentReads
+  import de.welt.contentapi.core.models.ApiReads.apiSearchResponseReads
 
   override val serviceName = "search"
-  override val jsonValidate: (JsLookupResult) ⇒ JsResult[Seq[ApiContent]] = json ⇒ json.validate[Seq[ApiContent]]
+  override val jsonValidate: (JsLookupResult) ⇒ JsResult[ApiSearchResponse] = json ⇒ (json \ "response").validate[ApiSearchResponse]
 
   override def search(apiContentSearch: ApiContentSearch)
-                     (implicit requestHeaders: RequestHeaders  = Seq.empty, executionContext: ExecutionContext): Future[Seq[ApiContent]] = {
-    super.get(urlArguments = Nil, parameters = apiContentSearch.getAllParamsUnwrapped)
+                     (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiSearchResponse] = {
+    super.get(parameters = apiContentSearch.getAllParamsUnwrapped)
   }
 
 }
