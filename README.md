@@ -1,3 +1,5 @@
+![Logo](static/img/wcac_logo.png)
+
 Welt Content API Client
 =======================
 
