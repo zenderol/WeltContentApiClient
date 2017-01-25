@@ -1,6 +1,55 @@
 Changelog
 =========
 
+0.9.0 (2017-01-26)
+
+**Changes:**
+
+- use Guice directly instead of Play's DI abstraction.
+
+**Breaking:**
+
+- Play's DI and Guice are compatible to some extend, but you should consider using Guice's interfaces if you access the WC/AC DI-Modules directly 
+
+**Migration:**
+
+Follow DI as described here https://www.playframework.com/documentation/2.5.x/ScalaDependencyInjection
+
+- migrate your code from `play.api.inject.Module` to `com.google.inject.AbstractModule`
+- change from `def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]]
+` to `protected abstract void configure()`
+- for module-dependencies, use `install(m: Module)`
+
+0.8.0 (2017-01-25)
+------------------
+
+**Changes:**
+
+- migrated to wrapped search endpoint that allows paginated searches
+
+**Breaking:**
+
+- none, if migration is applied
+
+**Migration:**
+
+- just call `searchResponse.map(_.results)` to unwrap the search result and use the old models
+- update the _search_ `endpoint` in your configuration to `/content/wrapped/_search`
+
+
+
+0.7.0 (2017-01-13)
+------------------
+
+**Changes:**
+
+- params for the `AbstractService` are getting trimmed now (remove leading and trailing white space) Fixes #42
+
+**Breaking:**
+
+- type safe rewrite of the `ApiContentSearch`
+- made the `RequestHeader` non `Optional`, but initialize with `Seq.empty` instead
+
 0.4.0 (2016-10-18)
 ------------------
 

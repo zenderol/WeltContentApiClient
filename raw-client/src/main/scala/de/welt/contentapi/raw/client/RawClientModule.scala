@@ -1,18 +1,16 @@
 package de.welt.contentapi.raw.client
 
+import com.google.inject.AbstractModule
 import de.welt.contentapi.raw.client.services._
-import play.api.inject.Module
-import play.api.{Configuration, Environment}
 
-class RawClientModule extends Module {
+class RawClientModule extends AbstractModule {
 
-  override def bindings(environment: Environment, configuration: Configuration) = {
-    val client = new de.welt.contentapi.core.client.CoreModule()
-    client.bindings(environment, configuration) ++ Seq(
-      // admin services
-      bind(classOf[RawTreeService]).to(classOf[RawTreeServiceImpl]),
-      bind(classOf[AdminSectionService]).to(classOf[AdminSectionServiceImpl]),
-      bind(classOf[SdpSectionDataService]).to(classOf[SdpSectionDataServiceImpl])
-    )
+  override def configure() = {
+
+    install(new de.welt.contentapi.core.client.CoreModule())
+    // admin services
+    bind(classOf[RawTreeService]).to(classOf[RawTreeServiceImpl])
+    bind(classOf[AdminSectionService]).to(classOf[AdminSectionServiceImpl])
+    bind(classOf[SdpSectionDataService]).to(classOf[SdpSectionDataServiceImpl])
   }
 }
