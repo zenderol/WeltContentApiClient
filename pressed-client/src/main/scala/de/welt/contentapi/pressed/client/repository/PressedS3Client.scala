@@ -19,12 +19,18 @@ sealed trait PressedS3Client {
 case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client with Loggable {
 
   import PressedS3ClientImpl._
-  val bucket: String = config.getString(bucketConfigKey).getOrElse(throw config.reportError(bucketConfigKey, s"Missing Configuration value: $bucketConfigKey"))
-  val file: String = config.getString(fileConfigKey).getOrElse(throw config.reportError(fileConfigKey, s"Missing Configuration value: $fileConfigKey"))
+  protected val bucket: String = config.getString(bucketConfigKey)
+    .getOrElse(throw config.reportError(bucketConfigKey, s"Missing Configuration value: $bucketConfigKey"))
+  private val file: String = config.getString(fileConfigKey)
+    .getOrElse(throw config.reportError(fileConfigKey, s"Missing Configuration value: $fileConfigKey"))
+
+  protected def getKeyForPath(path: String) = file + path + "pressed.json"
 
   override def find(path: String): Option[(ApiPressedSection, Instant)] = {
 
-    s3Client.getWithLastModified(bucket, path + file).flatMap {
+    val key = getKeyForPath(path)
+
+    s3Client.getWithLastModified(bucket, key).flatMap {
 
       case (json, lastMod) ⇒
 
@@ -32,7 +38,7 @@ case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configurati
           case JsSuccess(value, _) ⇒
             Some(value, lastMod)
           case err@JsError(_) ⇒
-            log.warn(s"Unable to parse content at '$bucket$path$file'. Reason: '${err.toString}'")
+            log.warn(s"Unable to parse content at (bucket: '$bucket' key: '$key'). Reason: '${err.toString}'")
             None
         }
     }
