@@ -1,6 +1,7 @@
 package de.welt.contentapi.utils
 
-import org.slf4j.{Logger, LoggerFactory}
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
 trait Loggable {
 
@@ -8,6 +9,6 @@ trait Loggable {
     * The configured logger.
     * Removes some scala-compiler class names. (Anonymous classes)
     */
-  implicit val log: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
+  implicit val log: Logger = Logger(LoggerFactory.getLogger(getClass.getName.stripSuffix("$")))
 
 }

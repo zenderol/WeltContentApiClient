@@ -1,6 +1,26 @@
 Changelog
 =========
 
+0.10.0 (2017-02-03)
+
+**Changes:**
+
+- `PressedSectionService` now wraps its responses
+  - the wrapper contains information about `time`, `status`, `source`, .. of the pressed result
+  - those wrapped models are uploaded to S3
+  - alternate treatment of backend calls when in `Dev Mode` 
+- Changed logging to typesafe's scala-logging (should increase performance and reduce memory)
+- minor fixes like typos  
+
+**Breaking:**
+
+- the models in S3 and the `PressedSectionService` are now wrapped (JSON changed)
+
+**Migration:**
+
+- the Logger automatically does the `log.isLevelEnabled()` and therefore permits calling this directly. Just remove the `if`.
+- As for the wrapped JSON: You could simply unwrap it to use the previous models.
+
 0.9.0 (2017-01-26)
 
 **Changes:**

@@ -4,7 +4,7 @@ import java.time.Instant
 
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.core.models.ApiReference
-import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection}
+import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection, ApiPressedSectionResponse}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
@@ -16,6 +16,9 @@ import play.api.libs.json.Json
 class PressedS3ClientTest extends PlaySpec with MockitoSugar {
 
   trait TestScope {
+
+    import de.welt.contentapi.pressed.models.PressedWrites.apiPressedSectionResponseWrites
+
     val path = "/foo/bar/"
     val s3Client: S3Client = mock[S3Client]
     val configuration = Configuration.from(Map(
@@ -34,9 +37,7 @@ class PressedS3ClientTest extends PlaySpec with MockitoSugar {
       )
     )
 
-    import de.welt.contentapi.pressed.models.PressedWrites.apiPressedSectionWrites
-
-    val simpleSectionJson: String = Json.toJson(simpleSection).toString()
+    val simpleSectionJson: String = Json.toJson(ApiPressedSectionResponse("test", Some(simpleSection))).toString()
   }
 
   "PressedS3Client" must {
@@ -49,13 +50,14 @@ class PressedS3ClientTest extends PlaySpec with MockitoSugar {
       when(s3Client.getWithLastModified(any(), any())).thenReturn(Some(s3Response))
 
       // When
-      private val maybeTuple = pressedS3Client.find(path)
+      private val Some(tuple) = pressedS3Client.find(path)
+      private val (response, timestamp) = tuple
 
       // Then
       // compare the label, because equals method is not implemented
-      maybeTuple.map(_._1).flatMap(_.channel).flatMap(_.section).flatMap(_.label) shouldBe simpleSection.channel.flatMap(_.section).flatMap(_.label)
+      response.section.flatMap(_.channel).flatMap(_.section).flatMap(_.label) shouldBe simpleSection.channel.flatMap(_.section).flatMap(_.label)
       // lastMod should be present
-      maybeTuple.map(_._2) shouldBe Some(s3LastMod)
+      timestamp shouldBe s3LastMod
 
     }
 

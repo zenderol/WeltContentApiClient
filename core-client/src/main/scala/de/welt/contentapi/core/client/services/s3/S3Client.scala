@@ -30,7 +30,7 @@ sealed trait S3Client extends Loggable {
             config.getString("welt.aws.s3.dev.accessKey")
               .getOrElse(throw config.reportError("welt.aws.s3.dev.accessKey", "You need to provide aws credentials (welt.aws.s3.dev.accessKey) in DEV/TEST mode")),
             config.getString("welt.aws.s3.dev.secretKey")
-              .getOrElse(throw config.reportError("welt.aws.s3.dev.accessKey", "You need to provide aws credentials (welt.aws.s3.dev.accessKey) in DEV/TEST mode"))
+              .getOrElse(throw config.reportError("welt.aws.s3.dev.secretKey", "You need to provide aws credentials (welt.aws.s3.dev.secretKey) in DEV/TEST mode"))
           )
         )
       }

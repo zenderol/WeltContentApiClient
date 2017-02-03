@@ -4,21 +4,29 @@ import java.time.Instant
 import javax.inject.Inject
 
 import de.welt.contentapi.core.client.services.s3.S3Client
-import de.welt.contentapi.pressed.models.{ApiPressedSection, PressedReads}
+import de.welt.contentapi.pressed.models.ApiPressedSectionResponse
+import de.welt.contentapi.pressed.models.PressedReads.apiPressedSectionResponseReads
 import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 sealed trait PressedS3Client {
   /**
-    * todo (harry): missing docs!
+    * find a pre-pressed section on S3
+    *
+    * @param path the section's path
+    *
+    * @return a tuple of a [[ApiPressedSectionResponse]] and its last mode time (of instance [[Instant]] <br/>
+    *         None if section was not found in S3
+    *
     */
-  def find(path: String): Option[(ApiPressedSection, Instant)]
+  def find(path: String): Option[(ApiPressedSectionResponse, Instant)]
 }
 
 case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client with Loggable {
 
   import PressedS3ClientImpl._
+
   protected val bucket: String = config.getString(bucketConfigKey)
     .getOrElse(throw config.reportError(bucketConfigKey, s"Missing Configuration value: $bucketConfigKey"))
   private val file: String = config.getString(fileConfigKey)
@@ -26,7 +34,7 @@ case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configurati
 
   protected def getKeyForPath(path: String) = file + path + "pressed.json"
 
-  override def find(path: String): Option[(ApiPressedSection, Instant)] = {
+  override def find(path: String): Option[(ApiPressedSectionResponse, Instant)] = {
 
     val key = getKeyForPath(path)
 
@@ -34,7 +42,7 @@ case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configurati
 
       case (json, lastMod) ⇒
 
-        Json.parse(json).validate[ApiPressedSection](PressedReads.apiPressedSectionReads) match {
+        Json.parse(json).validate[ApiPressedSectionResponse](apiPressedSectionResponseReads) match {
           case JsSuccess(value, _) ⇒
             Some(value, lastMod)
           case err@JsError(_) ⇒

@@ -1,6 +1,7 @@
 package de.welt.contentapi.pressed.models
 
 import de.welt.contentapi.core.models.ApiContent
+import de.welt.contentapi.pressed.models.StatusPhrase.StatusPhrase
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -42,6 +43,8 @@ object PressedReads {
   implicit lazy val apiTeaserReads: Reads[ApiTeaser] = Json.reads[ApiTeaser]
   implicit lazy val apiStageReads: Reads[ApiStage] = Json.reads[ApiStage]
   implicit lazy val apiPressedSectionReads: Reads[ApiPressedSection] = Json.reads[ApiPressedSection]
+  implicit lazy val statusPhraseReads: Reads[StatusPhrase] = Reads.enumNameReads(StatusPhrase)
+  implicit lazy val apiPressedSectionResponseReads: Reads[ApiPressedSectionResponse] = Json.reads[ApiPressedSectionResponse]
 }
 
 object PressedWrites {
@@ -69,6 +72,10 @@ object PressedWrites {
     ) (unlift(ApiPressedContent.unapply))
   implicit lazy val apiStageWrites: Writes[ApiStage] = Json.writes[ApiStage]
   implicit lazy val apiPressedSectionWrites: Writes[ApiPressedSection] = Json.writes[ApiPressedSection]
+  implicit lazy val statusPhraseWrites: Writes[StatusPhrase] = new Writes[StatusPhrase]{
+    override def writes(o: StatusPhrase): JsValue = JsString(o.toString)
+  }
+  implicit lazy val apiPressedSectionResponseWrites: Writes[ApiPressedSectionResponse] = Json.writes[ApiPressedSectionResponse]
 
 
 }
@@ -124,6 +131,11 @@ object PressedFormats {
     Format(apiStageReads, apiStageWrites)
 
   implicit lazy val apiPressedSectionFormat: Format[ApiPressedSection] =
-    Format(apiPressedSectionReads, apiPressedSectionWrites
-  )
+    Format(apiPressedSectionReads, apiPressedSectionWrites)
+
+  implicit lazy val statusPhraseFormat: Format[StatusPhrase] =
+    Format(statusPhraseReads, statusPhraseWrites)
+
+  implicit lazy val apiPressedSectionResponseFormat: Format[ApiPressedSectionResponse] =
+    Format(apiPressedSectionResponseReads, apiPressedSectionResponseWrites)
 }

@@ -13,7 +13,7 @@ object MyBuild extends Build {
   val forScala2_4 = Option(System.getenv("PLAY24")).exists(_.toBoolean)
 
   val playVersion = if (forScala2_4) "2.4.8" else "2.5.10"
-  private val actualVersion: String = s"0.9.$buildNumber"
+  private val actualVersion: String = s"0.10.$buildNumber"
 
   scalaVersion := "2.11.8"
 
@@ -42,6 +42,7 @@ object MyBuild extends Build {
   val coreDependencySettings = Seq(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play" % playVersion % Provided,
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % Test,
       "com.typesafe.play" %% "play-cache" % playVersion % Provided
@@ -59,6 +60,7 @@ object MyBuild extends Build {
 
       "com.typesafe.play" %% "play-ws" % playVersion % Provided,
       "com.typesafe.play" %% "play-cache" % playVersion % Provided,
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
 
       "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % Test
@@ -68,8 +70,7 @@ object MyBuild extends Build {
       }
       else {
         Seq("de.threedimensions" %% "metrics-play" % "2.5.13")
-      }
-      )
+      })
   )
 
 

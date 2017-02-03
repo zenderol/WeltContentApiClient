@@ -6,17 +6,18 @@ import javax.inject.{Inject, Singleton}
 
 import de.welt.contentapi.core.client.services.http._
 import de.welt.contentapi.pressed.client.repository.{PressedDiggerClient, PressedS3Client}
-import de.welt.contentapi.pressed.models.ApiPressedSection
+import de.welt.contentapi.pressed.models.ApiPressedSectionResponse
 import de.welt.contentapi.utils.Env.{Env, Live, Preview}
 import de.welt.contentapi.utils.Loggable
-import play.api.Configuration
+import play.api.Mode.Mode
+import play.api.{Configuration, Mode}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait PressedSectionService {
 
-  def findByPath(path: String, env: Env = Live)
-                (implicit requestHeaders: RequestHeaders, executionContext: ExecutionContext): Future[ApiPressedSection]
+  def findByPath(path: String, env: Env = Live, mode: Mode = Mode.Prod)
+                (implicit requestHeaders: RequestHeaders, executionContext: ExecutionContext): Future[ApiPressedSectionResponse]
 }
 
 object PressedSectionService {
@@ -37,12 +38,15 @@ class PressedSectionServiceImpl @Inject()(pressedS3Client: PressedS3Client,
     * @param env  can be Live or Preview, but is Live as default. If (Env == Preview) -> only ask Digger, don't try S3 first
     * @return a future ApiPressedSection or deliver HttpClient/ServerError from AbstractService
     */
-  override def findByPath(path: String, env: Env = Live)
-                         (implicit requestHeaders: RequestHeaders, executionContext: ExecutionContext): Future[ApiPressedSection] = {
+  override def findByPath(path: String, env: Env = Live, mode: Mode = Mode.Prod)
+                         (implicit requestHeaders: RequestHeaders, executionContext: ExecutionContext): Future[ApiPressedSectionResponse] = {
 
     if (env == Preview) {
       // do not use s3 when rendering a preview
       diggerClient.findByPath(path, Preview)
+    } else if (mode == Mode.Dev) {
+      // also do not use s3 when in dev mode
+      diggerClient.findByPath(path, Live)
     } else {
 
       pressedS3Client.find(path) match {
@@ -51,14 +55,14 @@ class PressedSectionServiceImpl @Inject()(pressedS3Client: PressedS3Client,
           Future.successful(section)
         case Some((section, _)) ⇒
           // s3 result is present, but outdated. Invoke digger, but use outdated result if digger fails
-          diggerClient.findByPath(path)
+          diggerClient.findByPath(path, Live)
             .recoverWith { case err ⇒
               log.warn("Delivering old content because digger failed.", err)
               Future.successful(section)
             }
         case _ ⇒
           // s3 result is not present, solely rely on digger
-          diggerClient.findByPath(path)
+          diggerClient.findByPath(path, Live)
       }
     }
   }

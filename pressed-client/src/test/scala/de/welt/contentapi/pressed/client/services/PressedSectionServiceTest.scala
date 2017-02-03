@@ -7,7 +7,7 @@ import de.welt.contentapi.core.client.services.exceptions.HttpClientErrorExcepti
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.client.repository.{PressedDiggerClient, PressedS3Client}
-import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection}
+import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection, ApiPressedSectionResponse}
 import de.welt.contentapi.utils.Env
 import de.welt.contentapi.utils.Env.{Live, Preview}
 import org.apache.http.HttpStatus
@@ -17,7 +17,7 @@ import org.mockito.{Matchers ⇒ MockitoMatchers}
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.words.MustVerb
 import org.scalatest.{FlatSpec, Matchers}
-import play.api.Configuration
+import play.api.{Configuration, Mode}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -35,11 +35,13 @@ class PressedSectionServiceTest extends FlatSpec
 
     val pressedSection = ApiPressedSection(channel = Some(ApiChannel(Some(ApiReference(Some("label"), Some("/href/"))))))
 
-    val validS3Response = (pressedSection, Instant.now.minus(PressedSectionService.DefaultSectionTTLMinutes - 5, ChronoUnit.MINUTES))
-    val invalidS3Response = (pressedSection, Instant.now.minus(PressedSectionService.DefaultSectionTTLMinutes + 5, ChronoUnit.MINUTES))
+    val validS3Response = (ApiPressedSectionResponse("test", Some(pressedSection)),
+      Instant.now.minus(PressedSectionService.DefaultSectionTTLMinutes - 5, ChronoUnit.MINUTES))
+    val invalidS3Response = (ApiPressedSectionResponse("test", Some(pressedSection)),
+      Instant.now.minus(PressedSectionService.DefaultSectionTTLMinutes + 5, ChronoUnit.MINUTES))
 
-    val pressedSectionFromDigger: Future[ApiPressedSection] = Future.successful {
-      pressedSection
+    val pressedSectionFromDigger: Future[ApiPressedSectionResponse] = Future.successful {
+      ApiPressedSectionResponse(source = "test", section = Some(pressedSection))
     }
 
     val sectionPath = "/foo/"
@@ -55,10 +57,10 @@ class PressedSectionServiceTest extends FlatSpec
       .thenThrow(HttpClientErrorException(HttpStatus.SC_NOT_FOUND, "In this test I don't deliver responses", sectionPath))
 
     // When
-    private val resolvedPressedSection: ApiPressedSection = Await.result(pressService.findByPath(sectionPath), 1.second)
+    private val resolvedPressedSection = Await.result(pressService.findByPath(sectionPath), 1.second)
 
     // Then
-    resolvedPressedSection.channel.flatMap(_.section).flatMap(_.href) shouldBe pressedSection.channel.flatMap(_.section).flatMap(_.href)
+    resolvedPressedSection.section.flatMap(_.channel.flatMap(_.section).flatMap(_.href)) shouldBe pressedSection.channel.flatMap(_.section).flatMap(_.href)
   }
 
   it must "use the outdated s3 result if digger fails" in new TestScope {
@@ -82,28 +84,28 @@ class PressedSectionServiceTest extends FlatSpec
     // Given
     when(s3Client.find(sectionPath))
       .thenReturn(None)
-    when(diggerClient.findByPath(sectionPath))
+    when(diggerClient.findByPath(sectionPath, Live))
       .thenReturn(pressedSectionFromDigger)
 
     // When
     Await.result(awaitable = pressService.findByPath(sectionPath), 1.second)
 
     // Then
-    verify(diggerClient, atLeastOnce).findByPath(sectionPath)
+    verify(diggerClient, atLeastOnce).findByPath(sectionPath, Live)
   }
 
   it must "ask Digger if S3 Pressed Section is too old" in new TestScope {
     // Given
     when(s3Client.find(sectionPath))
       .thenReturn(Some(invalidS3Response))
-    when(diggerClient.findByPath(sectionPath))
+    when(diggerClient.findByPath(sectionPath, Live))
       .thenReturn(pressedSectionFromDigger)
 
     // When
     Await.result(awaitable = pressService.findByPath(sectionPath), 1.second)
 
     // Then
-    verify(diggerClient, atLeastOnce).findByPath(sectionPath)
+    verify(diggerClient, atLeastOnce).findByPath(sectionPath, Live)
   }
 
   it must "don't ask S3 if Env == Preview" in new TestScope {
@@ -117,11 +119,22 @@ class PressedSectionServiceTest extends FlatSpec
     verify(s3Client, never).find(sectionPath)
   }
 
+  it must "don't ask S3 if Mode == Dev" in new TestScope {
+    // Given
+    when(diggerClient.findByPath(sectionPath, Live)).thenReturn(pressedSectionFromDigger)
+
+    // When
+    Await.result(awaitable = pressService.findByPath(sectionPath, Live, Mode.Dev), 1.second)
+
+    // Then
+    verify(s3Client, never).find(sectionPath)
+  }
+
   it must "pass the (preview) env to the service" in {
 
     // given
     val client = mock[PressedDiggerClient]
-    when(client.findByPath("/preview/test", Preview)).thenReturn(Future.successful(ApiPressedSection()))
+    when(client.findByPath("/preview/test", Preview)).thenReturn(Future.successful(ApiPressedSectionResponse("test", None)))
 
     // when
     Await.result(new PressedSectionServiceImpl(mock[PressedS3Client], Configuration(), client).findByPath("/preview/test", Preview), 1.second)
