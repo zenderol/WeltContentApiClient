@@ -39,20 +39,32 @@ class AbstractServiceTest extends PlaySpec
 
     when(metricsMock.defaultRegistry).thenReturn(new com.codahale.metrics.MetricRegistry())
     when(mockWsClient.url(anyString)).thenReturn(mockRequest)
+  }
 
+  trait TestScopeBasicAuth extends TestScope {
     class TestService extends AbstractService[String] {
       override val serviceName: String = "test"
-      override val configuration: Configuration = TestService.configuration
+      override val configuration: Configuration = TestServiceBasicAuth.configuration
       override val metrics: Metrics = metricsMock
       override val jsonValidate: (JsLookupResult) => JsResult[String] = json => json.validate[String]
       override val ws: WSClient = mockWsClient
 
       override protected def initializeMetricsContext(name: String): Context = mockTimerContext
     }
+  }
+  trait TestScopeApiKey extends TestScope {
+    class TestService extends AbstractService[String] {
+      override val serviceName: String = "test"
+      override val configuration: Configuration = TestServiceApiKeyOverridesBasicAuthConfig.configuration
+      override val metrics: Metrics = metricsMock
+      override val jsonValidate: (JsLookupResult) => JsResult[String] = json => json.validate[String]
+      override val ws: WSClient = mockWsClient
 
+      override protected def initializeMetricsContext(name: String): Context = mockTimerContext
+    }
   }
 
-  object TestService {
+  object TestServiceBasicAuth {
     val configuration = Configuration("welt.api.test" → Map(
       "host" → "http://www.example.com",
       "endpoint" → "/test/%s",
@@ -61,58 +73,76 @@ class AbstractServiceTest extends PlaySpec
     ))
   }
 
+  object TestServiceApiKeyOverridesBasicAuthConfig {
+    val configuration = Configuration("welt.api.test" → Map(
+      "host" → "http://www.example.com",
+      "endpoint" → "/test/%s",
+      "apiKey" → "foo",
+      "credentials.username" → "user",
+      "credentials.password" → "pass"
+    ))
+  }
+
   "AbstractService" should {
 
-    "call the endpoint" in new TestScope {
+    "call the endpoint" in new TestScopeBasicAuth {
       new TestService().get(Seq("fake-id"), Seq.empty)
       verify(mockWsClient).url("http://www.example.com/test/fake-id")
     }
 
-    "forward the X-Unique-Id header" in new TestScope {
+    "forward the X-Unique-Id header" in new TestScopeBasicAuth {
       val headers = Seq(("X-Unique-Id", "0xdeadbeef"))
       new TestService().get(Seq("fake-id"), Seq.empty)(headers, defaultContext)
       verify(mockRequest).withHeaders(("X-Unique-Id", "0xdeadbeef"))
     }
 
-    "forward the auth data" in new TestScope {
+    "forward the basic auth data" in new TestScopeBasicAuth {
       private val service = new TestService()
-      service.get(Seq("fake-id"), Seq("foo" → "bar"))
-      verify(mockRequest).withAuth(service.config.username, service.config.password, WSAuthScheme.BASIC)
+      service.get(Seq("fake-id"), Seq("foo" -> "bar"))
+      val ba = service.config.credentials.right.getOrElse("", "")
+      verify(mockRequest).withAuth(ba._1, ba._2, WSAuthScheme.BASIC)
     }
 
-    "forward the query string data" in new TestScope {
-      new TestService().get(Seq("fake-id"), Seq("foo" → "bar"))
+    "forward the api key as header" in new TestScopeApiKey {
+      private val service = new TestService()
+      service.get(Seq("fake-id"), Seq("foo" -> "bar"))
+      service.config.credentials.left.getOrElse("")
+      verify(mockRequest).withHeaders(("x-api-key", "foo"))
+    }
+
+    "forward the query string data" in new TestScopeBasicAuth {
+      new TestService().get(Seq("fake-id"), Seq("foo" -> "bar"))
       verify(mockRequest).withQueryString(("foo", "bar"))
     }
 
-    "forward the headers" in new TestScope {
-      implicit val requestHeaders: RequestHeaders = Seq("X-Unique-Id" → "bar")
+    "forward the headers" in new TestScopeBasicAuth {
+      implicit val requestHeaders: RequestHeaders = Seq("X-Unique-Id" -> "bar")
       new TestService().get(Seq("fake-id"), Seq.empty)
       verify(mockRequest).withHeaders(("X-Unique-Id", "bar"))
     }
 
-    "strip whitespaces and newline from the parameter" in new TestScope {
+    "strip whitespaces and newline from the parameter" in new TestScopeBasicAuth {
       new TestService().get(Seq("with-whitespace \n"))
       verify(mockWsClient).url("http://www.example.com/test/with-whitespace")
     }
 
-    "strip nonbreaking whitespace from parameters" in new TestScope {
+    "strip nonbreaking whitespace from parameters" in new TestScopeBasicAuth {
       new TestService().get(Seq("strange-whitespaces"), ApiContentSearch(MainTypeParam(List("\u00A0", " ", "\t", "\n"))).getAllParamsUnwrapped)
       verify(mockRequest).withQueryString()
     }
 
-    "not strip valid parameters" in new TestScope {
+    "not strip valid parameters" in new TestScopeBasicAuth {
       val parameters = ApiContentSearch(MainTypeParam(List("param1", "\u00A0param2\u00A0", "\u00A0"))).getAllParamsUnwrapped
       new TestService().get(Seq("strange-whitespaces"), parameters)
       verify(mockRequest).withQueryString("type" → Seq("param1", "param2").mkString(MainTypeParam().operator))
     }
 
-    "strip empty elements from the query string" in new TestScope {
+    "strip empty elements from the query string" in new TestScopeBasicAuth {
       new TestService().get(Seq("x"), Seq("spaces" → " \n", "trim" → "   value   "))
       verify(mockRequest).withQueryString(("trim", "value"))
     }
 
-    "will return the expected result" in new TestScope {
+    "will return the expected result" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(OK)
       when(responseMock.json).thenReturn(JsString("the result"))
 
@@ -121,7 +151,7 @@ class AbstractServiceTest extends PlaySpec
       result1 mustBe "the result"
     }
 
-    "will throw a RedirectErrorException when WS status is 301" in new TestScope {
+    "will throw a RedirectErrorException when WS status is 301" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(MOVED_PERMANENTLY)
 
       val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
@@ -132,7 +162,7 @@ class AbstractServiceTest extends PlaySpec
       }
     }
 
-    "will throw a ClientErrorException when WS status is 404" in new TestScope {
+    "will throw a ClientErrorException when WS status is 404" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(NOT_FOUND)
 
       val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
@@ -143,7 +173,7 @@ class AbstractServiceTest extends PlaySpec
       }
     }
 
-    "will throw a ServerErrorException when WS status is 504" in new TestScope {
+    "will throw a ServerErrorException when WS status is 504" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(GATEWAY_TIMEOUT)
 
       val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
@@ -154,7 +184,7 @@ class AbstractServiceTest extends PlaySpec
       }
     }
 
-    "will invoke metrics" in new TestScope {
+    "will invoke metrics" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(OK)
       when(responseMock.json).thenReturn(JsString(""))
 

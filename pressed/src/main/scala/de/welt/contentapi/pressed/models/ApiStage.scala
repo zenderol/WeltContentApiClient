@@ -6,7 +6,8 @@ import de.welt.contentapi.core.models.ApiReference
   * @param teasers       All Teasers that belong to a Stage
   * @param configuration Configuration for that Stage, with layout, label etc.
   */
-case class ApiStage(teasers: Seq[ApiTeaser],
+case class ApiStage(index: Int,
+                    teasers: Seq[ApiTeaser],
                     configuration: Option[ApiStageConfiguration] = None) {
   // stages with content are always valid
   lazy val hasContent = teasers.nonEmpty

@@ -17,6 +17,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AbstractService[T] extends Strings with Loggable with Status {
 
+  val HEADER_API_KEY = "x-api-key"
+
   /** these need to be provided by the implementing services */
   val ws: WSClient
   val metrics: Metrics
@@ -70,22 +72,29 @@ trait AbstractService[T] extends Strings with Loggable with Status {
 
     val getRequest: WSRequest = ws.url(url)
       .withQueryString(filteredParameters: _*)
+
+    val authenticatedGetRequest = config.credentials match {
+      case Right(basicAuth) ⇒ getRequest
+        .withAuth(username = basicAuth._1, password = basicAuth._2, WSAuthScheme.BASIC)
+
+      case Left(apiKey) ⇒ getRequest
+        .withHeaders(HEADER_API_KEY → apiKey)
+    }
+    log.debug(s"HTTP GET to ${authenticatedGetRequest.uri}")
+
+    authenticatedGetRequest
       .withHeaders(forwardHeaders(forwardedRequestHeaders): _*)
-      .withAuth(config.username, config.password, WSAuthScheme.BASIC)
-
-    log.debug(s"HTTP GET to ${getRequest.uri}")
-
-    getRequest.get().map { response ⇒
+      .get().map { response ⇒
 
       context.stop()
 
-      response.status match {
-        case OK ⇒ parseJson(response.json.result)
-        case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
-        case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url)
-        case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
+        response.status match {
+          case OK ⇒ parseJson(response.json.result)
+          case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
+          case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url)
+          case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
+        }
       }
-    }
   }
 
   /**

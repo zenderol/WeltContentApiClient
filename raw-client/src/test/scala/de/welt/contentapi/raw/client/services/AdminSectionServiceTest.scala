@@ -2,7 +2,7 @@ package de.welt.contentapi.raw.client.services
 
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.raw.models.FullRawChannelWrites.channelWrites
-import de.welt.contentapi.raw.models.{RawChannelConfiguration, RawChannelHeader, RawChannelStageConfiguration, RawChannelStageModule}
+import de.welt.contentapi.raw.models.{RawChannelConfiguration, RawChannelHeader, RawChannelStageConfiguration, RawChannelStageCustomModule}
 import de.welt.contentapi.utils.Env.Live
 import de.welt.testing.DisabledCache
 import de.welt.testing.TestHelper.raw.channel.emptyWithId
@@ -74,7 +74,7 @@ class AdminSectionServiceTest extends PlaySpec with MockitoSugar {
       implicit val env = Live
 
       // given
-      val expectedModules = Some(Seq(RawChannelStageModule(
+      val expectedModules = Some(Seq(RawChannelStageCustomModule(
         index = 0, module = "foo"
       )))
       val expectedStageConfig = Some(RawChannelStageConfiguration(stages = expectedModules))

@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.models.ApiContentSearch
 import de.welt.contentapi.core.client.services.http.RequestHeaders
-import de.welt.contentapi.core.models.ApiSearchResponse
+import de.welt.contentapi.core.models.{ApiContent, ApiSearchResponse}
 import play.api.Configuration
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient
@@ -49,6 +49,13 @@ sealed trait ContentSearchService {
 
 
   /**
+    * Batch get Content for a Seq of EscenicIds
+    *
+    * @param ids provide one or more EscenicIds to resolve
+    */
+  def batchGetForId(ids: Seq[String])
+                   (implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[Seq[ApiContent]]
+  /**
     * filter invalid values (such as negative or too large)
     *
     * @param maybeLimit the requested limit
@@ -76,4 +83,8 @@ class ContentSearchServiceImpl @Inject()(override val ws: WSClient,
     super.get(parameters = apiContentSearch.getAllParamsUnwrapped)
   }
 
+  override def batchGetForId(ids: Seq[String])(implicit requestHeaders: Option[RequestHeaders], executionContext: ExecutionContext): Future[Seq[ApiContent]] =
+    super
+      .get(urlArguments = Nil, parameters = Seq("id" → ids.mkString("|")))
+      .map(_.results)
 }
