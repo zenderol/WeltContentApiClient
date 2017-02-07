@@ -1,6 +1,6 @@
 package de.welt.contentapi.pressed.client.repository
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.contentapi.AbstractService
@@ -23,12 +23,13 @@ sealed trait PressedDiggerClient {
     * @param env  Live/Preview, default = Live
     */
   protected[client] def findByPath(path: String, env: Env = Live)
-                (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSectionResponse]
+                                  (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSectionResponse]
 }
 
-case class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
-                                             override val metrics: Metrics,
-                                             override val configuration: Configuration)
+@Singleton
+class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
+                                        override val metrics: Metrics,
+                                        override val configuration: Configuration)
   extends AbstractService[ApiPressedSectionResponse] with PressedDiggerClient {
 
   override val serviceName = "digger"
@@ -36,7 +37,7 @@ case class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
     jsLookupResult.validate[ApiPressedSectionResponse](apiPressedSectionResponseReads)
 
   override protected[client] def findByPath(path: String, env: Env = Live)
-                         (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSectionResponse] = {
+                                           (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSectionResponse] = {
     get(urlArguments = Seq(env.toString, path), parameters = Nil)
   }
 

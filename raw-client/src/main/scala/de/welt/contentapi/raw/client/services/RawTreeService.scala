@@ -1,6 +1,6 @@
 package de.welt.contentapi.raw.client.services
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.raw.models.RawChannel
@@ -16,6 +16,7 @@ trait RawTreeService {
   def root(implicit env: Env): Option[RawChannel]
 }
 
+@Singleton
 class RawTreeServiceImpl @Inject()(s3Client: S3Client,
                                    config: Configuration,
                                    environment: Environment,

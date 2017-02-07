@@ -25,7 +25,7 @@ class PressedS3ClientTest extends PlaySpec with MockitoSugar {
       "welt.aws.s3.pressed.bucket" → "bucket/for/pressed",
       "welt.aws.s3.pressed.file" → "filename.json"
     ))
-    val pressedS3Client: PressedS3Client = PressedS3ClientImpl(s3Client, configuration)
+    val pressedS3Client: PressedS3Client = new PressedS3ClientImpl(s3Client, configuration)
 
     val simpleSection = ApiPressedSection(
       channel = Some(

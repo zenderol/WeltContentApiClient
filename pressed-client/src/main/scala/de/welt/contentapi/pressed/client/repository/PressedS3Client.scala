@@ -1,7 +1,7 @@
 package de.welt.contentapi.pressed.client.repository
 
 import java.time.Instant
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.pressed.models.ApiPressedSectionResponse
@@ -15,7 +15,6 @@ sealed trait PressedS3Client {
     * find a pre-pressed section on S3
     *
     * @param path the section's path
-    *
     * @return a tuple of a [[ApiPressedSectionResponse]] and its last mode time (of instance [[Instant]] <br/>
     *         None if section was not found in S3
     *
@@ -23,7 +22,8 @@ sealed trait PressedS3Client {
   def find(path: String): Option[(ApiPressedSectionResponse, Instant)]
 }
 
-case class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client with Loggable {
+@Singleton
+class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client with Loggable {
 
   import PressedS3ClientImpl._
 
