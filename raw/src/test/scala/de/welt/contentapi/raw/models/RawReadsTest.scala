@@ -61,4 +61,25 @@ class RawReadsTest extends PlaySpec {
     }
 
   }
+
+  "RawChannelStage Reads" must {
+
+    "parse unknown modules as a hidden RawChannelStageIgnored" in {
+      val unknownModule = """{
+                            |  "index": 0,
+                            |  "hidden": false,
+                            |  "type": "my-fance-new-module",
+                            |  "layout": "fancy-layout"
+                            |}"""".stripMargin
+      val unknownStage = Json.parse(unknownModule)
+        .validate[RawChannelStage](rawChannelStageReads)
+        .asOpt
+        .get
+      unknownStage.`type` mustBe RawChannelStage.unknown
+      unknownStage.hidden mustBe true
+    }
+
+  }
+
+
 }

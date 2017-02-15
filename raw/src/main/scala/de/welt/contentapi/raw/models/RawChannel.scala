@@ -363,6 +363,7 @@ object RawChannelStage {
   val customModule = "custom-module"
   val commercial = "commercial"
   val curated = "curated"
+  val unknown = "unknown"
 
   import de.welt.contentapi.raw.models.RawFormats.{rawChannelStageCommercialFormat, rawChannelStageContentFormat, rawChannelStageCuratedFormat}
 
@@ -432,5 +433,14 @@ case class RawChannelStageCurated(index: Int,
                                   `type`: String = RawChannelStage.curated) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 
+}
+
+/**
+  * Unknown Modules will be parsed as [[RawChannelStageIgnored]] for future-proof Json Parsing
+  * Use Case: CMCF can be rolled out with new Modules that are not yet known to Digger
+  */
+case class RawChannelStageIgnored(index: Int) extends RawChannelStage {
+  override val `type`: String = RawChannelStage.unknown
+  override val hidden: Boolean = true
 }
 
