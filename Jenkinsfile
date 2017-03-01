@@ -10,8 +10,9 @@ node('large') {
                           extensions                       : [],
                           submoduleCfg                     : [],
                           userRemoteConfigs                : [[
-                                                                      url: 'git@github.com:WeltN24/WeltContentApiClient.git'
-                                                              ]]
+                              url: 'https://github.com/WeltN24/WeltContentApiClient.git',
+                              credentialsId: 'ci-weltn24_2017-02-28'
+                          ]]
                 ])
             }
 
@@ -80,9 +81,10 @@ node('large') {
                         extensions                       : [],
                         submoduleCfg                     : [],
                         userRemoteConfigs                : [[
-                                                                    refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
-                                                                    url: 'git@github.com:WeltN24/WeltContentApiClient.git'
-                                                            ]]
+                            refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
+                            url: 'https://github.com/WeltN24/WeltContentApiClient.git',
+                            credentialsId: 'ci-weltn24_2017-02-28'
+                        ]]
                 ]
             }
 
