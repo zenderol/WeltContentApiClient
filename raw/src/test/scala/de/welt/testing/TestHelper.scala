@@ -47,6 +47,10 @@ object TestHelper {
         brand = brand
       )
 
+      def withMaster(master: Boolean) = RawChannelConfiguration(
+        master = master
+      )
+
       def withTheme(name: String) = RawChannelConfiguration(
         theme = Some(RawChannelTheme(name = Some(name)))
       )

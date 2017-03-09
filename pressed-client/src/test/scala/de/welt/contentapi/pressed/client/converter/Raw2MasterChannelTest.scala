@@ -1,58 +1,138 @@
 package de.welt.contentapi.pressed.client.converter
 
 import de.welt.contentapi.core.models.ApiReference
-import de.welt.testing.TestHelper.raw.channel.{emptyWithId, emptyWithIdAndChildren}
-import org.scalatest.{FlatSpec, Matchers}
+import de.welt.testing.TestHelper.raw.channel.{emptyWithId, emptyWithIdAndChildren, emptyWithIdAndChildrenAndConfig}
+import de.welt.testing.TestHelper.raw.configuration.withMaster
+import org.scalatestplus.play.PlaySpec
 
-class Raw2MasterChannelTest extends FlatSpec with Matchers {
+class Raw2MasterChannelTest extends PlaySpec {
 
-  //noinspection ScalaStyle
-  trait TestScope {
-    /**
-      * {{{
-      *      (      0[root]     )
-      *       |               |
-      *      (10)            (11)
-      *       |
-      *      (100)
-      *       |
-      *      (1000)
-      * }}}
-      */
-    val node1000 = emptyWithId(1000)
-    val node100 = emptyWithIdAndChildren(100, Seq(node1000))
-    val node10 = emptyWithIdAndChildren(10, Seq(node100))
+  "Master Channel Calculator: Automatic calculated" must {
 
-    val node11 = emptyWithIdAndChildren(11, Nil)
+    //noinspection ScalaStyle
+    trait AutomaticFlaggedMasterScope {
+      /**
+        * Info:
+        * -A- == automatically a master channel (first level)
+        *
+        * {{{
+        *      (      0 -A- [root]     )
+        *       |               |
+        *      (10 -A-)        (11 -A-)
+        *       |
+        *      (100)
+        *       |
+        *      (1000)
+        * }}}
+        */
+      val node1000 = emptyWithId(1000)
+      val node100 = emptyWithIdAndChildren(100, Seq(node1000))
+      val node10 = emptyWithIdAndChildren(10, Seq(node100))
 
-    val root = emptyWithIdAndChildren(0, Seq(node10, node11))
+      val node11 = emptyWithIdAndChildren(11, Nil)
 
-    root.updateParentRelations()
+      val root = emptyWithIdAndChildren(0, Seq(node10, node11))
 
-    import de.welt.contentapi.core.models.testImplicits.pathUpdater
+      root.updateParentRelations()
 
-    root.updatePaths()
-    val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+      import de.welt.contentapi.core.models.testImplicits.pathUpdater
+
+      root.updatePaths()
+      val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+    }
+
+    val expectedRootMaster: ApiReference = ApiReference(label = Some("0"), href = Some("/"))
+    val expectedNode10Master: ApiReference = ApiReference(label = Some("10"), href = Some("/10/"))
+    val expectedNode11Master: ApiReference = ApiReference(label = Some("11"), href = Some("/11/"))
+
+    "calculate `root` as master for the root channel." in new AutomaticFlaggedMasterScope {
+      converter.calculateMaster(root) mustBe Some(expectedRootMaster)
+    }
+
+    "calculate `node10` as master for itself" in new AutomaticFlaggedMasterScope {
+      converter.calculateMaster(node10) mustBe Some(expectedNode10Master)
+    }
+
+    "calculate `node10` as master for every direct child of `node10`" in new AutomaticFlaggedMasterScope {
+      converter.calculateMaster(node100) mustBe Some(expectedNode10Master)
+    }
+
+    "calculate `node10` as master for every child-child (yo dawg) of `node10`" in new AutomaticFlaggedMasterScope {
+      converter.calculateMaster(node1000) mustBe Some(expectedNode10Master)
+    }
+
+    "calculate `node11` as master for itself" in new AutomaticFlaggedMasterScope {
+      converter.calculateMaster(node11) mustBe Some(expectedNode11Master)
+    }
   }
 
-  val expectedRootMaster: ApiReference = ApiReference(label = Some("0"), href = Some("/"))
-  val expectedNode10Master: ApiReference = ApiReference(label = Some("10"), href = Some("/10/"))
-  val expectedNode11Master: ApiReference = ApiReference(label = Some("11"), href = Some("/11/"))
+  "Master Channel Calculator: Manual flagged" must {
 
-  "Master Channel Calculator" must "calculate `root` as master for the root channel." in new TestScope {
-    converter.calculateMaster(root) shouldBe Some(expectedRootMaster)
+    //noinspection ScalaStyle
+    trait ManualFlaggedMasterScope {
+      /**
+        * Info:
+        * -A- == automatically a master channel (first level)
+        * -M- == manual set as master channel (CMCF GUI)
+        *
+        * {{{
+        *      (      0 -A- [root]     )
+        *       |               |
+        *      (10 -A-)        (11 -A-)
+        *       |
+        *      (100 -M-)
+        *       |
+        *      (1000)
+        *       |
+        *      (10000)
+        * }}}
+        */
+      val node10000 = emptyWithId(10000)
+      val node1000 = emptyWithIdAndChildren(1000, Seq(node10000))
+      val node100 = emptyWithIdAndChildrenAndConfig(100, Seq(node1000), withMaster(true))
+      val node10 = emptyWithIdAndChildren(10, Seq(node100))
+
+      val node11 = emptyWithIdAndChildren(11, Nil)
+
+      val root = emptyWithIdAndChildren(0, Seq(node10, node11))
+
+      root.updateParentRelations()
+
+      import de.welt.contentapi.core.models.testImplicits.pathUpdater
+
+      root.updatePaths()
+      val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+    }
+
+    val expectedRootMaster: ApiReference = ApiReference(label = Some("0"), href = Some("/"))
+    val expectedNode10Master: ApiReference = ApiReference(label = Some("10"), href = Some("/10/"))
+    val expectedNode100Master: ApiReference = ApiReference(label = Some("100"), href = Some("/10/100/"))
+    val expectedNode11Master: ApiReference = ApiReference(label = Some("11"), href = Some("/11/"))
+
+    "calculate `root` as master for the root channel." in new ManualFlaggedMasterScope {
+      converter.calculateMaster(root) mustBe Some(expectedRootMaster)
+    }
+
+    "calculate `node10` as master for itself (automatic flagged)" in new ManualFlaggedMasterScope {
+      converter.calculateMaster(node10) mustBe Some(expectedNode10Master)
+    }
+
+    "calculate `node100` as master for itself (manually flagged)" in new ManualFlaggedMasterScope {
+      converter.calculateMaster(node100) mustBe Some(expectedNode100Master)
+    }
+
+    "calculate `node100` as master for every direct child of `node100`" in new ManualFlaggedMasterScope {
+      converter.calculateMaster(node1000) mustBe Some(expectedNode100Master)
+    }
+
+    "calculate `node100` as master for every child-child (yo dawg) of `node100`" in new ManualFlaggedMasterScope {
+      converter.calculateMaster(node10000) mustBe Some(expectedNode100Master)
+    }
+
+    "calculate `node11` as master for itself" in new ManualFlaggedMasterScope {
+      converter.calculateMaster(node11) mustBe Some(expectedNode11Master)
+    }
   }
-  it must "calculate `node10` as master for itself" in new TestScope {
-    converter.calculateMaster(node10) shouldBe Some(expectedNode10Master)
-  }
-  it must "calculate `node10` as master for every direct child of `node10`" in new TestScope {
-    converter.calculateMaster(node100) shouldBe Some(expectedNode10Master)
-  }
-  it must "calculate `node10` as master for every child-child (yo dawg) of `node10`" in new TestScope {
-    converter.calculateMaster(node1000) shouldBe Some(expectedNode10Master)
-  }
-  it must "calculate `node11` as master for itself" in new TestScope {
-    converter.calculateMaster(node11) shouldBe Some(expectedNode11Master)
-  }
+
 
 }

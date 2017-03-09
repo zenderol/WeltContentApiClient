@@ -207,8 +207,10 @@ case class RawChannelId(var path: String,
   * @param theme      the optional theme for the channel. This is a developer configuration.
   * @param commercial commercial configuration for the channel. Used some override logic.
   * @param content    content query configuration for the whole channel and all sub-channel (children).
-  * @param brand      flags a channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
+  * @param brand      flags the channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
   *                   like Icon ('/icon/') with different UI elements or layouts.
+  * @param master     flags the channel as a 'master' channel. All it's sub-channels (children) get this channel
+  *                   as it's master. E.g. `/wirtschaft/bilanz/` is flagged as a master channel
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
@@ -216,7 +218,8 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
                                    content: Option[RawChannelContentConfiguration] = None,
-                                   brand: Boolean = false)
+                                   brand: Boolean = false,
+                                   master: Boolean = false)
 
 /**
   * The (ASMI) ad tag is a string with the root section and type of the page (section or content page).
@@ -418,10 +421,10 @@ case class RawChannelStageCommercial(index: Int, format: String, hidden: Boolean
   * Curated Stage to be configured in CMCF.
   * Allows placing curated Stages from Papyrus on Channels
   *
-  * @param label optional label to be rendered above the stage, e.g. name of channel
-  * @param layout optional layout name to be used for the stage, e.g. "classic-ressort" else will be default layout
+  * @param label                 optional label to be rendered above the stage, e.g. name of channel
+  * @param layout                optional layout name to be used for the stage, e.g. "classic-ressort" else will be default layout
   * @param curatedSectionMapping the id of the curated section in Papyrus, e.g. "frontpage" or "icon"
-  * @param curatedStageMapping the id of the curated stage within a curated section, e.g. "sport", "uhren", or "iconist"
+  * @param curatedStageMapping   the id of the curated stage within a curated section, e.g. "sport", "uhren", or "iconist"
   */
 case class RawChannelStageCurated(index: Int,
                                   label: Option[String],

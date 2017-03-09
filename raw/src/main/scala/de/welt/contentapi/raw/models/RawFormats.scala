@@ -147,7 +147,8 @@ object RawReads {
           theme = underlying.get("theme").map(_.as[RawChannelTheme]),
           commercial = underlying.get("commercial").map(_.as[RawChannelCommercial]).getOrElse(defaults.commercial),
           content = underlying.get("content").map(_.as[RawChannelContentConfiguration]),
-          brand = underlying.get("brand").map(_.as[Boolean]).getOrElse(defaults.brand)
+          brand = underlying.get("brand").map(_.as[Boolean]).getOrElse(defaults.brand),
+          master = underlying.get("master").map(_.as[Boolean]).getOrElse(defaults.master)
         ))
       case err@_ ⇒ jsErrorInvalidJson(err)
     }

@@ -65,12 +65,13 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
 
   private[converter] def calculateMaster(rawChannel: RawChannel): Option[ApiReference] = {
     val rawChannelToApiReference: RawChannel ⇒ Option[ApiReference] = c ⇒ Some(ApiReference(label = Some(c.id.label), href = Some(c.id.path)))
-    val themeInheritanceAction: InheritanceAction[Option[ApiReference]] = InheritanceAction[Option[ApiReference]](
+    val masterChannelInheritanceAction: InheritanceAction[Option[ApiReference]] = InheritanceAction[Option[ApiReference]](
       forRoot = c ⇒ rawChannelToApiReference.apply(c.root),
       forFallback = _ ⇒ None,
       forMatching = rawChannelToApiReference
     )
-    inheritanceCalculator.forChannel[Option[ApiReference]](rawChannel, themeInheritanceAction, c ⇒ c.parent.contains(c.root))
+    val predicate: RawChannel ⇒ Boolean = c ⇒ c.parent.contains(c.root) || c.config.master
+    inheritanceCalculator.forChannel[Option[ApiReference]](rawChannel, masterChannelInheritanceAction, predicate)
   }
 
   private[converter] def calculateBrand(rawChannel: RawChannel): Boolean = {
@@ -94,8 +95,8 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
 
   private[converter] def apiMetaConfigurationFromRawChannel(rawChannel: RawChannel): Option[ApiMetaConfiguration] = {
     rawChannel.config.metadata.map(metadata => ApiMetaConfiguration(
-      title = metadata.title,
-      description = metadata.description,
+      title = metadata.title.filter(_.nonEmpty),
+      description = metadata.description.filter(_.nonEmpty),
       tags = metadata.keywords,
       contentMetaRobots = metadata.contentRobots.map(apiMetaRobotsFromRawChannelMetaRobotsTag),
       sectionMetaRobots = metadata.sectionRobots.map(apiMetaRobotsFromRawChannelMetaRobotsTag)
