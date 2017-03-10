@@ -128,10 +128,9 @@ object ChannelTools extends Loggable {
       val addedByOther = update.children.diff(current.children)
 
       val moved = {
-        lazy val currentRoot = current.root
 
         // if we can find it in our tree, it hasn't been added but only moved
-        val notAddedButMoved = addedByOther.filter { elem ⇒ currentRoot.findByEscenicId(elem.id.escenicId).isDefined }
+        val notAddedButMoved = addedByOther.flatMap { e ⇒ current.root.findByEscenicId(e.id.escenicId) }
 
         lazy val otherRoot = update.root
         // if we can find the deleted elem, it has been moved

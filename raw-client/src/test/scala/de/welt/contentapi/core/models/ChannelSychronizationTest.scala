@@ -66,8 +66,8 @@ class ChannelSyncTest extends PlaySpec {
     object threeChildren {
 
       /**
-        * .  (0)
-        * /   |   \
+        * .     (0)
+        * .  /   |   \
         * (1)   (2)   (3)*
         *
         */
@@ -85,11 +85,11 @@ class ChannelSyncTest extends PlaySpec {
       val copyOf2 = child2.copy(children = Seq(copyOf3))
 
       /**
-        * (0)
-        * /  \
-        * (1)  (2)
-        * |
-        * (3)*
+        * .     (0)
+        * .    /  \
+        * .  (1)  (2)
+        * .   |
+        * .  (3)*
         */
       val root = TestHelper.raw.channel.emptyWithIdAndChildren(0, children = Seq(child1, copyOf2))
       root.updateParentRelations()
@@ -180,6 +180,18 @@ class ChannelSyncTest extends PlaySpec {
         root.children must not contain child3
         root.findByEscenicId(2).map(_.children).getOrElse(Nil) must contain(movedChild.copyOf3)
         root.findByEscenicId(3) must ===(Some(child3))
+        val Some(x) = root.findByEscenicId(3)
+        x.eq(child3) must ===(true)
+      }
+
+      "inverse apply moved items to the tree" in new Fixture {
+        val root = movedChild.root
+        ChannelTools.merge(root, threeChildren.root)
+
+        root.children must have size 3
+        root.findByEscenicId(3) must ===(Some(child3))
+        val Some(x) = root.findByEscenicId(3)
+        x.eq(movedChild.copyOf3) must ===(true)
       }
 
       "maintain the data for all the nodes" in new Fixture {
