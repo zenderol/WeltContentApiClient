@@ -206,6 +206,7 @@ object RawWrites {
         Json.toJson(c)(rawChannelStageCommercialWrites)
       case c: RawChannelStageCurated =>
         Json.toJson(c)(rawChannelStageCuratedWrites)
+      case err@_ ⇒ throw new IllegalStateException(s"[DEV-ERROR] Missing case-matching for new RawChannelStage: $err")
     }
   }
 

@@ -45,7 +45,10 @@ object MyBuild extends Build {
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
       "org.mockito" % "mockito-core" % "1.10.19" % Test,
-      "com.typesafe.play" %% "play-cache" % playVersion % Provided
+      "com.typesafe.play" %% "play-cache" % playVersion % Provided,
+      // Info:
+      // Prevent compile warnings of: `Class javax.annotation.Nullable not found - continuing with a stub.`
+      "com.google.code.findbugs" % "jsr305" % "3.0.1" % Compile
     )
   )
   val clientDependencySettings = Seq(
