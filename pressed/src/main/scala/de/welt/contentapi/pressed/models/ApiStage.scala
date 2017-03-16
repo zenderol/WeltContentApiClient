@@ -19,11 +19,13 @@ case class ApiStage(index: Int,
 /**
   * @param layout      Name of the layout for the stage, e.g. 'channel-hero', 'multimedia' or 'hidden'
   * @param label       Label to show above a stage
+  * @param logo        A optional logo for the stage. eg.g `/icon/`
   * @param references  References to render with href and label, e.g. Sub Ressorts
   * @param commercials contains the format ids for the Ads
   */
 case class ApiStageConfiguration(layout: String = "Default",
                                  label: Option[String],
+                                 logo: Option[String] = None,
                                  references: Option[Seq[ApiReference]] = None,
                                  commercials: Option[Seq[String]] = None) {
   lazy val unwrappedCommercials: Seq[String] = commercials.getOrElse(Nil)

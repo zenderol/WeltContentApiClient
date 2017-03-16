@@ -422,12 +422,14 @@ case class RawChannelStageCommercial(index: Int, format: String, hidden: Boolean
   * Allows placing curated Stages from Papyrus on Channels
   *
   * @param label                 optional label to be rendered above the stage, e.g. name of channel
+  * @param logo                  optional logo to be rendered next to the label, e.g. `/icon/` stage logos.
   * @param layout                optional layout name to be used for the stage, e.g. "classic-ressort" else will be default layout
   * @param curatedSectionMapping the id of the curated section in Papyrus, e.g. "frontpage" or "icon"
   * @param curatedStageMapping   the id of the curated stage within a curated section, e.g. "sport", "uhren", or "iconist"
   */
 case class RawChannelStageCurated(index: Int,
                                   label: Option[String],
+                                  logo: Option[String],
                                   layout: Option[String],
                                   curatedSectionMapping: String,
                                   curatedStageMapping: String,
