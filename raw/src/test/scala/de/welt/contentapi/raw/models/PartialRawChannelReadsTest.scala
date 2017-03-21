@@ -1,19 +1,30 @@
 package de.welt.contentapi.raw.models
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json}
+import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
 
 class PartialRawChannelReadsTest extends PlaySpec {
 
   "PartialRawChannelReads" should {
 
     trait Fixture {
-      private val channelStage = RawChannelStage(Json.toJson(
-        RawChannelStageCustomModule(
-          index = 1,
-          module = "module",
-          overrides = Some(Map("section" → "/foo/"))))(RawWrites.rawChannelStageCustomModuleWrites))
-      val j = JsObject(Map(
+
+      import RawReads.rawChannelStageCustomModuleReads
+      import RawWrites.rawChannelStageCustomModuleWrites
+
+      val originalModuleName = "module-for-partial-raw-channel-reads"
+      val originalIndex = 99
+      val originalOverrides = Some(Map("section" → "/foo/"))
+
+      private val customModule = RawChannelStageCustomModule(
+        index = originalIndex,
+        module = originalModuleName,
+        overrides = originalOverrides)
+
+      val rawStageAsJson: JsValue = Json.toJson(customModule)
+      private val channelStage = Json.fromJson(rawStageAsJson).asOpt.orNull
+
+      val rawChannelAsJsObject: JsObject = JsObject(Map(
         "id" → JsObject(Map(
           "path" → JsString("le-path"),
           "label" → JsString("id"),
@@ -27,12 +38,16 @@ class PartialRawChannelReadsTest extends PlaySpec {
       ))
     }
 
-    "read json with the no children reads" in new Fixture {
-      val ch: RawChannel = j.result.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
+    "have `type` field in Json" in new Fixture {
+      rawStageAsJson.toString must include(s""""type":"${RawChannelStage.TypeCustomModule}"""")
+    }
+
+    "read json with `no children reads`" in new Fixture {
+      val ch: RawChannel = rawChannelAsJsObject.result.validate[RawChannel](PartialRawChannelReads.noChildrenReads).get
 
       ch.id.path must be("le-path")
       val Some(stages) = ch.stageConfiguration.flatMap(_.stages)
-      stages must be(Seq(RawChannelStageCustomModule(index = 1, module = "module", overrides = Some(Map("section" → "/foo/")))))
+      stages must be(Seq(RawChannelStageCustomModule(index = originalIndex, module = originalModuleName , overrides = originalOverrides)))
 
     }
 

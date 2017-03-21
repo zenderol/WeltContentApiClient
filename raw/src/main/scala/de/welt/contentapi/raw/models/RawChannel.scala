@@ -351,69 +351,48 @@ case class RawChannelContentConfiguration(subTypeQueryForText: Option[String] = 
 }
 
 /**
-  * type is the the identifier for case class matching
   * index is for sorting the stages according to cmcf order
-  * hidden allows stages to be configured but not the be rendered
+  * `type` is the identifier for case class matching
+  * hidden allows stages to be configured but not rendered
   */
 sealed trait RawChannelStage {
-  val `type`: String
-  val index: Int
-  val hidden: Boolean
-}
-
-object RawChannelStage {
-  val module = "module"
-  val customModule = "custom-module"
-  val commercial = "commercial"
-  val curated = "curated"
-  val unknown = "unknown"
-
-  import de.welt.contentapi.raw.models.RawFormats.{rawChannelStageCommercialFormat, rawChannelStageContentFormat, rawChannelStageCuratedFormat}
-
-  // this is only used by tests
-  def apply(data: JsValue): RawChannelStage = {
-    ((data \ "type").as[String] match {
-      case RawChannelStage.customModule => Json.fromJson[RawChannelStageCustomModule](data)
-      case RawChannelStage.module => Json.fromJson[RawChannelStageCustomModule](data) // getting rid of the "module" to simplify cmcf ui
-      case RawChannelStage.commercial => Json.fromJson[RawChannelStageCommercial](data)
-      case RawChannelStage.curated => Json.fromJson[RawChannelStageCurated](data)
-    }) match {
-      case JsSuccess(value, _) ⇒ value
-      case JsError(err) ⇒ throw new IllegalArgumentException(err.toString())
-    }
-  }
+  def index: Int
+  def `type`: String
+  def hidden: Boolean
 }
 
 /**
-  * A module is a stage template, consisting of content search and layout configuration
-  * The RawChannelStageModule was removed to simplify the CMCF UI.
-  * Every module identifier leads to a default configuration for content and layout
+  * This is the model for God-Mode Stages from CMCF
+  * (The RawChannelStageModule was removed to be able to simplify the CMCF UI.)
+  * The value for `module` leads to a configuration for content and layout
   * Overrides for the defaults can be done in CMCF, see possible values below at the overrides parameter
   *
-  * @param module     identifier for the used Module, e.g. ChannelHero
+  * @param module     identifier for the referenced Module, e.g. ChannelHero
   * @param references optional section references. Example: Link to Mediathek A-Z.
   * @param overrides  optional overrides for the Stage, e.g. type, subType, sectionPath
   *                   Currently allowed/mapped values are: `sectionPath`, `limit`, `layout`, `label`
   */
-case class RawChannelStageCustomModule(index: Int,
+case class RawChannelStageCustomModule(override val index: Int,
+                                       override val `type`: String = RawChannelStage.TypeCustomModule,
+                                       override val hidden: Boolean = false,
                                        module: String,
-                                       hidden: Boolean = false,
                                        references: Option[Seq[RawSectionReference]] = None,
-                                       overrides: Option[Map[String, String]] = None,
-                                       `type`: String = RawChannelStage.customModule
-                                      ) extends RawChannelStage {
+                                       overrides: Option[Map[String, String]] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 }
 
 /**
   * A RawChannelStageCommercial is a stage only consisting of a commercial.
-  * Before commercials were attached to other stages. When the stages had no content the commercial wasn't rendered as well.
+  * In earlier days commercials were only attached to other stages.
+  * When the stages had no content the commercial wasn't rendered as well.
   * Today we have the commercials separately to always render the commercials independently from the content.
   *
-  * @param index  index of the stage (ordering)
   * @param format identifier of Advertorial, e.g. Billboard
   */
-case class RawChannelStageCommercial(index: Int, format: String, hidden: Boolean = false, `type`: String = RawChannelStage.commercial) extends RawChannelStage {
+case class RawChannelStageCommercial(override val index: Int,
+                                     override val `type`: String = RawChannelStage.TypeCommercial,
+                                     override val hidden: Boolean = false,
+                                     format: String) extends RawChannelStage {
 }
 
 
@@ -421,21 +400,22 @@ case class RawChannelStageCommercial(index: Int, format: String, hidden: Boolean
   * Curated Stage to be configured in CMCF.
   * Allows placing curated Stages from Papyrus on Channels
   *
-  * @param label                 optional label to be rendered above the stage, e.g. name of channel
-  * @param logo                  optional logo to be rendered next to the label, e.g. `/icon/` stage logos.
-  * @param layout                optional layout name to be used for the stage, e.g. "classic-ressort" else will be default layout
   * @param curatedSectionMapping the id of the curated section in Papyrus, e.g. "frontpage" or "icon"
   * @param curatedStageMapping   the id of the curated stage within a curated section, e.g. "sport", "uhren", or "iconist"
+  * @param layout                optional layout name to be used for the stage, e.g. "classic-ressort" else will be default layout
+  * @param label                 optional label to be rendered above the stage, e.g. name of channel
+  * @param logo                  optional logo to be rendered next to the label, e.g. `/icon/` stage logos.
+  * @param references            optional Link(s) to external or internal, absolute or relative URLs
   */
-case class RawChannelStageCurated(index: Int,
-                                  label: Option[String],
-                                  logo: Option[String],
-                                  layout: Option[String],
+case class RawChannelStageCurated(override val index: Int,
+                                  override val `type`: String = RawChannelStage.TypeCurated,
+                                  override val hidden: Boolean = false,
                                   curatedSectionMapping: String,
                                   curatedStageMapping: String,
-                                  hidden: Boolean = false,
-                                  references: Option[Seq[RawSectionReference]] = None,
-                                  `type`: String = RawChannelStage.curated) extends RawChannelStage {
+                                  layout: Option[String],
+                                  label: Option[String],
+                                  logo: Option[String],
+                                  references: Option[Seq[RawSectionReference]] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 
 }
@@ -444,8 +424,13 @@ case class RawChannelStageCurated(index: Int,
   * Unknown Modules will be parsed as [[RawChannelStageIgnored]] for future-proof Json Parsing
   * Use Case: CMCF can be rolled out with new Modules that are not yet known to Digger
   */
-case class RawChannelStageIgnored(index: Int) extends RawChannelStage {
-  override val `type`: String = RawChannelStage.unknown
-  override val hidden: Boolean = true
+case class RawChannelStageIgnored(override val index: Int,
+                                  override val `type`: String = RawChannelStage.TypeUnknown,
+                                  override val hidden: Boolean = true) extends RawChannelStage
+object RawChannelStage {
+  val TypeModule = "module"
+  val TypeCustomModule = "custom-module"
+  val TypeCommercial = "commercial"
+  val TypeCurated = "curated"
+  val TypeUnknown = "unknown"
 }
-

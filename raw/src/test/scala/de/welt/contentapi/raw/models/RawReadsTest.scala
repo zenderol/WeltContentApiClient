@@ -71,11 +71,11 @@ class RawReadsTest extends PlaySpec {
                             |  "type": "my-fance-new-module",
                             |  "layout": "fancy-layout"
                             |}"""".stripMargin
-      val unknownStage = Json.parse(unknownModule)
+      val unknownStage: RawChannelStage = Json.parse(unknownModule)
         .validate[RawChannelStage](rawChannelStageReads)
         .asOpt
         .get
-      unknownStage.`type` mustBe RawChannelStage.unknown
+      unknownStage.`type` mustBe RawChannelStage.TypeUnknown
       unknownStage.hidden mustBe true
     }
 

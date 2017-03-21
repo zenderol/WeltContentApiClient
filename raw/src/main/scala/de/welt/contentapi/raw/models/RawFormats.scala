@@ -18,7 +18,7 @@ object RawFormats {
   implicit lazy val rawChannelStageConfigurationFormat: Format[RawChannelStageConfiguration] = Format[RawChannelStageConfiguration](rawChannelStageConfigurationFormat, rawChannelStageConfigurationFormat)
   implicit lazy val rawChannelCommercialFormat: Format[RawChannelCommercial] = Format[RawChannelCommercial](rawChannelCommercialReads, rawChannelCommercialWrites)
 
-  implicit lazy val rawChannelStageContentFormat: Format[RawChannelStageCustomModule] = Format[RawChannelStageCustomModule](rawChannelStageContentReads, rawChannelStageCustomModuleWrites)
+  implicit lazy val rawChannelStageCustomFormat: Format[RawChannelStageCustomModule] = Format[RawChannelStageCustomModule](rawChannelStageCustomModuleReads, rawChannelStageCustomModuleWrites)
   implicit lazy val rawChannelStageIgnoredFormat: Format[RawChannelStageIgnored] = Format[RawChannelStageIgnored](rawChannelStageIgnoredReads, rawChannelStageIgnoredWrites)
   implicit lazy val rawChannelStageCuratedFormat: Format[RawChannelStageCurated] = Format[RawChannelStageCurated](rawChannelStageCuratedReads, rawChannelStageCuratedWrites)
   implicit lazy val rawChannelStageCommercialFormat: Format[RawChannelStageCommercial] = Format[RawChannelStageCommercial](rawChannelStageCommercialReads, rawChannelStageCommercialWrites)
@@ -112,21 +112,32 @@ object RawReads {
     }
   }
 
-  implicit lazy val rawChannelStageContentReads: Reads[RawChannelStageCustomModule] = Json.reads[RawChannelStageCustomModule]
-  implicit lazy val rawChannelStageIgnoredReads: Reads[RawChannelStageIgnored] = Json.reads[RawChannelStageIgnored]
-  implicit lazy val rawChannelStageCuratedReads: Reads[RawChannelStageCurated] = Json.reads[RawChannelStageCurated]
+  implicit lazy val rawChannelStageCustomModuleReads: Reads[RawChannelStageCustomModule] = Json.reads[RawChannelStageCustomModule]
   implicit lazy val rawChannelStageCommercialReads: Reads[RawChannelStageCommercial] = Json.reads[RawChannelStageCommercial]
+  implicit lazy val rawChannelStageCuratedReads: Reads[RawChannelStageCurated] = Json.reads[RawChannelStageCurated]
+
+  implicit lazy val rawChannelStageIgnoredReads = new Reads[RawChannelStageIgnored] {
+    override def reads(json: JsValue): JsResult[RawChannelStageIgnored] = json match {
+      case JsObject(underlying) ⇒ underlying
+        .get("index").map(_.as[Int])
+        .map(index ⇒ JsSuccess(RawChannelStageIgnored(index)))
+        .getOrElse(jsErrorInvalidData("RawChannelStageIgnored", json))
+      case err@_ ⇒ jsErrorInvalidJson(err)
+    }
+  }
+
   implicit lazy val rawChannelStageReads = new Reads[RawChannelStage] {
     override def reads(json: JsValue): JsResult[RawChannelStage] = {
+      println(s"[rawChannelStageReads] $json ")
       (json \ "type").as[String] match {
-        case RawChannelStage.customModule =>
+        case RawChannelStage.TypeCustomModule =>
           Json.fromJson[RawChannelStageCustomModule](json)
-        case RawChannelStage.module =>
+        case RawChannelStage.TypeModule =>
           Json.fromJson[RawChannelStageCustomModule](json)
-        case RawChannelStage.commercial =>
-          Json.fromJson[RawChannelStageCommercial](json)
-        case RawChannelStage.curated ⇒
+        case RawChannelStage.TypeCurated ⇒
           Json.fromJson[RawChannelStageCurated](json)
+        case RawChannelStage.TypeCommercial =>
+          Json.fromJson[RawChannelStageCommercial](json)
         case _ ⇒ Json.fromJson[RawChannelStageIgnored](json)
       }
     }
@@ -194,10 +205,48 @@ object RawWrites {
   implicit lazy val rawChannelTaboolaCommercialWrites: Writes[RawChannelTaboolaCommercial] = Json.writes[RawChannelTaboolaCommercial]
   implicit lazy val rawChannelCommercialWrites: Writes[RawChannelCommercial] = Json.writes[RawChannelCommercial]
 
-  implicit lazy val rawChannelStageCustomModuleWrites: Writes[RawChannelStageCustomModule] = Json.writes[RawChannelStageCustomModule]
-  implicit lazy val rawChannelStageIgnoredWrites: Writes[RawChannelStageIgnored] = Json.writes[RawChannelStageIgnored]
-  implicit lazy val rawChannelStageCuratedWrites: Writes[RawChannelStageCurated] = Json.writes[RawChannelStageCurated]
-  implicit lazy val rawChannelStageCommercialWrites: Writes[RawChannelStageCommercial] = Json.writes[RawChannelStageCommercial]
+  implicit lazy val rawChannelStageCustomModuleWrites = new Writes[RawChannelStageCustomModule] {
+    def writes(custom: RawChannelStageCustomModule): JsObject = Json.obj(
+    "index" -> custom.index,
+    "type"  → RawChannelStage.TypeCustomModule,
+    "hidden" → custom.hidden,
+    "module" → custom.module,
+    "references" → custom.references,
+    "overrides" → custom.overrides
+    )
+  }
+
+  implicit lazy val rawChannelStageCommercialWrites = new Writes[RawChannelStageCommercial] {
+    def writes(commercial: RawChannelStageCommercial): JsObject = Json.obj(
+    "index" -> commercial.index,
+    "type"  → RawChannelStage.TypeCommercial,
+    "hidden" → commercial.hidden,
+    "format" → commercial.format
+    )
+  }
+
+  implicit lazy val rawChannelStageCuratedWrites = new Writes[RawChannelStageCurated] {
+    def writes(curated: RawChannelStageCurated): JsObject = Json.obj(
+    "index" -> curated.index,
+    "type"  → RawChannelStage.TypeCurated,
+    "hidden" → curated.hidden,
+    "curatedSectionMapping" → curated.curatedSectionMapping,
+    "curatedStageMapping" → curated.curatedStageMapping,
+    "layout" → curated.layout,
+    "label" → curated.label,
+    "logo" → curated.logo,
+    "references" → curated.references
+    )
+  }
+
+  implicit lazy val rawChannelStageIgnoredWrites = new Writes[RawChannelStageIgnored] {
+    def writes(ignored: RawChannelStageIgnored): JsObject = Json.obj(
+      "index" -> ignored.index,
+      "type"  → RawChannelStage.TypeUnknown,
+      "hidden" → true
+    )
+  }
+
   implicit lazy val rawChannelStageWrites = new Writes[RawChannelStage] {
     override def writes(o: RawChannelStage): JsValue = o match {
       case r: RawChannelStageCustomModule =>
@@ -211,7 +260,6 @@ object RawWrites {
   }
 
   implicit lazy val rawChannelThemeWrites: Writes[RawChannelTheme] = Json.writes[RawChannelTheme]
-
   implicit lazy val rawMetadataWrites: Writes[RawMetadata] = Json.writes[RawMetadata]
   implicit lazy val rawChannelConfigurationWrites: Writes[RawChannelConfiguration] = Json.writes[RawChannelConfiguration]
 }

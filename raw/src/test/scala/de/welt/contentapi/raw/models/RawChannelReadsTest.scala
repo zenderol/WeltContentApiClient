@@ -1,19 +1,28 @@
 package de.welt.contentapi.raw.models
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json}
+import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
 
 class RawChannelReadsTest extends PlaySpec {
 
   "RawChannelReads" should {
+    import RawWrites.rawChannelStageCustomModuleWrites
+    import RawReads.rawChannelStageCustomModuleReads
 
     trait Fixture {
-      private val channelStage = RawChannelStage(Json.toJson(
-        RawChannelStageCustomModule(
-          index = 1,
-          module = "module",
-          overrides = Some(Map("section" → "/foo/"))))(RawWrites.rawChannelStageCustomModuleWrites))
-      val j = JsObject(Map(
+      val moduleValue = "module-for-raw-channel-reads"
+      val overrides = Some(Map("section" → "/foo/"))
+      val index = 1
+
+      val customModule: RawChannelStageCustomModule = RawChannelStageCustomModule(
+        index = index,
+        module = moduleValue,
+        overrides = overrides)
+
+      val stageAsJson: JsValue = Json.toJson(customModule)
+      val rawStageFromJson: RawChannelStageCustomModule = Json.fromJson(stageAsJson).asOpt.orNull
+
+      val rawChannelAsJsObject: JsObject = JsObject(Map(
         "id" → JsObject(Map(
           "path" → JsString("le-path"),
           "label" → JsString("id"),
@@ -22,17 +31,26 @@ class RawChannelReadsTest extends PlaySpec {
         "config" → Json.toJson(RawChannelConfiguration())(RawWrites.rawChannelConfigurationWrites),
         "metadata" → Json.toJson(RawMetadata())(RawWrites.rawMetadataWrites),
         "stageConfiguration" → Json.toJson(RawChannelStageConfiguration(
-          stages = Some(Seq(channelStage))
+          stages = Some(Seq(rawStageFromJson))
         ))(RawWrites.rawChannelStageConfigurationWrites)
       ))
     }
 
+    "have `type` field in Json" in new Fixture {
+      stageAsJson.toString must include(s""""type":"${RawChannelStage.TypeCustomModule}"""")
+    }
+
+    "RawChannelStage back from Json must have type" in new Fixture {
+      rawStageFromJson.`type` mustBe RawChannelStage.TypeCustomModule
+    }
+
     "read json" in new Fixture {
-      val ch: RawChannel = j.result.validate[RawChannel](RawReads.rawChannelReads).get
+      val ch: RawChannel = rawChannelAsJsObject.result.validate[RawChannel](RawReads.rawChannelReads).get
 
       ch.id.path must be("le-path")
       val Some(stages) = ch.stageConfiguration.flatMap(_.stages)
-      stages must be(Seq(RawChannelStageCustomModule(index = 1, module = "module", overrides = Some(Map("section" → "/foo/")))))
+
+      stages must be(Seq(RawChannelStageCustomModule(index = index, module = moduleValue, overrides = overrides)))
 
     }
 
