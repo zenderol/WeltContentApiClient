@@ -14,9 +14,8 @@ object exceptions extends Status {
     override def toString: String = super.toString
   }
 
-  case class HttpRedirectException(url: String, statusPhrase: String, statusCode: Int = MOVED_PERMANENTLY)
-    extends HttpStatusCodeException (statusCode, statusPhrase, url)
-  case class HttpClientErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
+  case class HttpRedirectException(url: String, statusPhrase: String) extends HttpStatusCodeException(MOVED_PERMANENTLY, statusPhrase, url)
+  case class HttpClientErrorException(statusCode: Int, statusPhrase: String, url: String, cacheHeader: Option[String] = None) extends HttpStatusCodeException(statusCode, statusPhrase, url)
   case class HttpServerErrorException(statusCode: Int, statusPhrase: String, url: String) extends HttpStatusCodeException(statusCode, statusPhrase, url)
 
 }

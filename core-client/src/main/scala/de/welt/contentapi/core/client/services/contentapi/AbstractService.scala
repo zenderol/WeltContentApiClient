@@ -8,14 +8,14 @@ import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.client.utilities.Strings
 import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
-import play.api.http.Status
+import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsError, JsLookupResult, JsResult, JsSuccess}
 import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest}
 import play.api.mvc.Headers
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AbstractService[T] extends Strings with Loggable with Status {
+trait AbstractService[T] extends Strings with Loggable with Status with HeaderNames {
 
   val HEADER_API_KEY = "x-api-key"
 
@@ -91,7 +91,7 @@ trait AbstractService[T] extends Strings with Loggable with Status {
         response.status match {
           case OK ⇒ parseJson(response.json.result)
           case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
-          case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url)
+          case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url, response.header(CACHE_CONTROL))
           case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
         }
       }

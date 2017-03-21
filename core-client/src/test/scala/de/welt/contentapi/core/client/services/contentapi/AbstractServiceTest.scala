@@ -11,7 +11,7 @@ import org.mockito.Mockito.{verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
-import play.api.http.Status
+import play.api.http.{HeaderNames, Status}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsLookupResult, JsResult, JsString}
 import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest, WSResponse}
@@ -158,18 +158,19 @@ class AbstractServiceTest extends PlaySpec
       the[HttpRedirectException] thrownBy {
         Await.result(result, 10.second)
       } must matchPattern {
-        case HttpRedirectException(_, _, _) ⇒
+        case _: HttpRedirectException ⇒
       }
     }
 
     "will throw a ClientErrorException when WS status is 404" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(NOT_FOUND)
+      when(responseMock.header(HeaderNames.CACHE_CONTROL)).thenReturn(Some("cache-header-value"))
 
       val result: Future[String] = new TestService().get(Seq("requested-id"), Seq.empty)
       the[HttpClientErrorException] thrownBy {
         Await.result(result, 10.second)
       } must matchPattern {
-        case HttpClientErrorException(NOT_FOUND, _, _) ⇒
+        case HttpClientErrorException(NOT_FOUND, _, _, Some("cache-header-value")) ⇒
       }
     }
 
