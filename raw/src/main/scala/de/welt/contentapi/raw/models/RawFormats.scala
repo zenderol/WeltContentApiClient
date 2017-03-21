@@ -128,7 +128,6 @@ object RawReads {
 
   implicit lazy val rawChannelStageReads = new Reads[RawChannelStage] {
     override def reads(json: JsValue): JsResult[RawChannelStage] = {
-      println(s"[rawChannelStageReads] $json ")
       (json \ "type").as[String] match {
         case RawChannelStage.TypeCustomModule =>
           Json.fromJson[RawChannelStageCustomModule](json)
