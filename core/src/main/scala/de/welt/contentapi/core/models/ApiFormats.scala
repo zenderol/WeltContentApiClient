@@ -13,6 +13,7 @@ object ApiFormats {
 
   implicit lazy val apiReferenceFormat: Format[ApiReference] = Format(apiReferenceReads, apiReferenceWrites)
   implicit lazy val apiOnwardFormat: Format[ApiOnward] = Format(apiOnwardReads, apiOnwardWrites)
+  implicit lazy val apiMetadataCatchUpFormat: Format[ApiMetadataCatchUp] = Format(apiMetadataCatchUpReads, apiMetadataCatchUpWrites)
   implicit lazy val apiMetadataFormat: Format[ApiMetadata] = Format(apiMetadataReads, apiMetadataWrites)
   implicit lazy val apiAssetFormat: Format[ApiAsset] = Format(apiAssetReads, apiAssetWrites)
   implicit lazy val apiSectionDataFormat: Format[ApiSectionData] = Format(apiSectionDataReads, apiSectionDataWrites)
@@ -28,6 +29,7 @@ object ApiFormats {
 object ApiReads {
   implicit lazy val apiReferenceReads: Reads[ApiReference] = Json.reads[ApiReference]
   implicit lazy val apiOnwardReads: Reads[ApiOnward] = Json.reads[ApiOnward]
+  implicit lazy val apiMetadataCatchUpReads: Reads[ApiMetadataCatchUp] = Json.reads[ApiMetadataCatchUp]
   implicit lazy val apiMetadataReads: Reads[ApiMetadata] = Json.reads[ApiMetadata]
   implicit lazy val apiSectionDataReads: Reads[ApiSectionData] = Json.reads[ApiSectionData]
   implicit lazy val apiAssetReads: Reads[ApiAsset] = Json.reads[ApiAsset]
@@ -42,6 +44,7 @@ object ApiReads {
 object ApiWrites {
   implicit lazy val apiReferenceWrites: Writes[ApiReference] = Json.writes[ApiReference]
   implicit lazy val apiOnwardWrites: Writes[ApiOnward] = Json.writes[ApiOnward]
+  implicit lazy val apiMetadataCatchUpWrites: Writes[ApiMetadataCatchUp] = Json.writes[ApiMetadataCatchUp]
   implicit lazy val apiMetadataWrites: Writes[ApiMetadata] = Json.writes[ApiMetadata]
   implicit lazy val apiAssetWrites: Writes[ApiAsset] = Json.writes[ApiAsset]
   implicit lazy val apiSectionDataWrites: Writes[ApiSectionData] = Json.writes[ApiSectionData]

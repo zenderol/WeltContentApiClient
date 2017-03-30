@@ -24,7 +24,6 @@ case class ApiResponse(content: ApiContent,
   * @param pages    total number of pages available
   * @param total    total number of items that match the search
   * @param results  search result of type [[ApiContent]]
-  *
   * @since 0.8
   */
 case class ApiSearchResponse(page: Int,
@@ -141,13 +140,23 @@ case class ApiAsset(`type`: String,
 /**
   * Some meta data of the content and transformation values of our services
   *
-  * @param validToDate Used for Video/Broadcast articles
+  * @param validToDate end of license - used for Video/Broadcast articles
+  * @param catchUp     CatchUp license interval for Broadcast articles
   */
-case class ApiMetadata(validToDate: String) {
+case class ApiMetadata(validToDate: String, catchUp: Option[ApiMetadataCatchUp] = None) {
   def asMap: Map[String, String] = Map(
     "validToDate" -> validToDate
   )
 }
+
+/**
+  * CatchUp License Interval for Broadcasts
+  *
+  * @param gte Start Date of License as Java.Instant as String in Zulu Timezone (GreaterThanOrEquals)
+  * @param lt  End Date of License as Java.Instant as String in Zulu Timezone (lowerThan)
+  * @since 0.12
+  */
+case class ApiMetadataCatchUp(gte: String, lt: String)
 
 /**
   * Escenic data of the Sections path the Content is published. This is only a internal escenic representation. Do not
