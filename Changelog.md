@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.13.0 (2017-03-31)
+
+#### Changes
+- [RAW] bugfix filter empty map values (overrides)
+- [RAW] bugfix correct json.writes of stages
+- [CORE] move `Strings.scala` to [UTILS]
+
+#### Breaking
+
+##### Change package for `Strings`
+
+**before**
+
+```
+de.welt.contentapi.core.client.utilities.Strings
+```
+
+**after**
+
+```
+de.welt.contentapi.utils.Strings
+```
+
+
 ## 0.12.0 (2017-03-09)
 
 #### Changes

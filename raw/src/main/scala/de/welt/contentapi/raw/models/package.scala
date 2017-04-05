@@ -1,6 +1,7 @@
 package de.welt.contentapi.raw
 
 import de.welt.contentapi.utils.Loggable
+import de.welt.contentapi.utils.Strings._
 
 package object models extends Loggable {
 
@@ -25,5 +26,13 @@ package object models extends Loggable {
     def merge(updates: Seq[ChannelUpdate]): ChannelUpdate = updates.foldLeft(this)((acc, update) ⇒ acc.merge(update))
   }
 
-
+  /**
+    * Empty Map.value filter:
+    *
+    * { "limit": "" }
+    */
+  val EmptyMapValues: ((String, String)) ⇒ Boolean = {
+    case (_, value) ⇒ containsTextContent(value)
+    case _ ⇒ true
+  }
 }

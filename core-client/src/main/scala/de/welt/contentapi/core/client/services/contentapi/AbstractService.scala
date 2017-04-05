@@ -5,8 +5,7 @@ import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.configuration.ServiceConfiguration
 import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
-import de.welt.contentapi.core.client.utilities.Strings
-import de.welt.contentapi.utils.Loggable
+import de.welt.contentapi.utils.{Loggable, Strings}
 import play.api.Configuration
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsError, JsLookupResult, JsResult, JsSuccess}

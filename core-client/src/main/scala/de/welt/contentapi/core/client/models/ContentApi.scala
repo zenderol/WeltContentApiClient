@@ -2,7 +2,7 @@ package de.welt.contentapi.core.client.models
 
 import java.time.Instant
 
-import de.welt.contentapi.core.client.utilities.Strings._
+import de.welt.contentapi.utils.Strings._
 import de.welt.contentapi.utils.Loggable
 
 /**

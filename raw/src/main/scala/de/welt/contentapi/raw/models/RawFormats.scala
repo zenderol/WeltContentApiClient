@@ -8,25 +8,42 @@ object RawFormats {
   import RawReads._
   import RawWrites._
 
-  implicit lazy val rawChannelIdFormat: Format[RawChannelId] = Format[RawChannelId](rawChannelIdReads, rawChannelIdWrites)
-  implicit lazy val rawChannelMetaRobotsTagFormat: Format[RawChannelMetaRobotsTag] = Format[RawChannelMetaRobotsTag](rawChannelMetaRobotsTagReads, rawChannelMetaRobotsTagWrites)
-  implicit lazy val rawChannelMetadataFormat: Format[RawChannelMetadata] = Format[RawChannelMetadata](rawChannelMetadataReads, rawChannelMetadataWrites)
-  implicit lazy val rawSectionReferenceFormat: Format[RawSectionReference] = Format[RawSectionReference](rawSectionReferenceReads, rawSectionReferenceWrites)
-  implicit lazy val rawChannelSponsoringFormat: Format[RawChannelSponsoring] = Format[RawChannelSponsoring](rawChannelSponsoringReads, rawChannelSponsoringWrites)
-  implicit lazy val rawChannelHeaderFormat: Format[RawChannelHeader] = Format[RawChannelHeader](rawChannelHeaderReads, rawChannelHeaderWrites)
-  implicit lazy val rawChannelContentConfigurationFormat: Format[RawChannelContentConfiguration] = Format[RawChannelContentConfiguration](rawChannelContentConfigurationReads, rawChannelContentConfigurationWrites)
-  implicit lazy val rawChannelStageConfigurationFormat: Format[RawChannelStageConfiguration] = Format[RawChannelStageConfiguration](rawChannelStageConfigurationFormat, rawChannelStageConfigurationFormat)
-  implicit lazy val rawChannelCommercialFormat: Format[RawChannelCommercial] = Format[RawChannelCommercial](rawChannelCommercialReads, rawChannelCommercialWrites)
+  implicit lazy val rawChannelIdFormat: Format[RawChannelId] =
+    Format[RawChannelId](rawChannelIdReads, rawChannelIdWrites)
+  implicit lazy val rawChannelMetaRobotsTagFormat: Format[RawChannelMetaRobotsTag] =
+    Format[RawChannelMetaRobotsTag](rawChannelMetaRobotsTagReads, rawChannelMetaRobotsTagWrites)
+  implicit lazy val rawChannelMetadataFormat: Format[RawChannelMetadata] =
+    Format[RawChannelMetadata](rawChannelMetadataReads, rawChannelMetadataWrites)
+  implicit lazy val rawSectionReferenceFormat: Format[RawSectionReference] =
+    Format[RawSectionReference](rawSectionReferenceReads, rawSectionReferenceWrites)
+  implicit lazy val rawChannelSponsoringFormat: Format[RawChannelSponsoring] =
+    Format[RawChannelSponsoring](rawChannelSponsoringReads, rawChannelSponsoringWrites)
+  implicit lazy val rawChannelHeaderFormat: Format[RawChannelHeader] =
+    Format[RawChannelHeader](rawChannelHeaderReads, rawChannelHeaderWrites)
+  implicit lazy val rawChannelContentConfigurationFormat: Format[RawChannelContentConfiguration] =
+    Format[RawChannelContentConfiguration](rawChannelContentConfigurationReads, rawChannelContentConfigurationWrites)
+  implicit lazy val rawChannelStageConfigurationFormat: Format[RawChannelStageConfiguration] =
+    Format[RawChannelStageConfiguration](rawChannelStageConfigurationFormat, rawChannelStageConfigurationFormat)
+  implicit lazy val rawChannelCommercialFormat: Format[RawChannelCommercial] =
+    Format[RawChannelCommercial](rawChannelCommercialReads, rawChannelCommercialWrites)
 
-  implicit lazy val rawChannelStageCustomFormat: Format[RawChannelStageCustomModule] = Format[RawChannelStageCustomModule](rawChannelStageCustomModuleReads, rawChannelStageCustomModuleWrites)
-  implicit lazy val rawChannelStageIgnoredFormat: Format[RawChannelStageIgnored] = Format[RawChannelStageIgnored](rawChannelStageIgnoredReads, rawChannelStageIgnoredWrites)
-  implicit lazy val rawChannelStageCuratedFormat: Format[RawChannelStageCurated] = Format[RawChannelStageCurated](rawChannelStageCuratedReads, rawChannelStageCuratedWrites)
-  implicit lazy val rawChannelStageCommercialFormat: Format[RawChannelStageCommercial] = Format[RawChannelStageCommercial](rawChannelStageCommercialReads, rawChannelStageCommercialWrites)
-  implicit lazy val rawChannelStageFormat: Format[RawChannelStage] = Format[RawChannelStage](rawChannelStageReads, rawChannelStageWrites)
-  implicit lazy val rawChannelThemeFormat: Format[RawChannelTheme] = Format[RawChannelTheme](rawChannelThemeReads, rawChannelThemeWrites)
+  implicit lazy val rawChannelStageCustomFormat: Format[RawChannelStageCustomModule] =
+    Format[RawChannelStageCustomModule](rawChannelStageCustomModuleReads, rawChannelStageCustomModuleWrites)
+  implicit lazy val rawChannelStageIgnoredFormat: Format[RawChannelStageIgnored] =
+    Format[RawChannelStageIgnored](rawChannelStageIgnoredReads, throw new scala.Error("[DEV-ERROR] You should not write IgnoredStages"))
+  implicit lazy val rawChannelStageCuratedFormat: Format[RawChannelStageCurated] =
+    Format[RawChannelStageCurated](rawChannelStageCuratedReads, rawChannelStageCuratedWrites)
+  implicit lazy val rawChannelStageCommercialFormat: Format[RawChannelStageCommercial] =
+    Format[RawChannelStageCommercial](rawChannelStageCommercialReads, rawChannelStageCommercialWrites)
+  implicit lazy val rawChannelStageFormat: Format[RawChannelStage] =
+    Format[RawChannelStage](rawChannelStageReads, rawChannelStageWrites)
+  implicit lazy val rawChannelThemeFormat: Format[RawChannelTheme] =
+    Format[RawChannelTheme](rawChannelThemeReads, rawChannelThemeWrites)
 
-  implicit lazy val rawMetadataFormat: Format[RawMetadata] = Format[RawMetadata](rawMetadataReads, rawMetadataWrites)
-  implicit lazy val rawChannelConfigurationFormat: Format[RawChannelConfiguration] = Format[RawChannelConfiguration](rawChannelConfigurationReads, rawChannelConfigurationWrites)
+  implicit lazy val rawMetadataFormat: Format[RawMetadata] =
+    Format[RawMetadata](rawMetadataReads, rawMetadataWrites)
+  implicit lazy val rawChannelConfigurationFormat: Format[RawChannelConfiguration] =
+    Format[RawChannelConfiguration](rawChannelConfigurationReads, rawChannelConfigurationWrites)
 }
 
 object RawReads {
@@ -112,7 +129,24 @@ object RawReads {
     }
   }
 
-  implicit lazy val rawChannelStageCustomModuleReads: Reads[RawChannelStageCustomModule] = Json.reads[RawChannelStageCustomModule]
+  implicit lazy val rawChannelStageCustomModuleReads: Reads[RawChannelStageCustomModule] = new Reads[RawChannelStageCustomModule] {
+    override def reads(json: JsValue): JsResult[RawChannelStageCustomModule] = json match {
+      case JsObject(underlying) ⇒ (for {
+        index <- underlying.get("index").map(_.as[Int])
+        module <- underlying.get("module").map(_.as[String])
+      } yield JsSuccess(
+        RawChannelStageCustomModule(
+          index = index,
+          hidden = underlying.get("hidden").map(_.as[Boolean]).getOrElse(RawChannelStage.HiddenDefault),
+          module = module,
+          references = underlying.get("references").map(_.as[Seq[RawSectionReference]]),
+          overrides = underlying.get("overrides").map(_.as[Map[String, String]]).map(_.filter(EmptyMapValues))
+        )
+      )).getOrElse(jsErrorInvalidData("RawChannelStageCustomModule", json))
+      case err@_ ⇒ jsErrorInvalidJson(err)
+    }
+  }
+
   implicit lazy val rawChannelStageCommercialReads: Reads[RawChannelStageCommercial] = Json.reads[RawChannelStageCommercial]
   implicit lazy val rawChannelStageCuratedReads: Reads[RawChannelStageCurated] = Json.reads[RawChannelStageCurated]
 
@@ -193,6 +227,10 @@ object RawReads {
 }
 
 object RawWrites {
+  lazy val filteredMapWrites = new Writes[Map[String, String]] {
+    override def writes(m: Map[String, String]): JsValue = Json.toJson(m.filter(EmptyMapValues))
+  }
+
   implicit lazy val rawChannelIdWrites: Writes[RawChannelId] = Json.writes[RawChannelId]
   implicit lazy val rawChannelMetaRobotsTagWrites: Writes[RawChannelMetaRobotsTag] = Json.writes[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataWrites: Writes[RawChannelMetadata] = Json.writes[RawChannelMetadata]
@@ -204,47 +242,33 @@ object RawWrites {
   implicit lazy val rawChannelTaboolaCommercialWrites: Writes[RawChannelTaboolaCommercial] = Json.writes[RawChannelTaboolaCommercial]
   implicit lazy val rawChannelCommercialWrites: Writes[RawChannelCommercial] = Json.writes[RawChannelCommercial]
 
-  implicit lazy val rawChannelStageCustomModuleWrites = new Writes[RawChannelStageCustomModule] {
-    def writes(custom: RawChannelStageCustomModule): JsObject = Json.obj(
-    "index" -> custom.index,
-    "type"  → RawChannelStage.TypeCustomModule,
-    "hidden" → custom.hidden,
-    "module" → custom.module,
-    "references" → custom.references,
-    "overrides" → custom.overrides
-    )
-  }
+  implicit lazy val rawChannelStageCustomModuleWrites: Writes[RawChannelStageCustomModule] = (
+    (__ \ "index").write[Int] and
+      OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeCustomModule)))) and
+      (__ \ "hidden").write[Boolean] and
+      (__ \ "module").write[String] and
+      (__ \ "references").writeNullable[Seq[RawSectionReference]] and
+      (__ \ "overrides").writeNullable[Map[String, String]](filteredMapWrites)
+    ) (unlift(RawChannelStageCustomModule.unapply))
 
-  implicit lazy val rawChannelStageCommercialWrites = new Writes[RawChannelStageCommercial] {
-    def writes(commercial: RawChannelStageCommercial): JsObject = Json.obj(
-    "index" -> commercial.index,
-    "type"  → RawChannelStage.TypeCommercial,
-    "hidden" → commercial.hidden,
-    "format" → commercial.format
-    )
-  }
+  implicit lazy val rawChannelStageCommercialWrites: Writes[RawChannelStageCommercial] = (
+    (__ \ "index").write[Int] and
+      OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeCommercial)))) and
+      (__ \ "hidden").write[Boolean] and
+      (__ \ "format").write[String]
+    ) (unlift(RawChannelStageCommercial.unapply))
 
-  implicit lazy val rawChannelStageCuratedWrites = new Writes[RawChannelStageCurated] {
-    def writes(curated: RawChannelStageCurated): JsObject = Json.obj(
-    "index" -> curated.index,
-    "type"  → RawChannelStage.TypeCurated,
-    "hidden" → curated.hidden,
-    "curatedSectionMapping" → curated.curatedSectionMapping,
-    "curatedStageMapping" → curated.curatedStageMapping,
-    "layout" → curated.layout,
-    "label" → curated.label,
-    "logo" → curated.logo,
-    "references" → curated.references
-    )
-  }
-
-  implicit lazy val rawChannelStageIgnoredWrites = new Writes[RawChannelStageIgnored] {
-    def writes(ignored: RawChannelStageIgnored): JsObject = Json.obj(
-      "index" -> ignored.index,
-      "type"  → RawChannelStage.TypeUnknown,
-      "hidden" → true
-    )
-  }
+  implicit lazy val rawChannelStageCuratedWrites: Writes[RawChannelStageCurated] = (
+    (__ \ "index").write[Int] and
+      OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeCurated)))) and
+      (__ \ "hidden").write[Boolean] and
+      (__ \ "curatedSectionMapping").write[String] and
+      (__ \ "curatedStageMapping").write[String] and
+      (__ \ "layout").writeNullable[String] and
+      (__ \ "label").writeNullable[String] and
+      (__ \ "logo").writeNullable[String] and
+      (__ \ "references").writeNullable[Seq[RawSectionReference]]
+    ) (unlift(RawChannelStageCurated.unapply))
 
   implicit lazy val rawChannelStageWrites = new Writes[RawChannelStage] {
     override def writes(o: RawChannelStage): JsValue = o match {
@@ -292,7 +316,7 @@ object PartialRawChannelWrites {
         "config" → Json.toJson(o.config),
         "metadata" → Json.toJson(o.metadata)
       )
-        ++ o.stageConfiguration.map {stageConfiguration ⇒ "stageConfiguration" → Json.toJson(stageConfiguration)}
+        ++ o.stageConfiguration.map { stageConfiguration ⇒ "stageConfiguration" → Json.toJson(stageConfiguration) }
       )
     }
   }
@@ -324,7 +348,7 @@ object PartialRawChannelReads {
         metadata ← underlying.get("metadata").map(_.as[RawMetadata])
       } yield {
         JsSuccess(
-            RawChannel(
+          RawChannel(
             id = id,
             config = config,
             metadata = metadata,

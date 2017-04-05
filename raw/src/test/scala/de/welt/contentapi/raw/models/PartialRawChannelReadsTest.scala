@@ -1,7 +1,7 @@
 package de.welt.contentapi.raw.models
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
+import play.api.libs.json._
 
 class PartialRawChannelReadsTest extends PlaySpec {
 
@@ -19,7 +19,8 @@ class PartialRawChannelReadsTest extends PlaySpec {
       private val customModule = RawChannelStageCustomModule(
         index = originalIndex,
         module = originalModuleName,
-        overrides = originalOverrides)
+        overrides = originalOverrides
+      )
 
       val rawStageAsJson: JsValue = Json.toJson(customModule)
       private val channelStage = Json.fromJson(rawStageAsJson).asOpt.orNull
@@ -47,7 +48,7 @@ class PartialRawChannelReadsTest extends PlaySpec {
 
       ch.id.path must be("le-path")
       val Some(stages) = ch.stageConfiguration.flatMap(_.stages)
-      stages must be(Seq(RawChannelStageCustomModule(index = originalIndex, module = originalModuleName , overrides = originalOverrides)))
+      stages must be(Seq(RawChannelStageCustomModule(index = originalIndex, module = originalModuleName, overrides = originalOverrides)))
 
     }
 

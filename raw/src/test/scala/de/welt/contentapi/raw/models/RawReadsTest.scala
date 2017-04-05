@@ -65,18 +65,51 @@ class RawReadsTest extends PlaySpec {
   "RawChannelStage Reads" must {
 
     "parse unknown modules as a hidden RawChannelStageIgnored" in {
-      val unknownModule = """{
-                            |  "index": 0,
-                            |  "hidden": false,
-                            |  "type": "my-fance-new-module",
-                            |  "layout": "fancy-layout"
-                            |}"""".stripMargin
+      val unknownModule =
+        """
+          |{
+          |  "index": 0,
+          |  "hidden": false,
+          |  "type": "my-fance-new-module",
+          |  "layout": "fancy-layout"
+          |}
+          |""".stripMargin
       val unknownStage: RawChannelStage = Json.parse(unknownModule)
         .validate[RawChannelStage](rawChannelStageReads)
         .asOpt
         .get
       unknownStage.`type` mustBe RawChannelStage.TypeUnknown
       unknownStage.hidden mustBe true
+    }
+
+  }
+
+  "RawChannelStageCustomModule Reads" must {
+
+    val customStageJson: String =
+      """
+        |{
+        |  "index": 0,
+        |  "module": "module-broadcasts",
+        |  "hidden": false,
+        |  "references": [],
+        |  "overrides": {
+        |    "sectionPath": "/mediathek/magazin/",
+        |    "label": "MEDIATHEK",
+        |    "limit": ""
+        |  },
+        |  "type": "custom-module"
+        |}
+      """.stripMargin
+
+    """|ignore empty (`String.empty`) override values
+       |Prevent of parse empty number values""".stripMargin in {
+      val customStage: RawChannelStageCustomModule = Json.parse(customStageJson)
+        .validate[RawChannelStageCustomModule](rawChannelStageCustomModuleReads)
+        .asOpt
+        .get
+
+      customStage.unwrappedOverrides.get("limit") mustBe None
     }
 
   }
