@@ -140,7 +140,8 @@ object RawReads {
           hidden = underlying.get("hidden").map(_.as[Boolean]).getOrElse(RawChannelStage.HiddenDefault),
           module = module,
           references = underlying.get("references").map(_.as[Seq[RawSectionReference]]),
-          overrides = underlying.get("overrides").map(_.as[Map[String, String]]).map(_.filter(EmptyMapValues))
+          overrides = underlying.get("overrides").map(_.as[Map[String, String]]).map(_.filter(EmptyMapValues)),
+          trackingName = underlying.get("trackingName").map(_.as[String])
         )
       )).getOrElse(jsErrorInvalidData("RawChannelStageCustomModule", json))
       case err@_ ⇒ jsErrorInvalidJson(err)
@@ -246,6 +247,7 @@ object RawWrites {
     (__ \ "index").write[Int] and
       OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeCustomModule)))) and
       (__ \ "hidden").write[Boolean] and
+      (__ \ "trackingName").writeNullable[String] and
       (__ \ "module").write[String] and
       (__ \ "references").writeNullable[Seq[RawSectionReference]] and
       (__ \ "overrides").writeNullable[Map[String, String]](filteredMapWrites)
@@ -255,6 +257,7 @@ object RawWrites {
     (__ \ "index").write[Int] and
       OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeCommercial)))) and
       (__ \ "hidden").write[Boolean] and
+      (__ \ "trackingName").writeNullable[String] and
       (__ \ "format").write[String]
     ) (unlift(RawChannelStageCommercial.unapply))
 
@@ -262,6 +265,7 @@ object RawWrites {
     (__ \ "index").write[Int] and
       OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeCurated)))) and
       (__ \ "hidden").write[Boolean] and
+      (__ \ "trackingName").writeNullable[String] and
       (__ \ "curatedSectionMapping").write[String] and
       (__ \ "curatedStageMapping").write[String] and
       (__ \ "layout").writeNullable[String] and

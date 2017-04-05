@@ -27,7 +27,8 @@ case class ApiStageConfiguration(layout: String = "Default",
                                  label: Option[String],
                                  logo: Option[String] = None,
                                  references: Option[Seq[ApiReference]] = None,
-                                 commercials: Option[Seq[String]] = None) {
+                                 commercials: Option[Seq[String]] = None,
+                                 trackingName: Option[String]) {
   lazy val unwrappedCommercials: Seq[String] = commercials.getOrElse(Nil)
   lazy val unwrappedReferences: Seq[ApiReference] = references.getOrElse(Nil)
 }

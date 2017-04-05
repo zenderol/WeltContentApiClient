@@ -12,13 +12,15 @@ class RawWritesTest extends PlaySpec {
     sealed trait DefaultCustomModule {
       val actualRawCustomStage = RawChannelStageCustomModule(
         index = 0,
-        module = "dick-butt"
+        module = "dick-butt",
+        trackingName = Some("tracking-name")
       )
       val expectedJson: String =
         """|{
            |  "index" : 0,
            |  "type" : "custom-module",
            |  "hidden" : false,
+           |  "trackingName" : "tracking-name",
            |  "module" : "dick-butt"
            |}""".stripMargin
     }
@@ -28,6 +30,7 @@ class RawWritesTest extends PlaySpec {
         index = 0,
         `type` = "dick-butt",
         hidden = true,
+        trackingName = None,
         module = "dick-butt",
         references = Some(Seq(
           RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
@@ -84,7 +87,8 @@ class RawWritesTest extends PlaySpec {
     sealed trait DefaultCommercialStage {
       val actualRawCommercialStage = RawChannelStageCommercial(
         index = 0,
-        format = "dick-butt"
+        format = "dick-butt",
+        trackingName = Some("tracking-name")
       )
 
       val expectedJson: String =
@@ -92,6 +96,7 @@ class RawWritesTest extends PlaySpec {
            |  "index" : 0,
            |  "type" : "commercial",
            |  "hidden" : false,
+           |  "trackingName" : "tracking-name",
            |  "format" : "dick-butt"
            |}""".stripMargin
     }
@@ -101,6 +106,7 @@ class RawWritesTest extends PlaySpec {
         index = 0,
         `type` = "dick-butt",
         hidden = true,
+        trackingName = None,
         format = "dick-butt"
       )
 
@@ -134,6 +140,7 @@ class RawWritesTest extends PlaySpec {
     sealed trait DefaultCommercialStage {
       val actualRawCuratedStage = RawChannelStageCurated(
         index = 0,
+        trackingName = Some("tracking-name"),
         curatedSectionMapping = "frontpage",
         curatedStageMapping = "hero",
         layout = None,
@@ -146,6 +153,7 @@ class RawWritesTest extends PlaySpec {
            |  "index" : 0,
            |  "type" : "curated",
            |  "hidden" : false,
+           |  "trackingName" : "tracking-name",
            |  "curatedSectionMapping" : "frontpage",
            |  "curatedStageMapping" : "hero"
            |}""".stripMargin
@@ -156,6 +164,7 @@ class RawWritesTest extends PlaySpec {
         index = 0,
         `type` = "dick-butt",
         hidden = true,
+        trackingName = Some("tracking-name"),
         curatedSectionMapping = "frontpage",
         curatedStageMapping = "hero",
         layout = Some("curated-layout"),
@@ -171,10 +180,11 @@ class RawWritesTest extends PlaySpec {
            |  "index" : 0,
            |  "type" : "curated",
            |  "hidden" : true,
-           |  "curatedSectionMapping" : "frontpage"
-           |  "curatedStageMapping" : "hero"
-           |  "layout" : "curated-layout"
-           |  "label" : "curated-label"
+           |  "trackingName" : "tracking-name",
+           |  "curatedSectionMapping" : "frontpage",
+           |  "curatedStageMapping" : "hero",
+           |  "layout" : "curated-layout",
+           |  "label" : "curated-label",
            |  "logo" : "curated-logo",
            |  "references" : [ {
            |    "label" : "ref-label",
