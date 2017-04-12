@@ -7,13 +7,16 @@ class RawWritesTest extends PlaySpec {
 
   import RawWrites._
 
+  val stageLink = RawSectionReference(path = Some("https://www.dick-butt.org"))
+
   "RawChannelStageCustomModule Writes" must {
 
     sealed trait DefaultCustomModule {
       val actualRawCustomStage = RawChannelStageCustomModule(
         index = 0,
         module = "dick-butt",
-        trackingName = Some("tracking-name")
+        trackingName = Some("tracking-name"),
+        link = Some(stageLink)
       )
       val expectedJson: String =
         """|{
@@ -21,6 +24,9 @@ class RawWritesTest extends PlaySpec {
            |  "type" : "custom-module",
            |  "hidden" : false,
            |  "trackingName" : "tracking-name",
+           |  "link" : {
+           |    "path" : "https://www.dick-butt.org"
+           |  },
            |  "module" : "dick-butt"
            |}""".stripMargin
     }
@@ -31,6 +37,7 @@ class RawWritesTest extends PlaySpec {
         `type` = "dick-butt",
         hidden = true,
         trackingName = None,
+        link = None,
         module = "dick-butt",
         references = Some(Seq(
           RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
@@ -88,7 +95,8 @@ class RawWritesTest extends PlaySpec {
       val actualRawCommercialStage = RawChannelStageCommercial(
         index = 0,
         format = "dick-butt",
-        trackingName = Some("tracking-name")
+        trackingName = Some("tracking-name"),
+        link = Some(stageLink)
       )
 
       val expectedJson: String =
@@ -97,6 +105,9 @@ class RawWritesTest extends PlaySpec {
            |  "type" : "commercial",
            |  "hidden" : false,
            |  "trackingName" : "tracking-name",
+           |  "link" : {
+           |    "path" : "https://www.dick-butt.org"
+           |  },
            |  "format" : "dick-butt"
            |}""".stripMargin
     }
@@ -107,6 +118,7 @@ class RawWritesTest extends PlaySpec {
         `type` = "dick-butt",
         hidden = true,
         trackingName = None,
+        link = None,
         format = "dick-butt"
       )
 
@@ -141,6 +153,7 @@ class RawWritesTest extends PlaySpec {
       val actualRawCuratedStage = RawChannelStageCurated(
         index = 0,
         trackingName = Some("tracking-name"),
+        link = Some(stageLink),
         curatedSectionMapping = "frontpage",
         curatedStageMapping = "hero",
         layout = None,
@@ -154,6 +167,9 @@ class RawWritesTest extends PlaySpec {
            |  "type" : "curated",
            |  "hidden" : false,
            |  "trackingName" : "tracking-name",
+           |  "link" : {
+           |    "path" : "https://www.dick-butt.org"
+           |  },
            |  "curatedSectionMapping" : "frontpage",
            |  "curatedStageMapping" : "hero"
            |}""".stripMargin
@@ -165,6 +181,7 @@ class RawWritesTest extends PlaySpec {
         `type` = "dick-butt",
         hidden = true,
         trackingName = Some("tracking-name"),
+        link = Some(stageLink),
         curatedSectionMapping = "frontpage",
         curatedStageMapping = "hero",
         layout = Some("curated-layout"),
@@ -181,6 +198,9 @@ class RawWritesTest extends PlaySpec {
            |  "type" : "curated",
            |  "hidden" : true,
            |  "trackingName" : "tracking-name",
+           |  "link" : {
+           |    "path" : "https://www.dick-butt.org"
+           |  },
            |  "curatedSectionMapping" : "frontpage",
            |  "curatedStageMapping" : "hero",
            |  "layout" : "curated-layout",

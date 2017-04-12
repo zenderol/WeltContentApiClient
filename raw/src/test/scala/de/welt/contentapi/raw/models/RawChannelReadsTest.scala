@@ -14,12 +14,15 @@ class RawChannelReadsTest extends PlaySpec {
       val overrides = Some(Map("section" → "/foo/"))
       val index = 1
       val originalTrackingName = Some("tracking-name")
+      val originalLink = Some(RawSectionReference(path = Some("https://www.dick-butt.org")))
 
       val customModule: RawChannelStageCustomModule = RawChannelStageCustomModule(
         index = index,
         module = moduleValue,
         overrides = overrides,
-        trackingName = originalTrackingName)
+        trackingName = originalTrackingName,
+        link = originalLink
+      )
 
       val stageAsJson: JsValue = Json.toJson(customModule)
       val rawStageFromJson: RawChannelStageCustomModule = Json.fromJson(stageAsJson).asOpt.orNull
@@ -52,7 +55,13 @@ class RawChannelReadsTest extends PlaySpec {
       ch.id.path must be("le-path")
       val Some(stages) = ch.stageConfiguration.flatMap(_.stages)
 
-      stages must be(Seq(RawChannelStageCustomModule(index = index, module = moduleValue, overrides = overrides, trackingName = originalTrackingName)))
+      stages must be(Seq(RawChannelStageCustomModule(
+        index = index,
+        module = moduleValue,
+        overrides = overrides,
+        trackingName = originalTrackingName,
+        link = originalLink
+      )))
 
     }
 

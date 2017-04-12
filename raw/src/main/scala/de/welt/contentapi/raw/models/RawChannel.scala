@@ -355,12 +355,14 @@ case class RawChannelContentConfiguration(subTypeQueryForText: Option[String] = 
   * `type` is the identifier for case class matching
   * hidden allows stages to be configured but not rendered
   * trackingName is used by Funkotron for tracking clicks on articles in stages (e.g. Webtrekk - important for Editors and BI!)
+  * link is used by Funkotron for linking the stage header label (e.g. Welt+ stage links to //www.welt.de/weltplus/ channel)
   */
 sealed trait RawChannelStage {
   def index: Int
   def `type`: String
   def hidden: Boolean
   def trackingName: Option[String]
+  def link: Option[RawSectionReference]
 }
 
 /**
@@ -378,6 +380,7 @@ case class RawChannelStageCustomModule(override val index: Int,
                                        override val `type`: String = RawChannelStage.TypeCustomModule,
                                        override val hidden: Boolean = RawChannelStage.HiddenDefault,
                                        override val trackingName: Option[String],
+                                       override val link: Option[RawSectionReference],
                                        module: String,
                                        references: Option[Seq[RawSectionReference]] = None,
                                        overrides: Option[Map[String, String]] = None) extends RawChannelStage {
@@ -397,6 +400,7 @@ case class RawChannelStageCommercial(override val index: Int,
                                      override val `type`: String = RawChannelStage.TypeCommercial,
                                      override val hidden: Boolean = RawChannelStage.HiddenDefault,
                                      override val trackingName: Option[String],
+                                     override val link: Option[RawSectionReference],
                                      format: String) extends RawChannelStage {
 }
 
@@ -416,6 +420,7 @@ case class RawChannelStageCurated(override val index: Int,
                                   override val `type`: String = RawChannelStage.TypeCurated,
                                   override val hidden: Boolean = RawChannelStage.HiddenDefault,
                                   override val trackingName: Option[String],
+                                  override val link: Option[RawSectionReference],
                                   curatedSectionMapping: String,
                                   curatedStageMapping: String,
                                   layout: Option[String],
@@ -433,7 +438,9 @@ case class RawChannelStageCurated(override val index: Int,
 case class RawChannelStageIgnored(override val index: Int,
                                   override val `type`: String = RawChannelStage.TypeUnknown,
                                   override val hidden: Boolean = true,
-                                  override val trackingName: Option[String] = None) extends RawChannelStage
+                                  override val trackingName: Option[String] = None,
+                                  override val link: Option[RawSectionReference] = None) extends RawChannelStage
+
 object RawChannelStage {
   val HiddenDefault = false
   val TypeModule = "module"

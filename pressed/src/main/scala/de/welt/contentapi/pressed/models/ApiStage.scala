@@ -17,18 +17,21 @@ case class ApiStage(index: Int,
 }
 
 /**
-  * @param layout      Name of the layout for the stage, e.g. 'channel-hero', 'multimedia' or 'hidden'
-  * @param label       Label to show above a stage
-  * @param logo        A optional logo for the stage. eg.g `/icon/`
-  * @param references  References to render with href and label, e.g. Sub Ressorts
-  * @param commercials contains the format ids for the Ads
+  * @param layout       Name of the layout for the stage, e.g. 'channel-hero', 'multimedia' or 'hidden'
+  * @param label        Label to show above a stage
+  * @param logo         A optional logo for the stage. eg.g `/icon/`
+  * @param references   References to render with href and label, e.g. Sub Ressorts
+  * @param commercials  contains the format ids for the Ads
+  * @param trackingName is used by Funkotron for tracking clicks on articles in stages (e.g. Webtrekk - important for Editors and BI!)
+  * @param link         is used by Funkotron for linking the stage header label (e.g. Welt+ stage links to //www.welt.de/weltplus/ channel)
   */
 case class ApiStageConfiguration(layout: String = "Default",
                                  label: Option[String],
                                  logo: Option[String] = None,
                                  references: Option[Seq[ApiReference]] = None,
                                  commercials: Option[Seq[String]] = None,
-                                 trackingName: Option[String]) {
+                                 trackingName: Option[String],
+                                 link: Option[ApiReference] = None) {
   lazy val unwrappedCommercials: Seq[String] = commercials.getOrElse(Nil)
   lazy val unwrappedReferences: Seq[ApiReference] = references.getOrElse(Nil)
 }
