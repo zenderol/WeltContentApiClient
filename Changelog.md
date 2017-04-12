@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.14.0 (2017-04-12)
+
+#### Breaking Changes
+- [CORE]    Delete `PapyrusRepository` and `CurationService (in-sourced to Digger)
+- [LEGACY]  Delete Module `Legacy` - Models and Client (da-hood was 100% replaced by Digger)
+
 ## 0.13.0 (2017-03-31)
 
 #### Changes

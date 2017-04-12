@@ -13,7 +13,7 @@ object MyBuild extends Build {
   val forScala2_4 = Option(System.getenv("PLAY24")).exists(_.toBoolean)
 
   val playVersion = if (forScala2_4) "2.4.8" else "2.5.10"
-  private val actualVersion: String = s"0.13.$buildNumber"
+  private val actualVersion: String = s"0.14.$buildNumber"
 
   scalaVersion := "2.11.8"
 
@@ -176,13 +176,6 @@ object MyBuild extends Build {
     .dependsOn(withTests(pressed)).aggregate(pressed)
     .dependsOn(withTests(rawClient)).aggregate(rawClient)
 
-  val legacyClient = project("legacy-client")
-    .settings(
-      name := "welt-content-api-legacy-client"
-    )
-    .settings(clientDependencySettings: _*)
-    .dependsOn(withTests(pressedClient)).aggregate(pressedClient)
-
   val main = Project("Root", base = file("."))
     .settings(
       name := "welt-content-api-root"
@@ -192,6 +185,6 @@ object MyBuild extends Build {
       publish := {},
       bintrayUnpublish := {}
     )
-    .aggregate(core, coreClient, raw, rawClient, pressed, pressedClient, legacyClient)
+    .aggregate(core, coreClient, raw, rawClient, pressed, pressedClient)
 
 }
