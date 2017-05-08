@@ -38,7 +38,8 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       contentTaboola = RawChannelTaboolaCommercial(
         showNetwork = false,
         showNews = false,
-        showWeb = false
+        showWeb = false,
+        showWebExtended = false
       )
     )
 
@@ -174,6 +175,7 @@ class Raw2ApiConfigurationTests extends PlaySpec {
     "convert `RawChannelTaboolaCommercial` to `ApiCommercial3rdPartyConfiguration.ApiCommercialTaboolaConfiguration`" in new TestScopeConfiguration {
       apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showNetwork) mustBe Some(rawChannelCommercial.contentTaboola.showNetwork)
       apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showWeb) mustBe Some(rawChannelCommercial.contentTaboola.showWeb)
+      apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showWeb) mustBe Some(rawChannelCommercial.contentTaboola.showWebExtended)
       apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showNews) mustBe Some(rawChannelCommercial.contentTaboola.showNews)
     }
 
