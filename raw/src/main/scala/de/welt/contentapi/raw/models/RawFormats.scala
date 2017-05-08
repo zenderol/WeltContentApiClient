@@ -99,11 +99,13 @@ object RawReads {
       case JsObject(underlying) ⇒ (for {
         showNews ← underlying.get("showNews").map(_.as[Boolean]).orElse(Some(defaults.showNews))
         showWeb ← underlying.get("showWeb").map(_.as[Boolean]).orElse(Some(defaults.showWeb))
+        showWebExtended ← underlying.get("showWebExtended").map(_.as[Boolean]).orElse(Some(defaults.showWebExtended))
         showNetwork ← underlying.get("showNetwork").map(_.as[Boolean]).orElse(Some(defaults.showNetwork))
       } yield JsSuccess(
         RawChannelTaboolaCommercial(
           showNews = showNews,
           showWeb = showWeb,
+          showWebExtended = showWebExtended,
           showNetwork = showNetwork
         )
       )).getOrElse(jsErrorInvalidData("RawChannelTaboolaCommercial", json))

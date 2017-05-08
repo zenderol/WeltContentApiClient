@@ -71,12 +71,14 @@ case class ApiCommercial3rdPartyConfiguration(contentTaboola: Option[ApiCommerci
   * Enable/Disable Taboola scripts on each content page of the channel. All Default values are defined by CMCF.
   * Do not set Default values here.
   *
-  * @param showNews    "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
-  * @param showWeb     "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
-  * @param showNetwork "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
+  * @param showNews         "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
+  * @param showWeb          "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
+  * @param showWebExtended  "Auch interessant". Taboola named it 'Below Article Thumbnails 3rd'
+  * @param showNetwork      "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
   */
 case class ApiCommercialTaboolaConfiguration(showNews: Option[Boolean] = None,
                                              showWeb: Option[Boolean] = None,
+                                             showWebExtended: Option[Boolean] = None,
                                              showNetwork: Option[Boolean] = None)
 
 /**

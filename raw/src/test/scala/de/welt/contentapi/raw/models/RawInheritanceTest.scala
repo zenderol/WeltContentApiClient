@@ -60,6 +60,7 @@ class RawInheritanceTest extends PlaySpec {
       val newTaboola = RawChannelTaboolaCommercial(
         showNews = false,
         showWeb = false,
+        showWebExtended = false,
         showNetwork = false
       )
       // When

@@ -238,12 +238,14 @@ case class RawChannelCommercial(definesAdTag: Boolean = false,
   * Enable/Disable Taboola scripts on content pages below the article text. Some Channel do not want
   * all Taboola scripts -- e.g. /icon/
   *
-  * @param showNews    "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
-  * @param showWeb     "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
-  * @param showNetwork "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
+  * @param showNews         "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
+  * @param showWeb          "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
+  * @param showWebExtended  "Auch interessant". Taboola named it 'Below Article Thumbnails 3rd'
+  * @param showNetwork      "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
   */
 case class RawChannelTaboolaCommercial(showNews: Boolean = true,
                                        showWeb: Boolean = true,
+                                       showWebExtended: Boolean = true,
                                        showNetwork: Boolean = true)
 
 /**

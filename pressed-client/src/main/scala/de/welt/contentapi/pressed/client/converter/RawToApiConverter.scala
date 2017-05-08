@@ -157,6 +157,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
       contentTaboola = Some(ApiCommercialTaboolaConfiguration(
         showNews = Some(rawChannelCommercial.contentTaboola.showNews),
         showWeb = Some(rawChannelCommercial.contentTaboola.showWeb),
+        showWebExtended = Some(rawChannelCommercial.contentTaboola.showWebExtended),
         showNetwork = Some(rawChannelCommercial.contentTaboola.showNetwork)
       ))
     )
