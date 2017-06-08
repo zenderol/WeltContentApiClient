@@ -33,6 +33,20 @@ class RawReadsTest extends PlaySpec {
         .asOpt mustBe Some(RawChannelCommercial())
     }
 
+    "use constructor value for showFallbackAds" in {
+      val json:String = """{ "definesAdTag": true,
+        |"definesVideoAdTag": true}""".stripMargin
+      Json.parse(json).validate[RawChannelCommercial](rawChannelCommercialReads).asOpt.map(_.showFallbackAds) mustBe Some(true)
+    }
+
+    "override constructor value showFallbackAds" in {
+      val json:String = """{"definesAdTag": true,
+                          |"definesVideoAdTag": true,
+                          |"showFallbackAds": false}""".stripMargin
+      val maybeChannel = Json.parse(json).validate[RawChannelCommercial](rawChannelCommercialReads).asOpt
+      maybeChannel
+        .map(_.showFallbackAds) mustBe Some(false)
+    }
   }
 
   "RawChannelTaboolaCommercialReads" must {

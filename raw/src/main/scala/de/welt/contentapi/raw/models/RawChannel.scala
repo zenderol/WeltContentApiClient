@@ -229,10 +229,12 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
   * @param definesAdTag      Overrides the (ASMI) ad tag for the channel
   * @param definesVideoAdTag Overrides the (ASMI) video ad tag for the channel
   * @param contentTaboola    Controls Taboola commercials on all content pages of the channel.
+  * @param showFallbackAds   Control to display fallback ads if ASMI fails to deliver their own for several ad formats (m-rectangle, skyscraper, ...)
   */
 case class RawChannelCommercial(definesAdTag: Boolean = false,
                                 definesVideoAdTag: Boolean = false,
-                                var contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial())
+                                var contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial(),
+                                showFallbackAds: Boolean = true)
 
 /**
   * Enable/Disable Taboola scripts on content pages below the article text. Some Channel do not want

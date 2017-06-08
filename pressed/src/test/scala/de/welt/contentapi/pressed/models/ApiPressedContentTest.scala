@@ -36,6 +36,13 @@ class ApiPressedContentTest extends PlaySpec {
       apiPressedContentWrites.writes(apiPressedContent).toString() mustBe expectedJson
     }
 
+    "write showFallbackAds to Json" in {
+      val apiConfiguration = ApiConfiguration(commercial = Some(ApiCommercialConfiguration(
+        showFallbackAds = Some(true)
+      )))
+      apiConfigurationWrites.writes(apiConfiguration).toString() must include("\"showFallbackAds\":true")
+    }
+
   }
 
 

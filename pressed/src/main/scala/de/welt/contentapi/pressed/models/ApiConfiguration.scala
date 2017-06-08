@@ -51,11 +51,13 @@ case class ApiMetaRobots(noIndex: Option[Boolean] = None, noFollow: Option[Boole
   * @param pathForVideoAdTag path used to build the video ad tag in client
   * @param thirdParty        controls 3rd-party commercial scripts
   * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
+  * @param showFallbackAds   Control to display fallback ads if ASMI fails to deliver their own for several ad formats (m-rectangle, skyscraper, ...)
   */
 case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
                                       pathForVideoAdTag: Option[String] = None,
                                       thirdParty: Option[ApiCommercial3rdPartyConfiguration] = None,
-                                      adIndicator: Option[Boolean] = None)
+                                      adIndicator: Option[Boolean] = None,
+                                      showFallbackAds: Option[Boolean] = Some(true))
 
 /**
   * Enable/Disable 3rd-Party commercial scripts on section/content pages.
@@ -71,10 +73,10 @@ case class ApiCommercial3rdPartyConfiguration(contentTaboola: Option[ApiCommerci
   * Enable/Disable Taboola scripts on each content page of the channel. All Default values are defined by CMCF.
   * Do not set Default values here.
   *
-  * @param showNews         "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
-  * @param showWeb          "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
-  * @param showWebExtended  "Auch interessant". Taboola named it 'Below Article Thumbnails 3rd'
-  * @param showNetwork      "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
+  * @param showNews        "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
+  * @param showWeb         "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
+  * @param showWebExtended "Auch interessant". Taboola named it 'Below Article Thumbnails 3rd'
+  * @param showNetwork     "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
   */
 case class ApiCommercialTaboolaConfiguration(showNews: Option[Boolean] = None,
                                              showWeb: Option[Boolean] = None,

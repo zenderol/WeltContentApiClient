@@ -120,11 +120,13 @@ object RawReads {
         definesAdTag ← underlying.get("definesAdTag").map(_.as[Boolean]).orElse(Some(defaults.definesAdTag))
         definesVideoAdTag ← underlying.get("definesVideoAdTag").map(_.as[Boolean]).orElse(Some(defaults.definesVideoAdTag))
         contentTaboola ← underlying.get("contentTaboola").map(_.as[RawChannelTaboolaCommercial]).orElse(Some(defaults.contentTaboola))
+        showFallbackAds ← underlying.get("showFallbackAds").map(_.as[Boolean]).orElse(Some(defaults.showFallbackAds))
       } yield JsSuccess(
         RawChannelCommercial(
           definesAdTag = definesAdTag,
           definesVideoAdTag = definesVideoAdTag,
-          contentTaboola = contentTaboola
+          contentTaboola = contentTaboola,
+          showFallbackAds = showFallbackAds
         )
       )).getOrElse(jsErrorInvalidData("RawChannelCommercial", json))
       case err@_ ⇒ jsErrorInvalidJson(err)

@@ -40,7 +40,8 @@ class Raw2ApiConfigurationTests extends PlaySpec {
         showNews = false,
         showWeb = false,
         showWebExtended = false
-      )
+      ),
+      showFallbackAds = false
     )
 
     val rawChannelConfiguration = RawChannelConfiguration(
@@ -53,7 +54,7 @@ class Raw2ApiConfigurationTests extends PlaySpec {
     )
 
     private val rawChannelId = 100
-    private val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
+    val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
     val rawChannel: RawChannel = emptyWithIdAndConfig(rawChannelId, rawChannelConfiguration)
     val apiChannel: ApiChannel = converter.apiChannelFromRawChannel(rawChannel)
     val apiHeaderConfiguration: ApiHeaderConfiguration = converter.apiHeaderConfigurationFromRawChannel(rawChannel)
@@ -177,6 +178,16 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showWeb) mustBe Some(rawChannelCommercial.contentTaboola.showWeb)
       apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showWeb) mustBe Some(rawChannelCommercial.contentTaboola.showWebExtended)
       apiCommercial3rdPartyConfiguration.contentTaboola.flatMap(_.showNews) mustBe Some(rawChannelCommercial.contentTaboola.showNews)
+    }
+
+    "copy 'showFallbackAds = false' value from RAW to API" in new TestScopeConfiguration {
+      apiCommercialConfiguration.showFallbackAds mustBe Some(false)
+    }
+
+    "assume true as default value for showFallbackAds" in new TestScopeConfiguration {
+      val channel = emptyWithId(123L)
+      val convertedCommercialConfig: ApiCommercialConfiguration = converter.apiCommercialConfigurationFromRawChannel(channel)
+      convertedCommercialConfig.showFallbackAds mustBe Some(true)
     }
 
   }
