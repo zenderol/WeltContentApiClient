@@ -100,7 +100,7 @@ class AdminSectionServiceImpl @Inject()(config: Configuration,
     cache.remove(env.toString)
   }
 
-  private def save(implicit env: Env) = {
+  def save(implicit env: Env) = {
     root.foreach(r ⇒ saveChannel(r))
   }
 }

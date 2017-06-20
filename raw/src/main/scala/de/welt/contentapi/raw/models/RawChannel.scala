@@ -2,8 +2,6 @@ package de.welt.contentapi.raw.models
 
 import java.time.Instant
 
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
 import scala.annotation.tailrec
 
 /**
@@ -109,15 +107,19 @@ case class RawChannel(id: RawChannelId,
     * @param other the source for the changes
     */
   def updateMasterData(other: RawChannel): Unit = {
-    val needsUpdate = (id.path != other.id.path) || (id.label != other.id.label)
-    id.path = other.id.path
-    id.label = other.id.label
+    updateMasterData(other.id.path, other.id.label)
+  }
+
+  def updateMasterData(newPath: String, newLabel: String): Unit = {
+    val needsUpdate = (id.path != newPath) || (id.label != newLabel)
+    id.path = newPath
+    id.label = newLabel
     if (needsUpdate) metadata = metadata.copy(lastModifiedDate = Instant.now.toEpochMilli)
   }
 
   /** equals solely on the ```ChannelId``` */
   override def equals(obj: Any): Boolean = obj match {
-    case RawChannel(otherId, _, _, _, _, _, _) ⇒ this.hashCode == otherId.hashCode
+    case RawChannel(otherId, _, _, _, _, _, _) ⇒ this.id.hashCode == otherId.hashCode
     case _ ⇒ false
   }
 
