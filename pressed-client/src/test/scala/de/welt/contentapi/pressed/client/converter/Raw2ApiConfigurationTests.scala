@@ -25,12 +25,15 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       slogan = Some("slogan"),
       hidden = true,
       sectionReferences = Some(Seq(RawSectionReference(Some("Label"), Some("/Path/")))),
-      adIndicator = true
+      adIndicator = true,
+      headerReference = Some(RawSectionReference(Some("Label"), Some("/link-for-logo-or-label.html"))),
+      sloganReference = Some(RawSectionReference(Some(""), Some("/link-for-slogan.html")))
     )
     val rawChannelSponsoring = RawChannelSponsoring(
       logo = Some("logo"),
       slogan = Some("slogan"),
-      hidden = true
+      hidden = true,
+      link = Some(RawSectionReference(Some(""), Some("/link-for-sponsor-logo.html")))
     )
     val rawChannelCommercial = RawChannelCommercial(
       definesAdTag = true,
@@ -141,6 +144,13 @@ class Raw2ApiConfigurationTests extends PlaySpec {
         .flatMap(r ⇒ r.label ++ r.path)
     }
 
+    "convert `headerReference`" in new TestScopeConfiguration {
+      private val apiHeaderReference = apiHeaderConfiguration.headerReference.map(r ⇒ (r.label, r.href))
+      private val rawHeaderReference = rawChannelHeader.headerReference.map(r ⇒ (r.label, r.path))
+
+      apiHeaderReference mustEqual rawHeaderReference
+    }
+
   }
 
   "RawChannelSponsoring to ApiSponsoringConfiguration" must {
@@ -161,6 +171,12 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       apiCommercialConfiguration.adIndicator mustBe Some(rawChannelHeader.adIndicator)
     }
 
+    "convert `link`" in new TestScopeConfiguration {
+      private val apiSponsoringLink = apiSponsoringConfiguration.link.map(r ⇒ (r.label, r.href))
+      private val rawSponsoringLink = rawChannelSponsoring.link.map(r ⇒ (r.label, r.path))
+
+      apiSponsoringLink mustEqual rawSponsoringLink
+    }
   }
 
   "RawChannelCommercial to ApiCommercialConfiguration" must {

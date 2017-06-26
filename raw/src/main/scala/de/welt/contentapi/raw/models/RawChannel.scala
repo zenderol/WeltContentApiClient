@@ -312,13 +312,18 @@ case class RawSectionReference(label: Option[String] = None, path: Option[String
   * @param hidden            hide only the channel header. (Not affected: Sponsoring, References). Default = `false`
   * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
   *                          Default = `false`
+  * @param sloganReference   Optional link for the slogan.
+  * @param headerReference   Optional link for the logo/label.
+  *                          Link logic (pseudo-code):  `headerReference.getOrElse(Master-Channel-Link)`
   */
 case class RawChannelHeader(logo: Option[String] = None,
                             slogan: Option[String] = None,
                             label: Option[String] = None,
                             sectionReferences: Option[Seq[RawSectionReference]] = None,
                             hidden: Boolean = false,
-                            adIndicator: Boolean = false) {
+                            adIndicator: Boolean = false,
+                            sloganReference: Option[RawSectionReference] = None,
+                            headerReference: Option[RawSectionReference] = None) {
   lazy val unwrappedSectionReferences: Seq[RawSectionReference] = sectionReferences.getOrElse(Nil)
 }
 
@@ -330,8 +335,12 @@ case class RawChannelHeader(logo: Option[String] = None,
   * @param slogan partner slogan for the channel sponsoring.
   *               E.g. "Philips - Es gibt immer einen Weg, das Leben besser zu machen"
   * @param hidden hide only the sponsoring. Default = `false`
+  * @param link   Optional link for the logo.
   */
-case class RawChannelSponsoring(logo: Option[String] = None, slogan: Option[String] = None, hidden: Boolean = false)
+case class RawChannelSponsoring(logo: Option[String] = None,
+                                slogan: Option[String] = None,
+                                hidden: Boolean = false,
+                                link: Option[RawSectionReference] = None)
 
 /**
   * Stored values for CMCF and Janus2. Should not be used by any clients.

@@ -127,7 +127,8 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
       name = rawChannel.config.sponsoring.logo,
       logo = rawChannel.config.sponsoring.logo,
       slogan = rawChannel.config.sponsoring.slogan,
-      hidden = Some(rawChannel.config.sponsoring.hidden)
+      hidden = Some(rawChannel.config.sponsoring.hidden),
+      link = rawChannel.config.sponsoring.link.map(ref ⇒ ApiReference(ref.label, ref.path))
     )
   }
 
@@ -135,14 +136,18 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     val apiSectionReferences: Seq[ApiReference] = mapReferences(
       rawChannel.config.header.map(_.unwrappedSectionReferences).getOrElse(Nil)
     )
+
     ApiHeaderConfiguration(
       label = rawChannel.config.header.flatMap(_.label),
       logo = rawChannel.config.header.flatMap(_.logo),
       slogan = rawChannel.config.header.flatMap(_.slogan),
       hidden = rawChannel.config.header.map(_.hidden),
-      sectionReferences = Some(apiSectionReferences)
+      sectionReferences = Some(apiSectionReferences),
+      headerReference = rawChannel.config.header.flatMap(_.headerReference).map(ref ⇒ ApiReference(ref.label, ref.path)),
+      sloganReference = rawChannel.config.header.flatMap(_.sloganReference).map(ref ⇒ ApiReference(ref.label, ref.path))
     )
   }
+
   /**
     * Simple Raw Reference -> Api Reference Converter
     */

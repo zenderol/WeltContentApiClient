@@ -66,7 +66,8 @@ object RawReads {
       case JsObject(underlying) ⇒ JsSuccess(RawChannelSponsoring(
         logo = underlying.get("logo").map(_.as[String]),
         slogan = underlying.get("slogan").map(_.as[String]),
-        hidden = underlying.get("hidden").map(_.as[Boolean]).getOrElse(defaults.hidden)
+        hidden = underlying.get("hidden").map(_.as[Boolean]).getOrElse(defaults.hidden),
+        link = underlying.get("link").map(_.as[RawSectionReference])
       ))
       case err@_ ⇒ jsErrorInvalidJson(err)
     }
@@ -84,7 +85,9 @@ object RawReads {
           label = underlying.get("label").map(_.as[String]),
           sectionReferences = underlying.get("sectionReferences").map(_.as[Seq[RawSectionReference]]),
           hidden = hidden,
-          adIndicator = adIndicator
+          adIndicator = adIndicator,
+          sloganReference = underlying.get("sloganReference").map(_.as[RawSectionReference]),
+          headerReference = underlying.get("headerReference").map(_.as[RawSectionReference])
         )
       )).getOrElse(jsErrorInvalidData("RawChannelHeader", json))
       case err@_ ⇒ jsErrorInvalidJson(err)

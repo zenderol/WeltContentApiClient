@@ -90,12 +90,14 @@ case class ApiCommercialTaboolaConfiguration(showNews: Option[Boolean] = None,
   * @param logo   name of the sponsoring logo. Need for mapping. Not a real image path.
   * @param slogan optional slogan of the sponsoring.
   * @param hidden name of the branding. Need for mapping.
+  * @param link   Optional link for the logo.
   */
 case class ApiSponsoringConfiguration(@deprecated("Renaming. Use logo instead", since = "01/2017")
                                       name: Option[String] = None,
                                       logo: Option[String] = None,
                                       slogan: Option[String] = None,
-                                      hidden: Option[Boolean] = None) {
+                                      hidden: Option[Boolean] = None,
+                                      link: Option[ApiReference] = None) {
   lazy val isHidden: Boolean = hidden.getOrElse(false)
 }
 
@@ -107,12 +109,17 @@ case class ApiSponsoringConfiguration(@deprecated("Renaming. Use logo instead", 
   * @param slogan            optional slogan for the label/logo
   * @param sectionReferences section refs for linking
   * @param hidden            Hide the complete channel header. Default == `false`
+  * @param sloganReference   Optional link for the slogan.
+  * @param headerReference   Optional link for the logo/label.
+  *                          Link logic (pseudo-code):  `headerReference.getOrElse(Master-Channel-Link)`
   */
 case class ApiHeaderConfiguration(label: Option[String] = None,
                                   logo: Option[String] = None,
                                   slogan: Option[String] = None,
                                   sectionReferences: Option[Seq[ApiReference]] = None,
-                                  hidden: Option[Boolean] = None) {
+                                  hidden: Option[Boolean] = None,
+                                  sloganReference: Option[ApiReference] = None,
+                                  headerReference: Option[ApiReference] = None) {
   lazy val unwrappedSectionReferences: Seq[ApiReference] = sectionReferences.getOrElse(Nil)
   lazy val isHidden: Boolean = hidden.getOrElse(false)
 }
