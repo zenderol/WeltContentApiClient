@@ -14,6 +14,8 @@ class ApiContentSearchTest extends PlaySpec {
   val contentType = "live"
   val subType = "ticker"
   val flags = "highlight"
+  val tag1 = "person-574114"
+  val tag2 = "thing-574111"
 
   "ApiContentSearch" should {
 
@@ -30,6 +32,7 @@ class ApiContentSearchTest extends PlaySpec {
         homeSection = HomeSectionParam(List(homeSectionPath)),
         sectionExcludes = SectionExcludes(excludes),
         flag = FlagParam(List(flags)),
+        tag = TagParam(List(tag1, tag2)),
         pageSize = PageSizeParam(maxResultSize),
         page = PageParam(page)
       )
@@ -41,6 +44,7 @@ class ApiContentSearchTest extends PlaySpec {
         ("sectionHome", "/dickButt/"),
         ("excludeSections", "-derpSection,-derpinaSection"),
         ("flag", "highlight"),
+        ("tag", "person-574114|thing-574111"),
         ("pageSize", "10"),
         ("page", "1"))
 
@@ -69,6 +73,11 @@ class ApiContentSearchTest extends PlaySpec {
     "date types are handled correctly" in {
       val dateParam = ApiContentSearch(fromDate = FromDateParam(Instant.ofEpochMilli(0))).getAllParamsUnwrapped
       dateParam must contain("fromDate" → "1970-01-01T00:00:00Z")
+    }
+
+    "tags are OR'ed with the '|' symbol" in {
+      val allParams = ApiContentSearch(tag = TagParam(List(tag1, tag2))).getAllParamsUnwrapped
+      allParams must contain("tag" → s"$tag1|$tag2")
     }
   }
 }

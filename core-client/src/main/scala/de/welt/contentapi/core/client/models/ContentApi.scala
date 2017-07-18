@@ -14,11 +14,12 @@ case class ApiContentSearch(`type`: MainTypeParam = MainTypeParam(),
                             homeSection: HomeSectionParam = HomeSectionParam(),
                             sectionExcludes: SectionExcludes = SectionExcludes(),
                             flag: FlagParam = FlagParam(),
+                            tag: TagParam = TagParam(),
                             page: PageParam = PageParam(),
                             pageSize: PageSizeParam = PageSizeParam(),
                             fromDate: FromDateParam = FromDateParam()
                            ) {
-  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, pageSize, page, fromDate)
+  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, tag, pageSize, page, fromDate)
 
   /**
     * Returns tuples of params ant their respective values {{{type -> news}}}.
@@ -150,6 +151,12 @@ case class FlagParam(override val value: List[String] = Nil) extends ListParam[S
   }
 
   override val name: String = "flag"
+}
+
+case class TagParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  override val name: String = "tag"
+
+  override def operator: String = "|" // disjunction by for tags
 }
 
 case class PageSizeParam(override val value: Int = Int.MinValue) extends ValueParam[Int](value) {
