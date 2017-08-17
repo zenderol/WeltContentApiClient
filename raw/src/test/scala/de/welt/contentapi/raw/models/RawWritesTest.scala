@@ -149,7 +149,7 @@ class RawWritesTest extends PlaySpec {
 
   "RawChannelStageCurated Writes" must {
 
-    sealed trait DefaultCommercialStage {
+    sealed trait MinimalCuratedStage {
       val actualRawCuratedStage = RawChannelStageCurated(
         index = 0,
         trackingName = Some("tracking-name"),
@@ -175,10 +175,10 @@ class RawWritesTest extends PlaySpec {
            |}""".stripMargin
     }
 
-    sealed trait StandardCommercialStage {
-      val actualRawCommercialStage = RawChannelStageCurated(
+    sealed trait MaximalCuratedStage {
+      val actualRawCuratedStage = RawChannelStageCurated(
         index = 0,
-        `type` = "dick-butt",
+        `type` = "dick-butt", // overriding the type will be ignored
         hidden = true,
         trackingName = Some("tracking-name"),
         link = Some(stageLink),
@@ -213,18 +213,93 @@ class RawWritesTest extends PlaySpec {
            |}""".stripMargin
     }
 
-    "generate valid JSON from default values (`Option.None` check)" in new DefaultCommercialStage {
+    "generate valid JSON from default values (`Option.None` check)" in new MinimalCuratedStage {
       val json: JsValue = Json.toJson[RawChannelStageCurated](actualRawCuratedStage)(rawChannelStageCuratedWrites)
 
       Json.prettyPrint(json) mustBe expectedJson
     }
 
     """|always override the `type` with 'curated'
-       |  Otherwise it's possible to override it with any value. (This is a glitch in PlayJson.Writes)""".stripMargin in new StandardCommercialStage {
-      val json: JsValue = Json.toJson[RawChannelStageCurated](actualRawCommercialStage)(rawChannelStageCuratedWrites)
+       |  Otherwise it's possible to override it with any value. (This is a glitch in PlayJson.Writes)""".stripMargin in new MaximalCuratedStage {
+      val json: JsValue = Json.toJson[RawChannelStageCurated](actualRawCuratedStage)(rawChannelStageCuratedWrites)
 
       val stageType: String = (json \ "type").as[String]
       stageType mustBe "curated"
+    }
+
+  }
+  "RawChannelStageTracking Writes" must {
+
+    sealed trait MinimalTrackingStage {
+      val minimalStage = RawChannelStageTracking(
+        index = 0,
+        trackingName = None,
+        link = None,
+        layout = None,
+        label = None,
+        logo = None,
+        reportName = "report-test-name"
+      )
+
+      val expectedJson: String =
+        s"""|{
+           |  "index" : 0,
+           |  "type" : "${RawChannelStage.TypeTracking}",
+           |  "hidden" : false,
+           |  "reportName" : "report-test-name"
+           |}""".stripMargin
+    }
+
+    sealed trait MaximalTrackingStage {
+      val maximalStage = RawChannelStageTracking(
+        index = 0,
+        `type`= "dick-butt", // overriding the type will be ignored
+        hidden = true,
+        trackingName = Some("tracking-name"),
+        link = Some(stageLink),
+        layout = Some("layout"),
+        label = Some("label"),
+        logo = Some("logo"),
+        references = Some(Seq(
+          RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
+        )),
+        reportName = "report-test-name"
+      )
+
+      val expectedJson: String =
+        s"""|{
+           |  "index" : 0,
+           |  "type" : "${RawChannelStage.TypeTracking}",
+           |  "hidden" : true,
+           |  "trackingName" : "tracking-name",
+           |  "link" : {
+           |    "path" : "https://www.dick-butt.org"
+           |  },
+           |  "layout" : "layout",
+           |  "label" : "label",
+           |  "logo" : "logo",
+           |  "references" : [ {
+           |    "label" : "ref-label",
+           |    "path" : "ref-path"
+           |  } ],
+           |  "reportName" : "report-test-name"
+           |}""".stripMargin
+    }
+
+    "generate valid JSON from minimal config" in new MinimalTrackingStage {
+      val json: JsValue = Json.toJson[RawChannelStageTracking](minimalStage)(rawChannelStageTrackingWrites)
+      Json.prettyPrint(json) mustBe expectedJson
+    }
+    "generate valid JSON from all possible values" in new MaximalTrackingStage {
+      val json: JsValue = Json.toJson[RawChannelStageTracking](maximalStage)(rawChannelStageTrackingWrites)
+      private val actual = Json.prettyPrint(json)
+      actual mustBe expectedJson
+    }
+
+    "always have `type` 'tracking' " in new MaximalTrackingStage {
+      val json: JsValue = Json.toJson[RawChannelStageTracking](maximalStage)(rawChannelStageTrackingWrites)
+      val stageType: String = (json \ "type").as[String]
+      stageType mustBe RawChannelStage.TypeTracking
     }
 
   }

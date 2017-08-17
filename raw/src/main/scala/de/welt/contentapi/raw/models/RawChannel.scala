@@ -242,10 +242,10 @@ case class RawChannelCommercial(definesAdTag: Boolean = false,
   * Enable/Disable Taboola scripts on content pages below the article text. Some Channel do not want
   * all Taboola scripts -- e.g. /icon/
   *
-  * @param showNews         "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
-  * @param showWeb          "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
-  * @param showWebExtended  "Auch interessant". Taboola named it 'Below Article Thumbnails 3rd'
-  * @param showNetwork      "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
+  * @param showNews        "Mehr aus dem Web". Taboola named it 'Below Article Thumbnails'
+  * @param showWeb         "Neues aus der Redaktion". Taboola named it 'Below Article Thumbnails 2nd'
+  * @param showWebExtended "Auch interessant". Taboola named it 'Below Article Thumbnails 3rd'
+  * @param showNetwork     "Neues aus unserem Netzwerk". Taboola named it 'Exchange Below Article Thumbnails'
   */
 case class RawChannelTaboolaCommercial(showNews: Boolean = true,
                                        showWeb: Boolean = true,
@@ -447,14 +447,32 @@ case class RawChannelStageCurated(override val index: Int,
 }
 
 /**
+  * Stage that (currently) represents a Webtrekk Report, e.g. Most-Read
+  * @param reportName the name as configured in Webtrekk, should not contain Whitespaces
+  */
+case class RawChannelStageTracking(override val index: Int,
+                                   override val `type`: String = RawChannelStage.TypeTracking,
+                                   override val hidden: Boolean = RawChannelStage.HiddenDefault,
+                                   override val trackingName: Option[String],
+                                   override val link: Option[RawSectionReference],
+                                   layout: Option[String],
+                                   label: Option[String],
+                                   logo: Option[String],
+                                   references: Option[Seq[RawSectionReference]] = None,
+                                   reportName: String) extends RawChannelStage {
+  lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
+}
+/**
   * Unknown Modules will be parsed as [[RawChannelStageIgnored]] for future-proof Json Parsing
   * Use Case: CMCF can be rolled out with new Modules that are not yet known to Digger
   */
 case class RawChannelStageIgnored(override val index: Int,
-                                  override val `type`: String = RawChannelStage.TypeUnknown,
-                                  override val hidden: Boolean = true,
-                                  override val trackingName: Option[String] = None,
-                                  override val link: Option[RawSectionReference] = None) extends RawChannelStage
+override val `type`: String = RawChannelStage.TypeUnknown,
+override val hidden: Boolean = true,
+override val trackingName: Option[String] = None,
+override val link: Option[RawSectionReference] = None) extends RawChannelStage
+
+
 
 object RawChannelStage {
   val HiddenDefault = false
@@ -462,5 +480,6 @@ object RawChannelStage {
   val TypeCustomModule = "custom-module"
   val TypeCommercial = "commercial"
   val TypeCurated = "curated"
+  val TypeTracking = "tracking"
   val TypeUnknown = "unknown"
 }
