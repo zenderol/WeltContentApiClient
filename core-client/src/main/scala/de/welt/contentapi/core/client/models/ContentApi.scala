@@ -6,7 +6,7 @@ import de.welt.contentapi.utils.Strings._
 import de.welt.contentapi.utils.Loggable
 
 /**
-  * Wrapper to configure a search against the content API. For params and values see https://content-api.up.welt.de/#_search
+  * Wrapper to configure a search against the content API. For params and values see https://doug-ecs-production.up.welt.de/#_request_parameters
   */
 case class ApiContentSearch(`type`: MainTypeParam = MainTypeParam(),
                             subType: SubTypeParam = SubTypeParam(),
@@ -17,9 +17,10 @@ case class ApiContentSearch(`type`: MainTypeParam = MainTypeParam(),
                             tag: TagParam = TagParam(),
                             page: PageParam = PageParam(),
                             pageSize: PageSizeParam = PageSizeParam(),
-                            fromDate: FromDateParam = FromDateParam()
+                            fromDate: FromDateParam = FromDateParam(),
+                            id: IdParam = IdParam()
                            ) {
-  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, tag, pageSize, page, fromDate)
+  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, tag, pageSize, page, fromDate, id)
 
   /**
     * Returns tuples of params ant their respective values {{{type -> news}}}.
@@ -169,6 +170,10 @@ case class PageParam(override val value: Int = Int.MinValue) extends ValueParam[
 
 case class FromDateParam(override val value: Instant = Instant.MIN) extends ValueParam[Instant](value) {
   override val name: String = "fromDate"
+}
+
+case class IdParam(override val value: List[String] = Nil) extends ListParam[String](value) {
+  override val name: String = "id"
 }
 
 sealed trait Datasource {

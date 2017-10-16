@@ -6,6 +6,7 @@ import org.scalatestplus.play.PlaySpec
 
 class ApiContentSearchTest extends PlaySpec {
 
+  val id = List("-157673104", "-157078453")
   val sectionPath = "/dickButt/"
   val homeSectionPath = "/dickButt/"
   val excludes = List("-derpSection", "-derpinaSection")
@@ -34,7 +35,8 @@ class ApiContentSearchTest extends PlaySpec {
         flag = FlagParam(List(flags)),
         tag = TagParam(List(tag1, tag2)),
         pageSize = PageSizeParam(maxResultSize),
-        page = PageParam(page)
+        page = PageParam(page),
+        id = IdParam(id)
       )
 
       val expectedListOfParams: Seq[(String, String)] = List(
@@ -46,7 +48,9 @@ class ApiContentSearchTest extends PlaySpec {
         ("flag", "highlight"),
         ("tag", "person-574114|thing-574111"),
         ("pageSize", "10"),
-        ("page", "1"))
+        ("page", "1"),
+        ("id", "-157673104,-157078453")
+      )
 
       query.getAllParamsUnwrapped mustBe expectedListOfParams
     }
