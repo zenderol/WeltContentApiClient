@@ -171,7 +171,8 @@ class RawWritesTest extends PlaySpec {
            |    "path" : "https://www.dick-butt.org"
            |  },
            |  "curatedSectionMapping" : "frontpage",
-           |  "curatedStageMapping" : "hero"
+           |  "curatedStageMapping" : "hero",
+           |  "hideCuratedStageLabel" : false
            |}""".stripMargin
     }
 
@@ -189,7 +190,8 @@ class RawWritesTest extends PlaySpec {
         logo = Some("curated-logo"),
         references = Some(Seq(
           RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
-        ))
+        )),
+        hideCuratedStageLabel = true
       )
 
       val expectedJson: String =
@@ -209,7 +211,8 @@ class RawWritesTest extends PlaySpec {
            |  "references" : [ {
            |    "label" : "ref-label",
            |    "path" : "ref-path"
-           |  } ]
+           |  } ],
+           |  "hideCuratedStageLabel" : true
            |}""".stripMargin
     }
 

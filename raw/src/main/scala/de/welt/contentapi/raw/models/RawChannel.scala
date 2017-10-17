@@ -432,6 +432,7 @@ case class RawChannelStageCommercial(override val index: Int,
   * @param label                 optional label to be rendered above the stage, e.g. name of channel
   * @param logo                  optional logo to be rendered next to the label, e.g. `/icon/` stage logos.
   * @param references            optional Link(s) to external or internal, absolute or relative URLs
+  * @param hideCuratedStageLabel don't show the label that curation api returns (allow re-usage of stages)
   */
 case class RawChannelStageCurated(override val index: Int,
                                   override val `type`: String = RawChannelStage.TypeCurated,
@@ -443,7 +444,8 @@ case class RawChannelStageCurated(override val index: Int,
                                   layout: Option[String],
                                   label: Option[String],
                                   logo: Option[String],
-                                  references: Option[Seq[RawSectionReference]] = None) extends RawChannelStage {
+                                  references: Option[Seq[RawSectionReference]] = None,
+                                  hideCuratedStageLabel: Boolean = false) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.X (2017-10-17)
+
+### Changes
+- [RAW] added field `hideCuratedStageLabel` as part of `RawChannelStageCurated`
+
+## 0.19.0 (2017-???)
+### Changes
+- [MISSING DATA]
+
 ## 0.18.0 (2017-09-19)
 
 ### Changes
