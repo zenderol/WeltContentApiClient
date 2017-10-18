@@ -171,8 +171,7 @@ class RawWritesTest extends PlaySpec {
            |    "path" : "https://www.dick-butt.org"
            |  },
            |  "curatedSectionMapping" : "frontpage",
-           |  "curatedStageMapping" : "hero",
-           |  "hideCuratedStageLabel" : false
+           |  "curatedStageMapping" : "hero"
            |}""".stripMargin
     }
 
@@ -191,7 +190,7 @@ class RawWritesTest extends PlaySpec {
         references = Some(Seq(
           RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
         )),
-        hideCuratedStageLabel = true
+        hideCuratedStageLabel = Some(true)
       )
 
       val expectedJson: String =

@@ -116,8 +116,7 @@ class RawReadsTest extends PlaySpec {
         |}
       """.stripMargin
 
-    """|ignore empty (`String.empty`) override values
-       |Prevent of parse empty number values""".stripMargin in {
+    "ignore empty override values to prevent parsing empty number values" in {
       val customStage: RawChannelStageCustomModule = Json.parse(customStageJson)
         .validate[RawChannelStageCustomModule](rawChannelStageCustomModuleReads)
         .asOpt
@@ -126,7 +125,25 @@ class RawReadsTest extends PlaySpec {
       customStage.unwrappedOverrides.get("limit") mustBe None
     }
 
+
   }
 
-
+  "RawChannelStageCurated Reads" must {
+    "work if defined values are missing in Json" in  {
+      // while writing this test a new field was added (hideCuratedStageLabel) and is missing in the following json
+      val json = """{
+        |  "index": 0,
+        |  "type": "curated",
+        |  "hidden": false,
+        |  "trackingName": "sondergruppe-1",
+        |  "curatedSectionMapping": "frontpage",
+        |  "curatedStageMapping": "sondergruppe-1",
+        |  "layout": "oembed",
+        |  "references": []
+        |}
+      """.stripMargin
+      val stage: Option[RawChannelStageCurated] = Json.parse(json).validateOpt[RawChannelStageCurated](rawChannelStageCuratedReads).get
+      stage.get.`type` mustBe RawChannelStage.TypeCurated
+    }
+  }
 }

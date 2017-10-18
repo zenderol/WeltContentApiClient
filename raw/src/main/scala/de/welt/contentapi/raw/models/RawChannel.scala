@@ -445,7 +445,7 @@ case class RawChannelStageCurated(override val index: Int,
                                   label: Option[String],
                                   logo: Option[String],
                                   references: Option[Seq[RawSectionReference]] = None,
-                                  hideCuratedStageLabel: Boolean = false) extends RawChannelStage {
+                                  hideCuratedStageLabel: Option[Boolean] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 
 }

@@ -289,7 +289,7 @@ object RawWrites {
       (__ \ "label").writeNullable[String] and
       (__ \ "logo").writeNullable[String] and
       (__ \ "references").writeNullable[Seq[RawSectionReference]] and
-      (__ \ "hideCuratedStageLabel").write[Boolean]
+      (__ \ "hideCuratedStageLabel").writeNullable[Boolean]
     ) (unlift(RawChannelStageCurated.unapply))
 
   implicit lazy val rawChannelStageTrackingWrites: Writes[RawChannelStageTracking] = (
