@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.21.X (2017-10-19) 
+
+### Changes
+- [CORE] add field `validFromDate` to `ApiMetadata`
+
 ## 0.20.X (2017-10-17)
 
 ### Changes

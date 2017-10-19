@@ -140,13 +140,14 @@ case class ApiAsset(`type`: String,
 /**
   * Some meta data of the content and transformation values of our services
   *
-  * @param validToDate end of license - used for Video/Broadcast articles
-  * @param catchUp     CatchUp license interval for Broadcast articles
+  * @param validToDate   end of license - used for Video/Broadcast articles
+  * @param validFromDate start of license - used for Broadcast articles
+  * @param catchUp       CatchUp license interval for Broadcast articles
   */
-case class ApiMetadata(validToDate: String, catchUp: Option[ApiMetadataCatchUp] = None) {
+case class ApiMetadata(validToDate: String, validFromDate: Option[String] = None, catchUp: Option[ApiMetadataCatchUp] = None) {
   def asMap: Map[String, String] = Map(
-    "validToDate" -> validToDate
-  )
+    "validToDate" → validToDate
+  ) ++ validFromDate.map("validFromDate" → _)
 }
 
 /**
