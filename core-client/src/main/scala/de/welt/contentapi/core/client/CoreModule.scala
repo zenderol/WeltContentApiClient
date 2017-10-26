@@ -13,5 +13,6 @@ class CoreModule extends AbstractModule {
     bind(classOf[S3Client]).to(classOf[S3ClientImpl])
     bind(classOf[ContentService]).to(classOf[ContentServiceImpl])
     bind(classOf[ContentSearchService]).to(classOf[ContentSearchServiceImpl])
+    bind(classOf[ContentBatchService]).to(classOf[ContentBatchServiceImpl])
   }
 }
