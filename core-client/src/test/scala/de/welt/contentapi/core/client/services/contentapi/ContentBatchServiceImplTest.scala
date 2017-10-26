@@ -2,7 +2,7 @@ package de.welt.contentapi.core.client.services.contentapi
 
 import com.codahale.metrics.Timer.Context
 import com.kenshoo.play.metrics.Metrics
-import de.welt.contentapi.core.models.{ApiBatchResponse, ApiContent}
+import de.welt.contentapi.core.models.{ApiBatchResponse, ApiBatchResult, ApiContent}
 import org.mockito.Matchers
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.{verify, when}
@@ -60,21 +60,26 @@ class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar {
       verify(mockWsClient).url(s"http://www.example.com/content/_batch/ids=123,234")
     }
 
-    "json-validate the response as ApiBatchResponse" in new TestScope with Status {
+    "json-validate the response as ApiBatchResult" in new TestScope with Status {
       val ids = Seq("123", "234")
       val apiContents = Seq(
         ApiContent(webUrl = "/123", `type` = "news"),
         ApiContent(webUrl = "/234", `type` = "news")
       )
-      val batchResponse = ApiBatchResponse(apiContents)
+      val batchResult = ApiBatchResult(apiContents)
+      val apiResponse = ApiBatchResponse(batchResult)
 
-      import de.welt.contentapi.core.models.ApiWrites.apiBatchResponseWrites
-      val mockJsResponse: JsValue = Json.toJson(batchResponse)
+      import de.welt.contentapi.core.models.ApiWrites._
+      val mockJsResponse: JsValue = Json.toJson(apiResponse)
 
       when(responseMock.status).thenReturn(OK)
       when(responseMock.json).thenReturn(mockJsResponse)
 
       Await.result(batchService.getIds(ids), 1.second).results mustBe apiContents
+    }
+
+    "not try to request an empty list of ids" in new TestScope {
+      Await.result(batchService.getIds(Nil), 1.second).results mustBe Nil
     }
 
   }

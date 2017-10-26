@@ -39,6 +39,7 @@ object ApiReads {
   implicit lazy val apiContentReads: Reads[ApiContent] = Json.reads[ApiContent]
   implicit lazy val apiResponseReads: Reads[ApiResponse] = Json.reads[ApiResponse]
   implicit lazy val apiSearchResponseReads: Reads[ApiSearchResponse] = Json.reads[ApiSearchResponse]
+  implicit lazy val apiBatchResultReads: Reads[ApiBatchResult] = Json.reads[ApiBatchResult]
   implicit lazy val apiBatchResponseReads: Reads[ApiBatchResponse] = Json.reads[ApiBatchResponse]
 }
 
@@ -55,6 +56,7 @@ object ApiWrites {
   implicit lazy val apiContentWrites: Writes[ApiContent] = Json.writes[ApiContent]
   implicit lazy val apiResponseWrites: Writes[ApiResponse] = Json.writes[ApiResponse]
   implicit lazy val apiSearchResponseWrites: Writes[ApiSearchResponse] = Json.writes[ApiSearchResponse]
+  implicit lazy val apiBatchResultWrites: Writes[ApiBatchResult] = Json.writes[ApiBatchResult]
   implicit lazy val apiBatchResponseWrites: Writes[ApiBatchResponse] = Json.writes[ApiBatchResponse]
 }
 

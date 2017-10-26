@@ -22,7 +22,15 @@ case class ApiResponse(content: ApiContent,
   * @param results  result of type [[ApiContent]]
   * @since 0.22
  */
-case class ApiBatchResponse(results: Seq[ApiContent])
+case class ApiBatchResult(results: Seq[ApiContent])
+
+/**
+  * This class is returned by the API as a Response Wrapper
+  *
+  * @param response  Wrapper for [[ApiBatchResult]]
+  * @since 0.22
+ */
+case class ApiBatchResponse(response: ApiBatchResult)
 
 /**
   * This class wraps search results from our API. Official documentation at https://content-api.up.welt.de

@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.http.RequestHeaders
-import de.welt.contentapi.core.models.ApiBatchResponse
+import de.welt.contentapi.core.models.{ApiBatchResponse, ApiBatchResult}
 import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
 import play.api.libs.json.{JsLookupResult, JsResult}
@@ -42,25 +42,28 @@ trait ContentBatchService {
     * @param executionContext Play [[scala.concurrent.ExecutionContext]] for [[scala.concurrent.Future]]'s
     */
   def getIds(ids: Seq[String])
-            (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiBatchResponse]
+            (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiBatchResult]
 }
 
 @Singleton
 class ContentBatchServiceImpl @Inject()(override val ws: WSClient,
                                    override val metrics: Metrics,
                                    override val configuration: Configuration)
-  extends AbstractService[ApiBatchResponse] with ContentBatchService with Loggable {
+  extends AbstractService[ApiBatchResult] with ContentBatchService with Loggable {
 
   override val serviceName = "content-batch"
 
   import de.welt.contentapi.core.models.ApiReads._
 
-  override val jsonValidate: JsLookupResult ⇒ JsResult[ApiBatchResponse] = _.validate[ApiBatchResponse]
+  override val jsonValidate: JsLookupResult ⇒ JsResult[ApiBatchResult] = _.validate[ApiBatchResponse].map(_.response)
 
   override def getIds(ids: Seq[String])
-                     (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiBatchResponse] = {
-
-    get(urlArguments = Seq(ids.mkString(",")))
+                     (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiBatchResult] = {
+    if (ids.isEmpty) {
+      Future.successful(ApiBatchResult(Nil))
+    } else {
+      get(urlArguments = Seq(ids.mkString(",")))
+    }
   }
 }
 
