@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.21.X (2017-10-19) 
+## 0.21.X (2017-10-26)
+
+### Changes
+- [CORE-CLIENT] add Service `ContentBatchService` to allow digger to resolve all Ids of a stage with one call
+
+## 0.21.X (2017-10-19)
 
 ### Changes
 - [CORE] add field `validFromDate` to `ApiMetadata`

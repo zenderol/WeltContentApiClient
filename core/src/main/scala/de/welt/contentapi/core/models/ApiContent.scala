@@ -17,6 +17,14 @@ case class ApiResponse(content: ApiContent,
 }
 
 /**
+  * This class is returned by the API, when a batch-id-get request is performed
+  *
+  * @param results  result of type [[ApiContent]]
+  * @since 0.22
+ */
+case class ApiBatchResponse(results: Seq[ApiContent])
+
+/**
   * This class wraps search results from our API. Official documentation at https://content-api.up.welt.de
   *
   * @param page     current result page
