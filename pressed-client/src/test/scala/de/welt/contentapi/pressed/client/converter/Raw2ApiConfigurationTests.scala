@@ -45,7 +45,8 @@ class Raw2ApiConfigurationTests extends PlaySpec {
         showWeb = false,
         showWebExtended = false
       ),
-      showFallbackAds = false
+      showFallbackAds = false,
+      disableAdvertisement = true
     )
 
     val rawChannelConfiguration = RawChannelConfiguration(
@@ -209,6 +210,16 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       val channel = emptyWithId(123L)
       val convertedCommercialConfig: ApiCommercialConfiguration = converter.apiCommercialConfigurationFromRawChannel(channel)
       convertedCommercialConfig.showFallbackAds mustBe Some(true)
+    }
+
+    "by default advertisements are enabled per channel" in new TestScopeConfiguration {
+      val channel = emptyWithId(123L)
+      val convertedCommercialConfig: ApiCommercialConfiguration = converter.apiCommercialConfigurationFromRawChannel(channel)
+      convertedCommercialConfig.disableAdvertisement mustBe Some(false)
+    }
+
+    "disabled advertisements on a channel(raw model) results in true option (api model)" in new TestScopeConfiguration {
+      apiCommercialConfiguration.disableAdvertisement mustBe Some(true)
     }
 
   }

@@ -52,12 +52,14 @@ case class ApiMetaRobots(noIndex: Option[Boolean] = None, noFollow: Option[Boole
   * @param thirdParty        controls 3rd-party commercial scripts
   * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
   * @param showFallbackAds   Control to display fallback ads if ASMI fails to deliver their own for several ad formats (m-rectangle, skyscraper, ...)
+  * @param disableAdvertisement Disable all advertisement for this channel; does not inherit to children
   */
 case class ApiCommercialConfiguration(pathForAdTag: Option[String] = None,
                                       pathForVideoAdTag: Option[String] = None,
                                       thirdParty: Option[ApiCommercial3rdPartyConfiguration] = None,
                                       adIndicator: Option[Boolean] = None,
-                                      showFallbackAds: Option[Boolean] = Some(true))
+                                      showFallbackAds: Option[Boolean] = Some(true),
+                                      disableAdvertisement: Option[Boolean] = Some(false))
 
 /**
   * Enable/Disable 3rd-Party commercial scripts on section/content pages.

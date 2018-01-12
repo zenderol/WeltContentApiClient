@@ -118,7 +118,8 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
       pathForVideoAdTag = Some(calculatePathForVideoAdTag(rawChannel)),
       thirdParty = Some(thirdPartyCommercialFromRawChannelCommercial(rawChannel.config.commercial)),
       adIndicator = rawChannel.config.header.map(_.adIndicator),
-      showFallbackAds = Some(rawChannel.config.commercial.showFallbackAds)
+      showFallbackAds = Some(rawChannel.config.commercial.showFallbackAds),
+      disableAdvertisement = Some(rawChannel.config.commercial.disableAdvertisement)
     )
   }
 

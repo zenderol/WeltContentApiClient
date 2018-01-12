@@ -228,15 +228,17 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
   * When a channel defines an ad tag we override the root section with its own section.
   * We need this for some channel targeting. E.g. '/sport/formel1/' needs his own ad tag.
   *
-  * @param definesAdTag      Overrides the (ASMI) ad tag for the channel
-  * @param definesVideoAdTag Overrides the (ASMI) video ad tag for the channel
-  * @param contentTaboola    Controls Taboola commercials on all content pages of the channel.
-  * @param showFallbackAds   Control to display fallback ads if ASMI fails to deliver their own for several ad formats (m-rectangle, skyscraper, ...)
+  * @param definesAdTag         Overrides the (ASMI) ad tag for the channel
+  * @param definesVideoAdTag    Overrides the (ASMI) video ad tag for the channel
+  * @param contentTaboola       Controls Taboola commercials on all content pages of the channel.
+  * @param showFallbackAds      Control to display fallback ads if ASMI fails to deliver their own for several ad formats (m-rectangle, skyscraper, ...)
+  * @param disableAdvertisement Disable all advertisements for this channel; does not inherit to children (#akalies)
   */
 case class RawChannelCommercial(definesAdTag: Boolean = false,
                                 definesVideoAdTag: Boolean = false,
                                 var contentTaboola: RawChannelTaboolaCommercial = RawChannelTaboolaCommercial(),
-                                showFallbackAds: Boolean = true)
+                                showFallbackAds: Boolean = true,
+                                disableAdvertisement: Boolean = false)
 
 /**
   * Enable/Disable Taboola scripts on content pages below the article text. Some Channel do not want
