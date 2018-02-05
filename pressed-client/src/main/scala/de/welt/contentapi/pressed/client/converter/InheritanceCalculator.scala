@@ -50,7 +50,7 @@ class InheritanceCalculator @Inject()() {
 /**
   * Holder object for the possible values for inheritance
   *
-  * @param forRoot     value or function to get a result for the root channel (frontpage is mostly unique)
+  * @param forRoot     value or function to get a result for the root channel (frontpage is mostly unique and needs to be protected from unexpected behaviour)
   * @param forFallback if no ancestor is found set this fallback value (apply fn). BEWARE: never inherit root channels values
   * @param forMatching this is the happy path for inheritance - a static value or an apply function can be provided
   */

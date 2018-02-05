@@ -46,23 +46,23 @@ class Raw2MasterChannelTest extends PlaySpec {
     val expectedNode11Master: ApiReference = ApiReference(label = Some("11"), href = Some("/11/"))
 
     "calculate `root` as master for the root channel." in new AutomaticFlaggedMasterScope {
-      converter.calculateMaster(root) mustBe Some(expectedRootMaster)
+      converter.calculateMasterReference(root) mustBe Some(expectedRootMaster)
     }
 
     "calculate `node10` as master for itself" in new AutomaticFlaggedMasterScope {
-      converter.calculateMaster(node10) mustBe Some(expectedNode10Master)
+      converter.calculateMasterReference(node10) mustBe Some(expectedNode10Master)
     }
 
     "calculate `node10` as master for every direct child of `node10`" in new AutomaticFlaggedMasterScope {
-      converter.calculateMaster(node100) mustBe Some(expectedNode10Master)
+      converter.calculateMasterReference(node100) mustBe Some(expectedNode10Master)
     }
 
     "calculate `node10` as master for every child-child (yo dawg) of `node10`" in new AutomaticFlaggedMasterScope {
-      converter.calculateMaster(node1000) mustBe Some(expectedNode10Master)
+      converter.calculateMasterReference(node1000) mustBe Some(expectedNode10Master)
     }
 
     "calculate `node11` as master for itself" in new AutomaticFlaggedMasterScope {
-      converter.calculateMaster(node11) mustBe Some(expectedNode11Master)
+      converter.calculateMasterReference(node11) mustBe Some(expectedNode11Master)
     }
   }
 
@@ -110,27 +110,27 @@ class Raw2MasterChannelTest extends PlaySpec {
     val expectedNode11Master: ApiReference = ApiReference(label = Some("11"), href = Some("/11/"))
 
     "calculate `root` as master for the root channel." in new ManualFlaggedMasterScope {
-      converter.calculateMaster(root) mustBe Some(expectedRootMaster)
+      converter.calculateMasterReference(root) mustBe Some(expectedRootMaster)
     }
 
     "calculate `node10` as master for itself (automatic flagged)" in new ManualFlaggedMasterScope {
-      converter.calculateMaster(node10) mustBe Some(expectedNode10Master)
+      converter.calculateMasterReference(node10) mustBe Some(expectedNode10Master)
     }
 
     "calculate `node100` as master for itself (manually flagged)" in new ManualFlaggedMasterScope {
-      converter.calculateMaster(node100) mustBe Some(expectedNode100Master)
+      converter.calculateMasterReference(node100) mustBe Some(expectedNode100Master)
     }
 
     "calculate `node100` as master for every direct child of `node100`" in new ManualFlaggedMasterScope {
-      converter.calculateMaster(node1000) mustBe Some(expectedNode100Master)
+      converter.calculateMasterReference(node1000) mustBe Some(expectedNode100Master)
     }
 
     "calculate `node100` as master for every child-child (yo dawg) of `node100`" in new ManualFlaggedMasterScope {
-      converter.calculateMaster(node10000) mustBe Some(expectedNode100Master)
+      converter.calculateMasterReference(node10000) mustBe Some(expectedNode100Master)
     }
 
     "calculate `node11` as master for itself" in new ManualFlaggedMasterScope {
-      converter.calculateMaster(node11) mustBe Some(expectedNode11Master)
+      converter.calculateMasterReference(node11) mustBe Some(expectedNode11Master)
     }
   }
 

@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.models._
-import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag, RawSectionReference}
+import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag}
 
 
 class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) {
@@ -23,7 +23,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
   def apiChannelFromRawChannel(rawChannel: RawChannel): ApiChannel = {
     ApiChannel(
       section = Some(getApiSectionReferenceFromRawChannel(rawChannel)),
-      master = calculateMaster(rawChannel),
+      master = calculateMasterReference(rawChannel),
       breadcrumb = Some(getBreadcrumb(rawChannel)),
       brand = Some(calculateBrand(rawChannel))
     )
@@ -48,7 +48,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     meta = apiMetaConfigurationFromRawChannel(rawChannel),
     commercial = Some(apiCommercialConfigurationFromRawChannel(rawChannel)),
     sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
-    header = Some(apiHeaderConfigurationFromRawChannel(rawChannel)),
+    header = calculateHeader(rawChannel),
     theme = calculateTheme(rawChannel)
   )
 
@@ -58,21 +58,55 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
   private[converter] def calculatePathForAdTag(rawChannel: RawChannel): String =
     inheritanceCalculator.forChannel[String](rawChannel, pathForAdTagAction, c ⇒ c.config.commercial.definesAdTag)
 
+  /**
+    * Primarily converts the RawChannelHeader from the current RawChannel
+    * Secondary is to search for a parent that is a `Master` and use its Header even if its None
+    */
+  private[converter] def calculateHeader(rawChannel: RawChannel): Option[ApiHeaderConfiguration] = {
+    rawChannel.config.header.flatMap { _ ⇒
+      apiHeaderConfigurationFromRawChannel(rawChannel)
+    }.orElse {
+      calculateMasterChannel(rawChannel).flatMap { masterForChannel ⇒
+        apiHeaderConfigurationFromRawChannel(masterForChannel)
+      }
+    }
+  }
+
+  /**
+    * Link to Master Channel in the top of a section page or an article page
+    * e.g. there is a link to /icon/ with Label Icon on /icon/uhren/
+    */
+  private[converter] def calculateMasterReference(rawChannel: RawChannel): Option[ApiReference] = {
+    calculateMasterChannel(rawChannel).flatMap { master ⇒
+      Some(ApiReference(label = Some(master.id.label), href = Some(master.id.path)))
+    }
+  }
+
   private[converter] def trimPathForAdTag(path: String): String = {
     val pathWithoutLeadingAndTrailingSlashes = path.stripPrefix("/").stripSuffix("/").trim
     Option(pathWithoutLeadingAndTrailingSlashes).filter(_.nonEmpty).getOrElse("sonstiges")
   }
 
-  private[converter] def calculateMaster(rawChannel: RawChannel): Option[ApiReference] = {
-    val rawChannelToApiReference: RawChannel ⇒ Option[ApiReference] = c ⇒ Some(ApiReference(label = Some(c.id.label), href = Some(c.id.path)))
-    val masterChannelInheritanceAction: InheritanceAction[Option[ApiReference]] = InheritanceAction[Option[ApiReference]](
-      forRoot = c ⇒ rawChannelToApiReference.apply(c.root),
+  /**
+    * Calculate the Master for any given Channel
+    * Master Channels are chosen by either
+    *   a) checking the `Master` Option under GodMode in CMCF
+    *   b) Section is 1st Level == parent is root (frontpage)
+    * Master Channel may inherit some of its properties
+    * e.g. on /sport/fussball/1.bundesliga/ the Header shows "Fußball" linked to /sport/fussball/ to allow user to click upwards in the tree
+    * e.g. on /sport/fussball/1.bundesliga/ the same SubNavigation is shown as on /sport/fussball/ to allow users to click through the page
+    * but ConfigMcConfigFace Users only need to define the Subnavigation once
+    */
+  private[converter] def calculateMasterChannel(rawChannel: RawChannel): Option[RawChannel] = {
+    val masterChannelInheritanceAction: InheritanceAction[Option[RawChannel]] = InheritanceAction[Option[RawChannel]](
+      forRoot = ch ⇒ Some(ch.root),
       forFallback = _ ⇒ None,
-      forMatching = rawChannelToApiReference
+      forMatching = masterChannel ⇒ Some(masterChannel)
     )
     val predicate: RawChannel ⇒ Boolean = c ⇒ c.parent.contains(c.root) || c.config.master
-    inheritanceCalculator.forChannel[Option[ApiReference]](rawChannel, masterChannelInheritanceAction, predicate)
+    inheritanceCalculator.forChannel[Option[RawChannel]](rawChannel, masterChannelInheritanceAction, predicate)
   }
+
 
   private[converter] def calculateBrand(rawChannel: RawChannel): Boolean = {
     val brandInheritanceAction: InheritanceAction[Boolean] = InheritanceAction[Boolean](
@@ -134,28 +168,20 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     )
   }
 
-  private[converter] def apiHeaderConfigurationFromRawChannel(rawChannel: RawChannel) = {
-    val apiSectionReferences: Seq[ApiReference] = mapReferences(
-      rawChannel.config.header.map(_.unwrappedSectionReferences).getOrElse(Nil)
-    )
-
-    ApiHeaderConfiguration(
-      label = rawChannel.config.header.flatMap(_.label),
-      logo = rawChannel.config.header.flatMap(_.logo),
-      slogan = rawChannel.config.header.flatMap(_.slogan),
-      hidden = rawChannel.config.header.map(_.hidden),
-      sectionReferences = Some(apiSectionReferences),
-      headerReference = rawChannel.config.header.flatMap(_.headerReference).map(ref ⇒ ApiReference(ref.label, ref.path)),
-      sloganReference = rawChannel.config.header.flatMap(_.sloganReference).map(ref ⇒ ApiReference(ref.label, ref.path))
-    )
+  private[converter] def apiHeaderConfigurationFromRawChannel(rawChannel: RawChannel): Option[ApiHeaderConfiguration] = {
+    rawChannel.config.header.map { header ⇒
+      ApiHeaderConfiguration(
+        label = header.label,
+        logo = header.logo,
+        slogan = header.slogan,
+        hidden = Some(header.hidden),
+        sectionReferences = header.sectionReferences.map(_.map(ref ⇒ ApiReference(ref.label, ref.path))),
+        headerReference = header.headerReference.map(ref ⇒ ApiReference(ref.label, ref.path)),
+        sloganReference = header.sloganReference.map(ref ⇒ ApiReference(ref.label, ref.path))
+      )
+    }
   }
 
-  /**
-    * Simple Raw Reference -> Api Reference Converter
-    */
-  def mapReferences(references: Seq[RawSectionReference]): Seq[ApiReference] = {
-    references.map(ref ⇒ ApiReference(ref.label, ref.path))
-  }
 
   private[converter] def apiThemeFromRawChannel(rawChannel: RawChannel): Option[ApiThemeConfiguration] =
     rawChannel.config.theme.map(t ⇒ ApiThemeConfiguration(t.name, t.fields))
