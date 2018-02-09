@@ -305,40 +305,52 @@ case class RawChannelMetaRobotsTag(noIndex: Option[Boolean] = None, noFollow: Op
 case class RawSectionReference(label: Option[String] = None, path: Option[String] = None)
 
 /**
-  *
+  * @param label             display name of the channel. The fallback label is always the [[RawChannelId.label]]
   * @param logo              only a mapping string for the client. Used for a svg/image logo to replace the label.
   *                          Display-Logic: `logo.getOrElse(label)`
-  * @param slogan            slogan for the channel. E.g. /kmpkt: 'NEWS TO GO. EINZIGARTIG ANDERS.'
-  * @param label             display name of the channel. The fallback label is always the [[RawChannelId.label]]
-  * @param sectionReferences some optional links inside the header. Example: Link to a sub-channel.
+  * @param headerReference   Optional link for the logo/label.
+  *                          Link logic (pseudo-code):  `headerReference.getOrElse(Master-Channel-Link)`
+  * @param slogan            slogan for the channel. E.g. /kmpkt/: 'NEWS TO GO. EINZIGARTIG ANDERS.'
+  * @param sloganReference   Optional link for the slogan.
+  * @param sectionReferences Used as a sub-navigation to make sub-channels reachable
   * @param hidden            hide only the channel header. (Not affected: Sponsoring, References). Default = `false`
   * @param adIndicator       Indicator for an advertorial or mark as advertisement. Used for: display the label 'Anzeige'.
   *                          Default = `false`
-  * @param sloganReference   Optional link for the slogan.
-  * @param headerReference   Optional link for the logo/label.
-  *                          Link logic (pseudo-code):  `headerReference.getOrElse(Master-Channel-Link)`
   */
-case class RawChannelHeader(logo: Option[String] = None,
+case class RawChannelHeader(label: Option[String] = None,
+                            logo: Option[String] = None,
+                            headerReference: Option[RawSectionReference] = None,
                             slogan: Option[String] = None,
-                            label: Option[String] = None,
-                            sectionReferences: Option[Seq[RawSectionReference]] = None,
-                            hidden: Boolean = false,
-                            adIndicator: Boolean = false,
                             sloganReference: Option[RawSectionReference] = None,
-                            headerReference: Option[RawSectionReference] = None) {
+                            sectionReferences: Option[Seq[RawSectionReference]] = None, // == SubNavi
+                            hidden: Boolean = false, // => complete clean header
+                            adIndicator: Boolean = false) {
+
   lazy val unwrappedSectionReferences: Seq[RawSectionReference] = sectionReferences.getOrElse(Nil)
+
+  /**
+    * isEmpty / nonEmpty are used for inheritance decisions
+    *
+    * because hidden and adIndicator are not optional fields the RawChannelHeader object is always `Some()`
+    * Some(RawChannelHeader) may still be counted as empty if
+    *   a) its values are equal to the Constructor defaults
+    *   b) only adIndicator is set to true
+    *      the field is wrongly placed here, because it is only used for the Commercial Configuration
+    */
+  lazy val isEmpty: Boolean = this == RawChannelHeader() || this == RawChannelHeader(adIndicator = true)
+  lazy val nonEmpty: Boolean = !isEmpty
 }
 
 /**
   * A channel can be sponsored by a partner or brand with a special logo + slogan. This is mostly part of the
   * page-sub-header.
   *
-  * @param logo   only a mapping string for the client. Used for a svg/image logo e.g. 'Commerzbank' or 'Philips'
-  * @param slogan partner slogan for the channel sponsoring.
+  * @param logo         only a mapping string for the client. Used for a svg/image logo e.g. 'Commerzbank' or 'Philips'
+  * @param slogan       partner slogan for the channel sponsoring.
   *               E.g. "Philips - Es gibt immer einen Weg, das Leben besser zu machen"
-  * @param hidden hide only the sponsoring. Default = `false`
-  * @param link   Optional link for the logo.
-  * @param brandstation   Optional type of Brandstation if the partner is part of brandstation.
+  * @param hidden       hide only the sponsoring. Default = `false`
+  * @param link         Optional link for the logo.
+  * @param brandstation Optional type of Brandstation if the partner is part of brandstation.
   */
 case class RawChannelSponsoring(logo: Option[String] = None,
                                 slogan: Option[String] = None,
@@ -378,9 +390,13 @@ case class RawChannelContentConfiguration(subTypeQueryForText: Option[String] = 
   */
 sealed trait RawChannelStage {
   def index: Int
+
   def `type`: String
+
   def hidden: Boolean
+
   def trackingName: Option[String]
+
   def link: Option[RawSectionReference]
 }
 
@@ -454,6 +470,7 @@ case class RawChannelStageCurated(override val index: Int,
 
 /**
   * Stage that (currently) represents a Webtrekk Report, e.g. Most-Read
+  *
   * @param reportName the name as configured in Webtrekk, should not contain Whitespaces
   */
 case class RawChannelStageTracking(override val index: Int,
@@ -468,16 +485,16 @@ case class RawChannelStageTracking(override val index: Int,
                                    reportName: String) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 }
+
 /**
   * Unknown Modules will be parsed as [[RawChannelStageIgnored]] for future-proof Json Parsing
   * Use Case: CMCF can be rolled out with new Modules that are not yet known to Digger
   */
 case class RawChannelStageIgnored(override val index: Int,
-override val `type`: String = RawChannelStage.TypeUnknown,
-override val hidden: Boolean = true,
-override val trackingName: Option[String] = None,
-override val link: Option[RawSectionReference] = None) extends RawChannelStage
-
+                                  override val `type`: String = RawChannelStage.TypeUnknown,
+                                  override val hidden: Boolean = true,
+                                  override val trackingName: Option[String] = None,
+                                  override val link: Option[RawSectionReference] = None) extends RawChannelStage
 
 
 object RawChannelStage {

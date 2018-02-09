@@ -62,7 +62,7 @@ class Raw2ApiConfigurationTests extends PlaySpec {
     val converter: RawToApiConverter = new RawToApiConverter(new InheritanceCalculator())
     val rawChannel: RawChannel = emptyWithIdAndConfig(rawChannelId, rawChannelConfiguration)
     val apiChannel: ApiChannel = converter.apiChannelFromRawChannel(rawChannel)
-    val apiHeaderConfiguration: ApiHeaderConfiguration = converter.apiHeaderConfigurationFromRawChannel(rawChannel).get
+    val apiHeaderConfiguration: ApiHeaderConfiguration = converter.calculateHeader(rawChannel).get
     val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(rawChannel)
     val apiCommercialConfiguration: ApiCommercialConfiguration = converter.apiCommercialConfigurationFromRawChannel(rawChannel)
 

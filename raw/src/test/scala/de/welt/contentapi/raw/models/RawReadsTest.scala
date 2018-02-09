@@ -83,6 +83,13 @@ class RawReadsTest extends PlaySpec {
         .asOpt mustBe Some(RawChannelHeader(logo = Some("foo"), slogan = Some("foo"), label = Some("foo")))
     }
 
+    "map Some('') to None" in {
+      val json: String = """{"logo": "", "slogan": "", "label": "", "sectionReferences": [], "hidden": false, "adIndicator": false}"""
+      Json.parse(json)
+        .validate[RawChannelHeader](rawChannelHeaderReads)
+        .asOpt mustBe Some(RawChannelHeader(logo = None, slogan = None, label = None, sectionReferences = None))
+    }
+
   }
 
   "RawChannelStage Reads" must {

@@ -83,10 +83,10 @@ object RawReads {
         adIndicator ← underlying.get("adIndicator").map(_.as[Boolean]).orElse(Some(defaults.adIndicator))
       } yield JsSuccess(
         RawChannelHeader(
-          logo = underlying.get("logo").map(_.as[String]),
-          slogan = underlying.get("slogan").map(_.as[String]),
-          label = underlying.get("label").map(_.as[String]),
-          sectionReferences = underlying.get("sectionReferences").map(_.as[Seq[RawSectionReference]]),
+          logo = underlying.get("logo").map(_.as[String]).filter(_.nonEmpty),
+          slogan = underlying.get("slogan").map(_.as[String]).filter(_.nonEmpty),
+          label = underlying.get("label").map(_.as[String]).filter(_.nonEmpty),
+          sectionReferences = underlying.get("sectionReferences").map(_.as[Seq[RawSectionReference]]).filter(_.nonEmpty),
           hidden = hidden,
           adIndicator = adIndicator,
           sloganReference = underlying.get("sloganReference").map(_.as[RawSectionReference]),
