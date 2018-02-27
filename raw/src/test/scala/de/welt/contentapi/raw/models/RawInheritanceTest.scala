@@ -1,6 +1,7 @@
 package de.welt.contentapi.raw.models
 
 import org.scalatestplus.play.PlaySpec
+import play.api.Logger
 
 class RawInheritanceTest extends PlaySpec {
 
@@ -106,7 +107,7 @@ class RawInheritanceTest extends PlaySpec {
 
     "sets the user and lastMod date after inheritance actions" in new TestScope {
       private val now = 55555555L
-      root.batchInheritGenericToAllChildren((rawChannel: RawChannel) ⇒ log.debug(s"${rawChannel.id.label}"), "user", now)
+      root.batchInheritGenericToAllChildren((rawChannel: RawChannel) ⇒ Logger.debug(s"${rawChannel.id.label}"), "user", now)
       root.metadata.changedBy mustNot be("user")
       sport.metadata.changedBy mustBe "user"
       fussball.metadata.changedBy mustBe "user"

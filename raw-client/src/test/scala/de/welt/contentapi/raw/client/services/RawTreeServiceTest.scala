@@ -1,10 +1,10 @@
 package de.welt.contentapi.raw.client.services
 
+import de.welt.contentapi.TestExecutionContext
 import de.welt.contentapi.core.client.services.s3.S3Client
-import de.welt.contentapi.utils.Env
-import de.welt.testing.DisabledCache
+import de.welt.contentapi.utils.Env.Live
 import org.mockito.{Matchers, Mockito}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.{Configuration, Environment, Mode}
 
@@ -23,7 +23,8 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
       val s3Client: S3Client = mock[S3Client]
 
       Mockito.when(environment.mode) thenReturn Mode.Prod
-      Mockito.when(s3Client.get(Matchers.anyString(), Matchers.anyString())) thenReturn None
+      Mockito.when(s3Client.getLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
+      Mockito.when(s3Client.getWithLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
     }
 
     "use 'mode' from config file" in new ConfigurationScope {
@@ -33,13 +34,13 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
         RawTreeServiceImpl.folderConfigKey → expectedFolder,
         RawTreeServiceImpl.modeConfigKey → expectedMode
       )
-      val service = new RawTreeServiceImpl(s3Client, config = config, environment = environment, DisabledCache)
+      val service = new RawTreeServiceImpl(s3Client, config = config, environment = environment, TestExecutionContext.executionContext)
 
       // when
-      service.root(env = Env.Live)
+      service.root(Live)
 
       // then
-      Mockito.verify(s3Client).get(expectedBucket, s"$expectedFolder/$expectedMode/Live/config.json")
+      Mockito.verify(s3Client).getLastModified(expectedBucket, s"$expectedFolder/$expectedMode/Live/config.json")
     }
 
     "use 'play.Mode' as fallback" in new ConfigurationScope {
@@ -48,13 +49,13 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
         RawTreeServiceImpl.bucketConfigKey → expectedBucket,
         RawTreeServiceImpl.folderConfigKey → expectedFolder
       )
-      val service = new RawTreeServiceImpl(s3Client, config = config, environment = environment, DisabledCache)
+      val service = new RawTreeServiceImpl(s3Client, config = config, environment = environment, TestExecutionContext.executionContext)
 
       // when
-      service.root(env = Env.Live)
+      service.root(Live)
 
       // then
-      Mockito.verify(s3Client).get(expectedBucket, s"$expectedFolder/$expectedPlayMode/Live/config.json")
+      Mockito.verify(s3Client).getLastModified(expectedBucket, s"$expectedFolder/$expectedPlayMode/Live/config.json")
     }
 
   }

@@ -2,7 +2,9 @@ package de.welt.contentapi.pressed.client.repository
 
 import javax.inject.{Inject, Singleton}
 
+import com.google.inject.ImplementedBy
 import com.kenshoo.play.metrics.Metrics
+import de.welt.contentapi.core.client.services.CapiExecutionContext
 import de.welt.contentapi.core.client.services.contentapi.AbstractService
 import de.welt.contentapi.core.client.services.http._
 import de.welt.contentapi.pressed.models.ApiPressedSectionResponse
@@ -12,8 +14,9 @@ import play.api.Configuration
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
+@ImplementedBy(classOf[PressedDiggerClientImpl])
 sealed trait PressedDiggerClient {
 
   /**
@@ -22,22 +25,17 @@ sealed trait PressedDiggerClient {
     * @param path SectionPath for the Section, e.g. /sport/
     * @param env  Live/Preview, default = Live
     */
-  protected[client] def findByPath(path: String, env: Env = Live)
-                                  (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSectionResponse]
+  protected[client] def findByPath(path: String, env: Env = Live)(implicit requestHeaders: RequestHeaders = Seq.empty): Future[ApiPressedSectionResponse]
 }
 
 @Singleton
-class PressedDiggerClientImpl @Inject()(override val ws: WSClient,
-                                        override val metrics: Metrics,
-                                        override val configuration: Configuration)
-  extends AbstractService[ApiPressedSectionResponse] with PressedDiggerClient {
+class PressedDiggerClientImpl @Inject()(ws: WSClient, metrics: Metrics, configuration: Configuration, capi: CapiExecutionContext)
+  extends AbstractService[ApiPressedSectionResponse](ws, metrics, configuration, "digger", capi) with PressedDiggerClient {
 
-  override val serviceName = "digger"
-  override val jsonValidate: (JsLookupResult) ⇒ JsResult[ApiPressedSectionResponse] = jsLookupResult ⇒
-    jsLookupResult.validate[ApiPressedSectionResponse](apiPressedSectionResponseReads)
+  override val jsonValidate: (JsLookupResult) ⇒ JsResult[ApiPressedSectionResponse] = _.validate[ApiPressedSectionResponse](apiPressedSectionResponseReads)
 
   override protected[client] def findByPath(path: String, env: Env = Live)
-                                           (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiPressedSectionResponse] = {
+                                           (implicit requestHeaders: RequestHeaders = Seq.empty): Future[ApiPressedSectionResponse] = {
     get(urlArguments = Seq(env.toString, path), parameters = Nil)
   }
 

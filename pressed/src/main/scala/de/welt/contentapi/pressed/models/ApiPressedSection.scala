@@ -3,7 +3,6 @@ package de.welt.contentapi.pressed.models
 import java.time.Instant
 
 import de.welt.contentapi.pressed.models.StatusPhrase.StatusPhrase
-import play.api.http.Status
 
 /**
   * A wrapper around a [[ApiPressedSection]] that adds additional information
@@ -17,12 +16,13 @@ import play.api.http.Status
 case class ApiPressedSectionResponse(source: String,
                                      section: Option[ApiPressedSection],
                                      status: StatusPhrase = StatusPhrase.ok,
-                                     statusCode: Int = Status.OK,
+                                     statusCode: Int = StatusPhrase.HttpStatusOk,
                                      createdDate: Instant = Instant.now)
 
 object StatusPhrase extends Enumeration {
   type StatusPhrase = Value
   val ok, no_content, section_not_found, internal_error = Value
+  val HttpStatusOk = 200
 }
 
 /**

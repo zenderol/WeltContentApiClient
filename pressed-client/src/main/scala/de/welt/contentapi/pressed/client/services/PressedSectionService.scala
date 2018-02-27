@@ -4,16 +4,16 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.{Inject, Singleton}
 
+import com.google.inject.ImplementedBy
 import de.welt.contentapi.core.client.services.http._
 import de.welt.contentapi.pressed.client.repository.{PressedDiggerClient, PressedS3Client}
 import de.welt.contentapi.pressed.models.ApiPressedSectionResponse
 import de.welt.contentapi.utils.Env.{Env, Live, Preview}
-import de.welt.contentapi.utils.Loggable
-import play.api.Mode.Mode
-import play.api.{Configuration, Mode}
+import play.api.{Configuration, Logger, Mode}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[PressedSectionServiceImpl])
 trait PressedSectionService {
 
   def findByPath(path: String, env: Env = Live, mode: Mode = Mode.Prod)
@@ -27,9 +27,9 @@ object PressedSectionService {
 @Singleton
 class PressedSectionServiceImpl @Inject()(pressedS3Client: PressedS3Client,
                                           configuration: Configuration,
-                                          diggerClient: PressedDiggerClient) extends PressedSectionService with Loggable {
+                                          diggerClient: PressedDiggerClient) extends PressedSectionService {
 
-  lazy val configuredSectionTTL = configuration.getLong("welt.api.digger.ttlMinutes").getOrElse(PressedSectionService.DefaultSectionTTLMinutes)
+  lazy val configuredSectionTTL: Long = configuration.getOptional[Long]("welt.api.digger.ttlMinutes").getOrElse(PressedSectionService.DefaultSectionTTLMinutes)
 
   /**
     * Primarily gets Pressed Section from S3, if pressed is older than 30 minutes or is not present -> fallback to digger rest call
@@ -57,7 +57,7 @@ class PressedSectionServiceImpl @Inject()(pressedS3Client: PressedS3Client,
           // s3 result is present, but outdated. Invoke digger, but use outdated result if digger fails
           diggerClient.findByPath(path, Live)
             .recoverWith { case err ⇒
-              log.warn("Delivering old content because digger failed.", err)
+              Logger.warn("Delivering old content because digger failed.", err)
               Future.successful(section)
             }
         case _ ⇒

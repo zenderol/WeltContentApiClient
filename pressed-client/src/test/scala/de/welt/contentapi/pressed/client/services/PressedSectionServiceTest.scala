@@ -3,6 +3,7 @@ package de.welt.contentapi.pressed.client.services
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.client.services.exceptions.HttpClientErrorException
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.models.ApiReference
@@ -14,18 +15,16 @@ import org.apache.http.HttpStatus
 import org.mockito.Matchers.{any, anyString}
 import org.mockito.Mockito._
 import org.mockito.{Matchers ⇒ MockitoMatchers}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.words.MustVerb
 import org.scalatest.{FlatSpec, Matchers}
 import play.api.{Configuration, Mode}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 
-class PressedSectionServiceTest extends FlatSpec
-  with Matchers with MustVerb with MockitoSugar {
+class PressedSectionServiceTest extends FlatSpec with Matchers with MustVerb with MockitoSugar with TestExecutionContext {
 
-  implicit val ec = ExecutionContext.global
   implicit val requestHeaders: RequestHeaders = Seq.empty
 
   trait TestScope {
@@ -67,14 +66,14 @@ class PressedSectionServiceTest extends FlatSpec
 
     // given
     when(s3Client.find(anyString())).thenReturn(Some(invalidS3Response))
-    when(diggerClient.findByPath(anyString(), any())(any(), any())).thenReturn(Future.failed(new IllegalStateException("boum")))
+    when(diggerClient.findByPath(anyString(), any())(any())).thenReturn(Future.failed(new IllegalStateException("boum")))
 
 
     // when
     val result = Await.result(new PressedSectionServiceImpl(s3Client, Configuration(), diggerClient).findByPath("/preview/test", Live), 1.second)
 
     // then
-    verify(diggerClient).findByPath(MockitoMatchers.eq("/preview/test"), any())(any(), any())
+    verify(diggerClient).findByPath(MockitoMatchers.eq("/preview/test"), any())(any())
     verify(s3Client).find(MockitoMatchers.eq("/preview/test"))
 
     result shouldBe invalidS3Response._1
@@ -140,7 +139,7 @@ class PressedSectionServiceTest extends FlatSpec
     Await.result(new PressedSectionServiceImpl(mock[PressedS3Client], Configuration(), client).findByPath("/preview/test", Preview), 1.second)
 
     // then
-    verify(client).findByPath(MockitoMatchers.eq("/preview/test"), MockitoMatchers.eq(Preview))(any(), any())
+    verify(client).findByPath(MockitoMatchers.eq("/preview/test"), MockitoMatchers.eq(Preview))(any())
   }
 
 }

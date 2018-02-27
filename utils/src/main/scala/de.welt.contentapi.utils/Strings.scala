@@ -4,7 +4,7 @@ import com.google.common.base.CharMatcher
 
 trait Strings {
 
-  private val charMatcher = CharMatcher.WHITESPACE
+  private val charMatcher = CharMatcher.whitespace()
 
   /**
     * remove all whitespaces from the string (such as {{{"\u00A0", " ", "\t", "\n"}}})

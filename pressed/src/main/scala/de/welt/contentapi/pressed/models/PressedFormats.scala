@@ -22,22 +22,22 @@ object PressedReads {
   implicit lazy val apiMetaRobotsReads: Reads[ApiMetaRobots] = Json.reads[ApiMetaRobots]
   implicit lazy val apiMetaConfigurationReads: Reads[ApiMetaConfiguration] = Json.reads[ApiMetaConfiguration]
   implicit lazy val apiConfigurationReads: Reads[ApiConfiguration] = Json.reads[ApiConfiguration]
+  implicit lazy val apiPressedEmbedReads: Reads[ApiPressedEmbed] = Json.reads[ApiPressedEmbed]
 
-  implicit lazy val apiPressedContentReads: Reads[ApiPressedContent] = new Reads[ApiPressedContent] {
-    override def reads(json: JsValue): JsResult[ApiPressedContent] = json match {
-      case JsObject(underlying) ⇒ (for {
-        content ← underlying.get("content").map(_.as[ApiContent])
-      } yield JsSuccess(
-        ApiPressedContent(
-          content = content,
-          related = underlying.get("related").map(_.as[Seq[ApiPressedContent]]),
-          channel = underlying.get("channel").map(_.as[ApiChannel]),
-          configuration = underlying.get("configuration").map(_.as[ApiConfiguration])
-        )))
-        .getOrElse(JsError("Could not validate json [something is missing]. " + Json.prettyPrint(json)))
+  implicit lazy val apiPressedContentReads: Reads[ApiPressedContent] = {
+    case json@JsObject(underlying) ⇒ (for {
+      content ← underlying.get("content").map(_.as[ApiContent])
+    } yield JsSuccess(
+      ApiPressedContent(
+        content = content,
+        related = underlying.get("related").map(_.as[Seq[ApiPressedContent]]),
+        channel = underlying.get("channel").map(_.as[ApiChannel]),
+        configuration = underlying.get("configuration").map(_.as[ApiConfiguration]),
+        embeds = underlying.get("embeds").map(_.as[Seq[ApiPressedEmbed]])
+      )))
+      .getOrElse(JsError("Could not validate json [something is missing]. " + Json.prettyPrint(json)))
 
-      case err@_ ⇒ JsError(s"expected js-object, but was $err")
-    }
+    case err@_ ⇒ JsError(s"expected js-object, but was $err")
   }
 
   implicit lazy val apiTeaserReads: Reads[ApiTeaser] = Json.reads[ApiTeaser]
@@ -64,20 +64,18 @@ object PressedWrites {
   implicit lazy val apiMetaRobotsWrites: Writes[ApiMetaRobots] = Json.writes[ApiMetaRobots]
   implicit lazy val apiMetaConfigurationWrites: Writes[ApiMetaConfiguration] = Json.writes[ApiMetaConfiguration]
   implicit lazy val apiConfigurationWrites: Writes[ApiConfiguration] = Json.writes[ApiConfiguration]
+  implicit lazy val apiPressedEmbedWrites: Writes[ApiPressedEmbed] = Json.writes[ApiPressedEmbed]
   implicit lazy val apiPressedContentWrites: Writes[ApiPressedContent] = (
     (__ \ "content").write[ApiContent] and
       (__ \ "related").lazyWriteNullable(Writes.seq[ApiPressedContent](apiPressedContentWrites)) and
       (__ \ "channel").writeNullable[ApiChannel] and
-      (__ \ "configuration").writeNullable[ApiConfiguration]
+      (__ \ "configuration").writeNullable[ApiConfiguration] and
+      (__ \ "embeds").writeNullable(Writes.seq[ApiPressedEmbed](apiPressedEmbedWrites))
     ) (unlift(ApiPressedContent.unapply))
   implicit lazy val apiStageWrites: Writes[ApiStage] = Json.writes[ApiStage]
   implicit lazy val apiPressedSectionWrites: Writes[ApiPressedSection] = Json.writes[ApiPressedSection]
-  implicit lazy val statusPhraseWrites: Writes[StatusPhrase] = new Writes[StatusPhrase]{
-    override def writes(o: StatusPhrase): JsValue = JsString(o.toString)
-  }
+  implicit lazy val statusPhraseWrites: Writes[StatusPhrase] = (o: StatusPhrase) => JsString(o.toString)
   implicit lazy val apiPressedSectionResponseWrites: Writes[ApiPressedSectionResponse] = Json.writes[ApiPressedSectionResponse]
-
-
 }
 
 object PressedFormats {
@@ -135,6 +133,9 @@ object PressedFormats {
 
   implicit lazy val statusPhraseFormat: Format[StatusPhrase] =
     Format(statusPhraseReads, statusPhraseWrites)
+
+  implicit lazy val apiPressedEmbedFormats: Format[ApiPressedEmbed] =
+    Format(apiPressedEmbedReads, apiPressedEmbedWrites)
 
   implicit lazy val apiPressedSectionResponseFormat: Format[ApiPressedSectionResponse] =
     Format(apiPressedSectionResponseReads, apiPressedSectionResponseWrites)

@@ -2,10 +2,11 @@ package de.welt.contentapi.core.client.services.contentapi
 
 import javax.inject.{Inject, Singleton}
 
+import com.google.inject.ImplementedBy
 import com.kenshoo.play.metrics.Metrics
+import de.welt.contentapi.core.client.services.CapiExecutionContext
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.models.ApiResponse
-import de.welt.contentapi.utils.Loggable
 import play.api.Configuration
 import play.api.libs.json.{JsLookupResult, JsResult}
 import play.api.libs.ws.WSClient
@@ -31,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *   }
   * }}}
   */
+@ImplementedBy(classOf[ContentServiceImpl])
 trait ContentService {
 
   /**
@@ -47,12 +49,8 @@ trait ContentService {
 }
 
 @Singleton
-class ContentServiceImpl @Inject()(override val ws: WSClient,
-                                   override val metrics: Metrics,
-                                   override val configuration: Configuration)
-  extends AbstractService[ApiResponse] with ContentService with Loggable {
-
-  override val serviceName = "content"
+class ContentServiceImpl @Inject()(ws: WSClient, metrics: Metrics, configuration: Configuration, capi: CapiExecutionContext)
+  extends AbstractService[ApiResponse](ws, metrics, configuration, "content", capi) with ContentService {
 
   import de.welt.contentapi.core.models.ApiReads._
 

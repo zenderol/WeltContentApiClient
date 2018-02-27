@@ -1,11 +1,33 @@
 # Changelog
 
-## 0.21.X (2017-10-26)
+## 1.2 (2017-11-27)
+
+- introduced circuit breaker pattern in AbstractService
+- Playframework 2.6.6
+- Added Cigger Support
+
+#### Breaking Changes
+
+- AbstractService is now an `abstract class` (instead of a `trait`)
+- `ExecutionContexts` should now be `@Injected` everywhere instead of being passed as `implicit` parameters 
+
+## 1.1 (2017-07-21)
+
+- Upgraded to Playframework 2.6.2 
+
+## 1.0 (2017-06-20)
+
+#### Breaking Changes
+
+- Playframework 2.6 (dropped 2.4 & 2.5)
+- Scala 2.12 (dropped 2.11)
+
+## 0.22.X (2017-10-26)
 
 ### Changes
 - [CORE-CLIENT] add Service `ContentBatchService` to allow digger to resolve all Ids of a stage with one call
 
-## 0.21.X (2017-10-19)
+## 0.21.X (2017-10-19) 
 
 ### Changes
 - [CORE] add field `validFromDate` to `ApiMetadata`

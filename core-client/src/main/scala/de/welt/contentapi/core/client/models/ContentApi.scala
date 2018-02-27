@@ -2,8 +2,9 @@ package de.welt.contentapi.core.client.models
 
 import java.time.Instant
 
-import de.welt.contentapi.utils.Strings._
 import de.welt.contentapi.utils.Loggable
+import de.welt.contentapi.utils.Strings._
+import play.api.Logger
 
 /**
   * Wrapper to configure a search against the content API. For params and values see https://doug-ecs-production.up.welt.de/#_request_parameters
@@ -69,11 +70,11 @@ protected abstract class ListParam[T](override val value: List[T]) extends Abstr
   }
 }
 
-protected abstract class ValueParam[T](override val value: T) extends AbstractParam[T] with Loggable {
+protected abstract class ValueParam[T](override val value: T) extends AbstractParam[T] {
   override def valueToStringOpt: T ⇒ Option[String] = PrimitiveParam[T]().valueToStringOpt
 }
 
-private case class PrimitiveParam[T]() extends Loggable {
+private case class PrimitiveParam[T]() {
   /**
     * Validate some basic types and return [[scala.None]] if value is invalid or empty
     *
@@ -91,7 +92,7 @@ private case class PrimitiveParam[T]() extends Loggable {
     case _: Instant ⇒ None
 
     case unknown@_ ⇒
-      log.warn(s"Unknown value type: ${unknown.getClass.toString}")
+      Logger.warn(s"Unknown value type: ${unknown.getClass.toString}")
       None
   }
 }

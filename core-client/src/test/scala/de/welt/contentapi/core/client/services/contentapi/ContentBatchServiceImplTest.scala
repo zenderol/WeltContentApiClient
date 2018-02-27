@@ -2,11 +2,12 @@ package de.welt.contentapi.core.client.services.contentapi
 
 import com.codahale.metrics.Timer.Context
 import com.kenshoo.play.metrics.Metrics
+import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.models.{ApiBatchResponse, ApiBatchResult, ApiContent}
 import org.mockito.Matchers
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
 import play.api.http.Status
@@ -17,7 +18,7 @@ import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest, WSResponse}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar {
+class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar with TestExecutionContext {
 
   trait TestScope {
 
@@ -27,8 +28,9 @@ class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar {
     val metricsMock: Metrics = mock[Metrics]
     val mockTimerContext: Context = mock[Context]
 
-    when(mockRequest.withHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
-    when(mockRequest.withQueryString(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
+    when(mockRequest.withHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
+    when(mockRequest.withQueryStringParameters(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
+    when(mockRequest.addHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
     when(mockRequest.withAuth(anyString, anyString, Matchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
 
     when(mockRequest.get()).thenReturn(Future {
@@ -47,7 +49,7 @@ class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar {
       "credentials.password" → "pass"
     ))
 
-    val batchService: ContentBatchService = new ContentBatchServiceImpl(mockWsClient, metricsMock, configuration)
+    val batchService: ContentBatchService = new ContentBatchServiceImpl(mockWsClient, metricsMock, configuration, executionContext)
   }
 
   /** Happy Path Testing only
@@ -70,6 +72,7 @@ class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar {
       val apiResponse = ApiBatchResponse(batchResult)
 
       import de.welt.contentapi.core.models.ApiWrites._
+
       val mockJsResponse: JsValue = Json.toJson(apiResponse)
 
       when(responseMock.status).thenReturn(OK)

@@ -1,15 +1,16 @@
 package de.welt.contentapi.pressed.client.repository
 
 import java.time.Instant
-import javax.inject.{Inject, Singleton}
 
+import com.google.inject.{ImplementedBy, Inject, Singleton}
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.pressed.models.ApiPressedSectionResponse
 import de.welt.contentapi.pressed.models.PressedReads.apiPressedSectionResponseReads
 import de.welt.contentapi.utils.Loggable
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
+@ImplementedBy(classOf[PressedS3ClientImpl])
 sealed trait PressedS3Client {
   /**
     * find a pre-pressed section on S3
@@ -23,7 +24,7 @@ sealed trait PressedS3Client {
 }
 
 @Singleton
-class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client with Loggable {
+class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) extends PressedS3Client {
 
   import PressedS3ClientImpl._
 
@@ -46,7 +47,7 @@ class PressedS3ClientImpl @Inject()(s3Client: S3Client, config: Configuration) e
           case JsSuccess(value, _) ⇒
             Some(value, lastMod)
           case err@JsError(_) ⇒
-            log.warn(s"Unable to parse content at (bucket: '$bucket' key: '$key'). Reason: '${err.toString}'")
+            Logger.warn(s"Unable to parse content at (bucket: '$bucket' key: '$key'). Reason: '${err.toString}'")
             None
         }
     }

@@ -3,46 +3,44 @@ package de.welt.contentapi.core.client.services.s3
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.model._
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client}
 import com.amazonaws.util.StringInputStream
-import de.welt.contentapi.utils.Loggable
-import play.api.{Configuration, Environment, Mode}
+import com.google.inject.ImplementedBy
+import play.api.{Configuration, Environment, Logger}
 
 import scala.io.{Codec, Source}
 
-sealed trait S3Client extends Loggable {
+@ImplementedBy(classOf[S3ClientImpl])
+sealed trait S3Client {
 
   val config: Configuration
   val environment: Environment
   implicit val codec: Codec = Codec.UTF8
 
-  val client: AmazonS3Client = {
-    val endpointConfigKey = "welt.aws.s3.endpoint"
-    val maybeS3Client = for {
-      endpoint ← config.getString(endpointConfigKey)
-    } yield {
-      val s3Client = environment.mode match {
-        case Mode.Prod ⇒ new AmazonS3Client()
-        case _ ⇒ new AmazonS3Client(
-          new BasicAWSCredentials(
-            config.getString("welt.aws.s3.dev.accessKey")
-              .getOrElse(throw config.reportError("welt.aws.s3.dev.accessKey", "You need to provide aws credentials (welt.aws.s3.dev.accessKey) in DEV/TEST mode")),
-            config.getString("welt.aws.s3.dev.secretKey")
-              .getOrElse(throw config.reportError("welt.aws.s3.dev.secretKey", "You need to provide aws credentials (welt.aws.s3.dev.secretKey) in DEV/TEST mode"))
+  lazy val client: AmazonS3 = {
+    val region: Regions = Regions.fromName(config.get[String](S3ClientConstants.RegionConfigKey))
+
+    Logger.debug(s"s3 connected to $region")
+
+    (environment.mode match {
+      case play.api.Mode.Prod ⇒ AmazonS3Client.builder()
+      case _ ⇒ AmazonS3Client.builder()
+        .withCredentials(
+          new AWSStaticCredentialsProvider(
+            new BasicAWSCredentials(
+              config.get[String]("welt.aws.s3.dev.accessKey"),
+              config.get[String]("welt.aws.s3.dev.secretKey")
+            )
           )
         )
-      }
-      s3Client.setEndpoint(endpoint)
-      log.debug(s"s3 connected to $endpoint")
-      s3Client
-    }
-    maybeS3Client.getOrElse(throw config.reportError(endpointConfigKey, s"You need to set the AWS s3 endpoint at $endpointConfigKey"))
+    }).withRegion(region).build()
   }
 
   def get(bucket: String, key: String): Option[String] = withS3Result(bucket, key)({
-    log.debug(s"get($key)")
+    Logger.debug(s"get($key)")
     result ⇒ Source.fromInputStream(result.getObjectContent).mkString
   })
 
@@ -53,11 +51,16 @@ sealed trait S3Client extends Loggable {
       (content, lastModified)
   })
 
-  def getLastModified(bucket: String, key: String): Option[Instant] = withS3Result(bucket, key)({
-    result ⇒ result.getObjectMetadata.getLastModified.toInstant
-  })
+  def getLastModified(bucket: String, key: String): Option[Instant] = {
+    val request = new GetObjectMetadataRequest(bucket, key)
+    try {
+      Some(client.getObjectMetadata(request).getLastModified.toInstant)
+    } catch {
+      case _: Exception ⇒ None
+    }
+  }
 
-  def putPrivate(bucket: String, key: String, value: String, contentType: String) = {
+  def putPrivate(bucket: String, key: String, value: String, contentType: String): Unit = {
     //    log.info(s"put($key, $value, $contentType)")
     put(bucket, key, value, contentType)
   }
@@ -75,7 +78,7 @@ sealed trait S3Client extends Loggable {
       }
     } catch {
       case e: AmazonS3Exception if e.getStatusCode == 404 ⇒
-        log.debug("not found at %s - %s" format(bucket, key))
+        Logger.debug("not found at %s - %s" format(bucket, key))
         None
     }
 
@@ -95,3 +98,7 @@ sealed trait S3Client extends Loggable {
 
 @Singleton
 class S3ClientImpl @Inject()(override val config: Configuration, override val environment: Environment) extends S3Client {}
+
+object S3ClientConstants {
+  protected[s3] val RegionConfigKey = "welt.aws.s3.region"
+}

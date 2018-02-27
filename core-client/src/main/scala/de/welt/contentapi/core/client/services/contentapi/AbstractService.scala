@@ -1,34 +1,28 @@
 package de.welt.contentapi.core.client.services.contentapi
 
-import com.codahale.metrics.{MetricRegistry, Timer}
+import akka.actor.Scheduler
+import akka.pattern.CircuitBreaker
+import com.codahale.metrics.{Gauge, MetricRegistry, Timer}
 import com.kenshoo.play.metrics.Metrics
+import de.welt.contentapi.core.client.services.CapiExecutionContext
 import de.welt.contentapi.core.client.services.configuration.ServiceConfiguration
 import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
-import de.welt.contentapi.utils.{Loggable, Strings}
-import play.api.Configuration
+import de.welt.contentapi.utils.Strings
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsError, JsLookupResult, JsResult, JsSuccess}
-import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest}
+import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest, WSResponse}
 import play.api.mvc.Headers
+import play.api.{Configuration, Logger}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-trait AbstractService[T] extends Strings with Loggable with Status with HeaderNames {
-
-  val HEADER_API_KEY = "x-api-key"
-
-  /** these need to be provided by the implementing services */
-  val ws: WSClient
-  val metrics: Metrics
-  val configuration: Configuration
-
-  /**
-    * this service's name
-    *
-    * @return service name
-    */
-  def serviceName: String
+abstract class AbstractService[T](ws: WSClient,
+                                  metrics: Metrics,
+                                  configuration: Configuration,
+                                  val serviceName: String,
+                                  implicit val capi: CapiExecutionContext)
+  extends Strings {
 
   /**
     * This must provide a [[ServiceConfiguration]]. It will be used to
@@ -36,7 +30,7 @@ trait AbstractService[T] extends Strings with Loggable with Status with HeaderNa
     *
     * @return a [[ServiceConfiguration]]
     */
-  protected[contentapi] def config: ServiceConfiguration = ServiceConfiguration(s"welt.api.$serviceName", configuration)
+  protected[contentapi] val config: ServiceConfiguration = ServiceConfiguration(s"welt.api.$serviceName", configuration)
 
   /**
     * This must provide a function that maps a [[JsLookupResult]] to a [[JsResult]].
@@ -47,21 +41,39 @@ trait AbstractService[T] extends Strings with Loggable with Status with HeaderNa
     */
   def jsonValidate: JsLookupResult => JsResult[T]
 
+  private lazy val breaker: CircuitBreaker = AbstractService.circuitBreaker(capi.actorSystem.scheduler, config, serviceName)
+
+  /**
+    * report the breaker state as a gauge to metrics, only if breaker is enabled
+    */
+  if (config.circuitBreaker.enabled) {
+    Logger.info(s"Circuit Breaker enabled for $serviceName")
+    metrics.defaultRegistry.register(s"service.$serviceName.circuit_breaker", new Gauge[String]() {
+      override def getValue: String = breakerState()
+    })
+  } else {
+    Logger.info(s"Circuit Breaker NOT enabled for $serviceName")
+  }
+
+  /**
+    * this circuit breaker's current state
+    *
+    * @return `disabled`, `open`, `closed` or `half-open`
+    */
+  def breakerState(): String = if (!config.circuitBreaker.enabled) {
+    "disabled"
+  } else {
+    if (breaker.isOpen) "open" else if (breaker.isClosed) "closed" else "half-open"
+  }
+
   /**
     * @param urlArguments            string interpolation arguments for endpoint. e.g. /foo/%s/bar/%s see [[java.lang.String#format}]]
     * @param parameters              URL parameters to be sent with the request
     * @param forwardedRequestHeaders forwarded request headers from the controller e.g. API key
-    * @param executionContext        pass in an execution context for async processing/mapping
     * @return
     */
-  def get(urlArguments: Seq[String] = Nil,
-          parameters: Seq[(String, String)] = Nil)
-         (implicit forwardedRequestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[T] = {
-
-    def parseJson(json: JsLookupResult): T = jsonValidate(json) match {
-      case JsSuccess(value, _) => value
-      case err@JsError(_) => throw new IllegalStateException(err.toString)
-    }
+  def get(urlArguments: Seq[String] = Nil, parameters: Seq[(String, String)] = Nil)
+         (implicit forwardedRequestHeaders: RequestHeaders = Seq.empty): Future[T] = {
 
     val context = initializeMetricsContext(config.serviceName)
 
@@ -70,43 +82,65 @@ trait AbstractService[T] extends Strings with Loggable with Status with HeaderNa
     val filteredParameters = parameters.map { case (k, v) ⇒ k → stripWhiteSpaces(v) }.filter(_._2.nonEmpty)
 
     val getRequest: WSRequest = ws.url(url)
-      .withQueryString(filteredParameters: _*)
+      .withQueryStringParameters(filteredParameters: _*)
+      .addHttpHeaders(forwardHeaders(forwardedRequestHeaders): _*)
 
-    val authenticatedGetRequest = config.credentials match {
-      case Right(basicAuth) ⇒ getRequest
-        .withAuth(username = basicAuth._1, password = basicAuth._2, WSAuthScheme.BASIC)
-
-      case Left(apiKey) ⇒ getRequest
-        .withHeaders(HEADER_API_KEY → apiKey)
+    val preparedRequest = config.credentials match {
+      case Right(basicAuth) ⇒ getRequest.withAuth(username = basicAuth._1, password = basicAuth._2, WSAuthScheme.BASIC)
+      case Left(apiKey) ⇒ getRequest.addHttpHeaders(AbstractService.HeaderApiKey → apiKey)
     }
-    log.debug(s"HTTP GET to ${authenticatedGetRequest.uri}")
 
-    authenticatedGetRequest
-      .withHeaders(forwardHeaders(forwardedRequestHeaders): _*)
-      .get().map { response ⇒
+    Logger.debug(s"HTTP GET to ${preparedRequest.uri}")
 
-      context.stop()
-
-        response.status match {
-          case OK ⇒ parseJson(response.json.result)
-          case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
-          case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url, response.header(CACHE_CONTROL))
-          case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
-        }
-      }
+    if (config.circuitBreaker.enabled) breaker.withCircuitBreaker(executeAndProcess(preparedRequest, context)) else executeAndProcess(preparedRequest, context)
   }
 
+  private def executeAndProcess(req: WSRequest, context: Timer.Context): Future[T] = req.get()
+    .map { response ⇒
+      context.stop()
+      processResponse(response, req.url)
+    }
+
   /**
-    * headers to be forwarded from client to server, e.g. the `X-Unique-Id`
+    * headers to be forwarded from client to server, e.g. the `X-Unique-Id` or `X-Amzn-Trace-Id`
     *
     * @param maybeHeaders [[Headers]] from the incoming [[play.api.mvc.Request]]
     * @return tuples of type String for headers to be forwarded
     */
-  def forwardHeaders(maybeHeaders: RequestHeaders): RequestHeaders = {
-    maybeHeaders.collect { case tuple@("X-Unique-Id", _) ⇒ tuple }
+  private def forwardHeaders(maybeHeaders: RequestHeaders): RequestHeaders = {
+    maybeHeaders.collect {
+      case tuple@("X-Unique-Id", _) ⇒ tuple
+      case tuple@("X-Amzn-Trace-Id", _) ⇒ tuple
+    }
   }
 
   protected def initializeMetricsContext(name: String): Timer.Context = {
     metrics.defaultRegistry.timer(MetricRegistry.name(s"service.$name", "requestTimer")).time()
   }
+
+  private def processResponse(response: WSResponse, url: String): T = response.status match {
+    case Status.OK ⇒ parseJson(response.json.result)
+    case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
+    case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url, response.header(HeaderNames.CACHE_CONTROL))
+    case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
+  }
+
+  private def parseJson(json: JsLookupResult): T = jsonValidate(json) match {
+    case JsSuccess(value, _) => value
+    case err@JsError(_) => throw new IllegalStateException(err.toString)
+  }
+}
+
+object AbstractService {
+  val HeaderApiKey = "x-api-key"
+
+  def circuitBreaker(scheduler: Scheduler, config: ServiceConfiguration, serviceName: String)(implicit ec: CapiExecutionContext) = new CircuitBreaker(
+    scheduler,
+    maxFailures = config.circuitBreaker.maxFailures,
+    callTimeout = config.circuitBreaker.callTimeout,
+    resetTimeout = config.circuitBreaker.resetTimeout)
+    .withExponentialBackoff(config.circuitBreaker.exponentialBackoff)
+    .onOpen(Logger.warn(s"CircuitBreaker [$serviceName] is now open, and will not close for some time"))
+    .onClose(Logger.warn(s"CircuitBreaker [$serviceName] is now closed"))
+    .onHalfOpen(Logger.warn(s"CircuitBreaker [$serviceName] is now half-open"))
 }

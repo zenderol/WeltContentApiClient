@@ -1,9 +1,8 @@
 package de.welt.contentapi.raw
 
-import de.welt.contentapi.utils.Loggable
 import de.welt.contentapi.utils.Strings._
 
-package object models extends Loggable {
+package object models {
 
   /**
     * collect changes between two [[RawChannel]]

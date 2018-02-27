@@ -71,7 +71,7 @@ case class ApiContent(webUrl: String,
                       fields: Option[Map[String, String]] = None,
                       authors: Option[List[ApiAuthor]] = None,
                       elements: Option[List[ApiElement]] = None,
-                      roles: Option[List[String]] = None,
+                      var roles: Option[List[String]] = None,
                       sections: Option[ApiSectionData] = None,
                       tags: Option[List[ApiTag]] = None,
                       onward: Option[List[ApiOnward]] = None) {

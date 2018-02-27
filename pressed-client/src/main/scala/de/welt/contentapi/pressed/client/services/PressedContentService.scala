@@ -3,6 +3,7 @@ package de.welt.contentapi.pressed.client.services
 import javax.inject.{Inject, Singleton}
 
 import com.codahale.metrics.Timer.Context
+import com.google.inject.ImplementedBy
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.contentapi.ContentService
 import de.welt.contentapi.core.client.services.http.RequestHeaders
@@ -12,11 +13,11 @@ import de.welt.contentapi.pressed.models.{ApiChannel, ApiConfiguration, ApiPress
 import de.welt.contentapi.raw.client.services.RawTreeService
 import de.welt.contentapi.raw.models.RawChannel
 import de.welt.contentapi.utils.Env.{Env, Live}
-import de.welt.contentapi.utils.Loggable
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[PressedContentServiceImpl])
 trait PressedContentService {
   /**
     * Uses the ContentService to get an ApiContent from ContentAPI and wraps it with the convert method as ApiPressedContent
@@ -51,15 +52,14 @@ class PressedContentServiceImpl @Inject()(contentService: ContentService,
                                           converter: RawToApiConverter,
                                           rawTreeService: RawTreeService,
                                           metrics: Metrics)
-  extends PressedContentService with Loggable {
+  extends PressedContentService {
 
   override def find(id: String, showRelated: Boolean = true)
                    (implicit requestHeaders: RequestHeaders = Nil, executionContext: ExecutionContext, env: Env = Live): Future[ApiPressedContent] = {
-    contentService
-      .find(id, showRelated)
-      .map(response ⇒ {
-        convert(response.content, response.related, env)
-      })
+
+    contentService.find(id, showRelated).map(response ⇒ {
+      convert(response.content, response.related, env)
+    })
   }
 
   override def convert(apiContent: ApiContent, maybeRelatedContent: Option[Seq[ApiContent]] = None, env: Env = Live): ApiPressedContent = {
@@ -74,7 +74,8 @@ class PressedContentServiceImpl @Inject()(contentService: ContentService,
         content = apiContent,
         related = maybeRelatedPressedContent,
         channel = Some(apiChannel),
-        configuration = Some(apiConfiguration)
+        configuration = Some(apiConfiguration),
+        embeds = None
       )
     } getOrElse {
       // Fallback if S3.get or Json.parse fails
