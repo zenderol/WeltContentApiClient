@@ -22,28 +22,7 @@ import scala.concurrent.{Await, Future}
 
 class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with TestExecutionContext {
 
-  trait TestScope {
-
-    val mockWsClient: WSClient = mock[WSClient]
-    val mockRequest: AhcWSRequest = mock[AhcWSRequest]
-    val responseMock: WSResponse = mock[WSResponse]
-    val metricsMock: Metrics = mock[Metrics]
-    val mockTimerContext: Context = mock[Context]
-
-    when(mockRequest.withHttpHeaders(Matchers.anyVararg())).thenReturn(mockRequest)
-    when(mockRequest.addHttpHeaders(Matchers.anyVararg())).thenReturn(mockRequest)
-    when(mockRequest.withQueryStringParameters(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
-    when(mockRequest.withAuth(anyString, anyString, Matchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
-
-    when(mockRequest.get()).thenReturn(Future {
-      responseMock
-    })
-
-    when(metricsMock.defaultRegistry).thenReturn(new com.codahale.metrics.MetricRegistry())
-    when(mockWsClient.url(anyString)).thenReturn(mockRequest)
-  }
-
-  trait TestScopeBasicAuth extends TestScope {
+  trait TestScopeBasicAuth extends AbstractServiceTest.TestScope {
 
     class TestService extends AbstractService[String](mockWsClient, metricsMock, TestServiceWithBasicAuth.configuration, "test", executionContext) {
       override val jsonValidate: (JsLookupResult) => JsResult[String] = json => json.validate[String]
@@ -53,7 +32,7 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
   }
 
-  trait TestScopeApiKey extends TestScope {
+  trait TestScopeApiKey extends AbstractServiceTest.TestScope {
 
     class TestService extends AbstractService[String](mockWsClient, metricsMock, TestServiceWithApiKey.configuration, "test", executionContext) {
       override val jsonValidate: (JsLookupResult) => JsResult[String] = json => json.validate[String]
@@ -205,4 +184,27 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
   }
 
+}
+
+object AbstractServiceTest extends MockitoSugar with TestExecutionContext {
+  trait TestScope {
+
+    val mockWsClient: WSClient = mock[WSClient]
+    val mockRequest: AhcWSRequest = mock[AhcWSRequest]
+    val responseMock: WSResponse = mock[WSResponse]
+    val metricsMock: Metrics = mock[Metrics]
+    val mockTimerContext: Context = mock[Context]
+
+    when(mockRequest.withHttpHeaders(Matchers.anyVararg())).thenReturn(mockRequest)
+    when(mockRequest.addHttpHeaders(Matchers.anyVararg())).thenReturn(mockRequest)
+    when(mockRequest.withQueryStringParameters(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
+    when(mockRequest.withAuth(anyString, anyString, Matchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
+
+    when(mockRequest.get()).thenReturn(Future {
+      responseMock
+    })
+
+    when(metricsMock.defaultRegistry).thenReturn(new com.codahale.metrics.MetricRegistry())
+    when(mockWsClient.url(anyString)).thenReturn(mockRequest)
+  }
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2 bugfix (2018-03-16)
+
+- definition which Exceptions will cause the breaker to stay open or allow close. e.g.
+    - `HttpClientErrorException` and `HttpRedirectException` will keep the breaker closed (this is good)
+    - whereas `HttpServerErrorException` and any other exception may open the breaker
+
 ## 1.2 (2017-11-27)
 
 - introduced circuit breaker pattern in AbstractService

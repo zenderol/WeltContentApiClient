@@ -16,6 +16,7 @@ import play.api.mvc.Headers
 import play.api.{Configuration, Logger}
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 abstract class AbstractService[T](ws: WSClient,
                                   metrics: Metrics,
@@ -41,15 +42,25 @@ abstract class AbstractService[T](ws: WSClient,
     */
   def jsonValidate: JsLookupResult => JsResult[T]
 
-  private lazy val breaker: CircuitBreaker = AbstractService.circuitBreaker(capi.actorSystem.scheduler, config, serviceName)
-
+  protected[contentapi] lazy val breaker: CircuitBreaker = AbstractService.circuitBreaker(capi.actorSystem.scheduler, config, serviceName)
+  /**
+    * `false` -> breaker will not open [this is a good exception, eg. 3xx and 4xx handled by custom-error-handler]
+    * `true` -> breaker might open and prevent further requests for some time [this is bad]
+    */
+  private val circuitBreakerFailureFn: Try[T] ⇒ Boolean = {
+    case Success(_) ⇒ false
+    case Failure(_: HttpRedirectException) ⇒ false
+    case Failure(_: HttpClientErrorException) ⇒ false
+    case _ ⇒ true
+  }
   /**
     * report the breaker state as a gauge to metrics, only if breaker is enabled
     */
   if (config.circuitBreaker.enabled) {
     Logger.info(s"Circuit Breaker enabled for $serviceName")
-    metrics.defaultRegistry.register(s"service.$serviceName.circuit_breaker", new Gauge[String]() {
-      override def getValue: String = breakerState()
+    // datadog gauges must be numeric
+    metrics.defaultRegistry.register(s"service.$serviceName.circuit_breaker", new Gauge[Int]() {
+      override def getValue: Int = breakerState()
     })
   } else {
     Logger.info(s"Circuit Breaker NOT enabled for $serviceName")
@@ -58,12 +69,21 @@ abstract class AbstractService[T](ws: WSClient,
   /**
     * this circuit breaker's current state
     *
-    * @return `disabled`, `open`, `closed` or `half-open`
+    * @return `disabled` = -1
+    *         `closed` = 0
+    *         `half-open` = 1
+    *         `open` = 2
     */
-  def breakerState(): String = if (!config.circuitBreaker.enabled) {
-    "disabled"
+  def breakerState(): Int = if (config.circuitBreaker.enabled) {
+    if (breaker.isClosed) {
+      0
+    } else if (breaker.isHalfOpen) {
+      1
+    } else {
+      2
+    }
   } else {
-    if (breaker.isOpen) "open" else if (breaker.isClosed) "closed" else "half-open"
+    -1
   }
 
   /**
@@ -92,14 +112,18 @@ abstract class AbstractService[T](ws: WSClient,
 
     Logger.debug(s"HTTP GET to ${preparedRequest.uri}")
 
-    if (config.circuitBreaker.enabled) breaker.withCircuitBreaker(executeAndProcess(preparedRequest, context)) else executeAndProcess(preparedRequest, context)
-  }
+    lazy val block = preparedRequest.get()
+      .map { response ⇒
+        context.stop()
+        processResponse(response, preparedRequest.url)
+      }
 
-  private def executeAndProcess(req: WSRequest, context: Timer.Context): Future[T] = req.get()
-    .map { response ⇒
-      context.stop()
-      processResponse(response, req.url)
+    if (config.circuitBreaker.enabled) {
+      breaker.withCircuitBreaker(block, circuitBreakerFailureFn)
+    } else {
+      block
     }
+  }
 
   /**
     * headers to be forwarded from client to server, e.g. the `X-Unique-Id` or `X-Amzn-Trace-Id`
@@ -121,7 +145,8 @@ abstract class AbstractService[T](ws: WSClient,
   private def processResponse(response: WSResponse, url: String): T = response.status match {
     case Status.OK ⇒ parseJson(response.json.result)
     case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
-    case status if (400 until 500).contains(status) ⇒ throw HttpClientErrorException(status, response.statusText, url, response.header(HeaderNames.CACHE_CONTROL))
+    case status if (400 until 500).contains(status) ⇒
+      throw HttpClientErrorException(status, response.statusText, url, response.header(HeaderNames.CACHE_CONTROL))
     case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
   }
 
@@ -140,7 +165,7 @@ object AbstractService {
     callTimeout = config.circuitBreaker.callTimeout,
     resetTimeout = config.circuitBreaker.resetTimeout)
     .withExponentialBackoff(config.circuitBreaker.exponentialBackoff)
-    .onOpen(Logger.warn(s"CircuitBreaker [$serviceName] is now open, and will not close for some time"))
-    .onClose(Logger.warn(s"CircuitBreaker [$serviceName] is now closed"))
-    .onHalfOpen(Logger.warn(s"CircuitBreaker [$serviceName] is now half-open"))
+    .onOpen(Logger.error(s"CircuitBreaker [$serviceName] is now open [this is bad], and will not close for some time"))
+    .onClose(Logger.warn(s"CircuitBreaker [$serviceName] is now closed [this is good]"))
+    .onHalfOpen(Logger.warn(s"CircuitBreaker [$serviceName] is now half-open [trying to recover]"))
 }
