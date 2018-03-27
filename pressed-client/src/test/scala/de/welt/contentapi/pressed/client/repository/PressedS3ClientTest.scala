@@ -37,7 +37,7 @@ class PressedS3ClientTest extends PlaySpec with MockitoSugar {
       )
     )
 
-    val simpleSectionJson: String = Json.toJson(ApiPressedSectionResponse("test", Some(simpleSection))).toString()
+    val simpleSectionJson: String = Json.toJson(ApiPressedSectionResponse(Some(simpleSection), "test")).toString()
   }
 
   "PressedS3Client" must {

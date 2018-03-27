@@ -40,6 +40,7 @@ object PressedReads {
     case err@_ ⇒ JsError(s"expected js-object, but was $err")
   }
 
+  implicit lazy val apiPressedContentResponseReads: Reads[ApiPressedContentResponse] = Json.reads[ApiPressedContentResponse]
   implicit lazy val apiTeaserReads: Reads[ApiTeaser] = Json.reads[ApiTeaser]
   implicit lazy val apiStageReads: Reads[ApiStage] = Json.reads[ApiStage]
   implicit lazy val apiPressedSectionReads: Reads[ApiPressedSection] = Json.reads[ApiPressedSection]
@@ -72,6 +73,7 @@ object PressedWrites {
       (__ \ "configuration").writeNullable[ApiConfiguration] and
       (__ \ "embeds").writeNullable(Writes.seq[ApiPressedEmbed](apiPressedEmbedWrites))
     ) (unlift(ApiPressedContent.unapply))
+  implicit lazy val apiPressedContentResponseWrites: Writes[ApiPressedContentResponse] = Json.writes[ApiPressedContentResponse]
   implicit lazy val apiStageWrites: Writes[ApiStage] = Json.writes[ApiStage]
   implicit lazy val apiPressedSectionWrites: Writes[ApiPressedSection] = Json.writes[ApiPressedSection]
   implicit lazy val statusPhraseWrites: Writes[StatusPhrase] = (o: StatusPhrase) => JsString(o.toString)
@@ -121,6 +123,9 @@ object PressedFormats {
 
   implicit lazy val apiPressedContentFormat: Format[ApiPressedContent] =
     Format(apiPressedContentReads, apiPressedContentWrites)
+
+  implicit lazy val apiPressedContentResponseFormat: Format[ApiPressedContentResponse] =
+    Format(apiPressedContentResponseReads, apiPressedContentResponseWrites)
 
   implicit lazy val apiTeaserFormat: Format[ApiTeaser] =
     Format(apiTeaserReads, apiTeaserWrites)

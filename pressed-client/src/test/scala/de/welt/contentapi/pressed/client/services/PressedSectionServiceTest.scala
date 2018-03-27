@@ -34,9 +34,9 @@ class PressedSectionServiceTest extends FlatSpec with Matchers with MustVerb wit
 
     val pressedSection = ApiPressedSection(channel = Some(ApiChannel(Some(ApiReference(Some("label"), Some("/href/"))))))
 
-    val validS3Response = (ApiPressedSectionResponse("test", Some(pressedSection)),
+    val validS3Response = (ApiPressedSectionResponse(Some(pressedSection), "test"),
       Instant.now.minus(PressedSectionService.DefaultSectionTTLMinutes - 5, ChronoUnit.MINUTES))
-    val invalidS3Response = (ApiPressedSectionResponse("test", Some(pressedSection)),
+    val invalidS3Response = (ApiPressedSectionResponse(Some(pressedSection), "test"),
       Instant.now.minus(PressedSectionService.DefaultSectionTTLMinutes + 5, ChronoUnit.MINUTES))
 
     val pressedSectionFromDigger: Future[ApiPressedSectionResponse] = Future.successful {
@@ -133,7 +133,7 @@ class PressedSectionServiceTest extends FlatSpec with Matchers with MustVerb wit
 
     // given
     val client = mock[PressedDiggerClient]
-    when(client.findByPath("/preview/test", Preview)).thenReturn(Future.successful(ApiPressedSectionResponse("test", None)))
+    when(client.findByPath("/preview/test", Preview)).thenReturn(Future.successful(ApiPressedSectionResponse(None, "test")))
 
     // when
     Await.result(new PressedSectionServiceImpl(mock[PressedS3Client], Configuration(), client).findByPath("/preview/test", Preview), 1.second)

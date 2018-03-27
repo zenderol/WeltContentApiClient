@@ -7,7 +7,6 @@ import play.api.libs.json.{JsSuccess, Json}
 class ApiPressedContentTest extends PlaySpec {
 
   "Reads" must {
-    import PressedReads._
     val raw: String =
       """
         {
@@ -18,10 +17,8 @@ class ApiPressedContentTest extends PlaySpec {
         }
       """
 
-    // Info:
-    // This test fails with Play 2.4
-    "transform String->Model only with an `ApiContent`" ignore {
-      Json.parse(raw).validate[ApiPressedContent] mustBe an[JsSuccess[_]]
+    "transform String->Model only with an `ApiContent`" in {
+      Json.parse(raw).validate[ApiPressedContent](PressedReads.apiPressedContentReads) mustBe an[JsSuccess[_]]
     }
 
   }

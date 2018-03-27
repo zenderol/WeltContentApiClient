@@ -6,9 +6,9 @@ import scala.util.Properties
 
 val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
-val PlayVersion = "2.6.11"
-val PlayJsonVersion = "2.6.8"
-val actualVersion: String = s"1.2.${buildNumber.getOrElse("0-local")}"
+val PlayVersion = "2.6.12"
+val PlayJsonVersion = "2.6.9"
+val actualVersion: String = s"1.3.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
@@ -182,7 +182,7 @@ val pressedClient = project("pressed-client")
   .dependsOn(withTests(pressed)).aggregate(pressed)
   .dependsOn(withTests(rawClient)).aggregate(rawClient)
 
-val main = Project("Root", base = file("."))
+val main = Project("root", base = file("."))
   .settings(
     name := "welt-content-api-root"
   )
