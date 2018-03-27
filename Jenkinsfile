@@ -52,10 +52,10 @@ pipeline {
 
         stage('Publish') {
             when { branch 'master' }
+            // provide BINTRAY_{USER,PASS} as of https://github.com/sbt/sbt-bintray/blob/master/notes/0.5.0.markdown
+            environment { BINTRAY_USER = "ci-weltn24" }
             steps {
                 withCredentials([[$class: 'StringBinding', credentialsId: 'BINTRAY_API_KEY_CI_WELTN24', variable: 'BINTRAY_PASS']]) {
-                    // provide BINTRAY_{USER,PASS} as of https://github.com/sbt/sbt-bintray/blob/master/notes/0.5.0.markdown
-                    env.BINTRAY_USER = "ci-weltn24"
                     wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
                         sh './sbt publish'
                     }
