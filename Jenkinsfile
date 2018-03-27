@@ -8,14 +8,17 @@ pipeline {
 
     stages {
         stage('Git') {
-            checkout scm
+            steps {
+                checkout scm
+            }
         }
-
 
         stage('Check') {
             when { expression { BRANCH_NAME ==~ /^PR-.*/ } }
-            wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
-                sh "./sbt clean test"
+            steps {
+                wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                    sh "./sbt clean test"
+                }
             }
         }
 
