@@ -28,7 +28,9 @@ val frontendCompilationSettings = Seq(
   javaOptions in Test += "-XX:ReservedCodeCacheSize=128m",
   javaOptions in Test += "-XX:MaxMetaspaceSize=512m",
   javaOptions in Test += "-Duser.timezone=Europe/Berlin",
-  baseDirectory in Test := file(".")
+  baseDirectory in Test := file("."),
+  // disable scaladoc
+  sources in (Compile, doc) := Seq()
 )
 
 val frontendDependencyManagementSettings = Seq(
