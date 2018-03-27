@@ -1,52 +1,55 @@
-node('medium') {
+pipeline {
+    agent { label 'large' }
+    options { buildDiscarder(logRotator(numToKeepStr: '50')) }
 
-    stage('Git') {
-        checkout scm
+    parameters {
+        booleanParam(name: 'QUICK_DEPLOY', defaultValue: false, description: 'Skip scala: test and coverage')
     }
 
-    if (env.BRANCH_NAME.startsWith('PR-')) {
+    stages {
+        stage('Git') {
+            checkout scm
+        }
+
+
         stage('Check') {
+            when { expression { BRANCH_NAME ==~ /^PR-.*/ } }
             wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
                 sh "./sbt clean test"
             }
         }
-    }
 
-    try {
-        if (env.BRANCH_NAME == 'master') {
-
-            stage('Test') {
-                try {
-                    wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+        stage('Parallel') {
+            when { allOf { branch 'master'; expression { return !params.QUICK_DEPLOY } } }
+            failFast true
+            parallel {
+                stage('Scala Style') {
+                    steps {
                         sh './sbt scalastyle'
+                        step([$class: 'CheckStylePublisher', pattern: '**/scalastyle-result.xml'])
                     }
-                } finally {
-                    step([$class: 'CheckStylePublisher', pattern: '**/scalastyle-result.xml'])
                 }
-                try {
-                    wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                stage('Test') {
+                    steps {
                         sh './sbt clean coverage test'
+                        junit '**/target/test-reports/*.xml'
                     }
-                } finally {
-                    junit '**/target/test-reports/*.xml'
-                }
-                try {
-                    wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
-                        sh './sbt coverageReport'
-                        sh './sbt coverageAggregate'
-                    }
-                } finally {
-                    step([
-                            $class    : 'ScoveragePublisher',
-                            reportDir : 'target/scala-2.12/scoverage-report',
-                            reportFile: 'scoverage.xml'
-                    ])
                 }
             }
+        }
 
+        stage('Coverage') {
+            when { allOf { branch 'master'; expression { return !params.QUICK_DEPLOY } } }
+            steps {
+                sh './sbt coverageReport'
+                sh './sbt coverageAggregate'
+                step([$class: 'ScoveragePublisher', reportDir: 'target/scala-2.12/scoverage-report', reportFile: 'scoverage.xml'])
+            }
+        }
 
-
-            stage('Publish') {
+        stage('Publish') {
+            when { branch 'master' }
+            steps {
                 withCredentials([[$class: 'StringBinding', credentialsId: 'BINTRAY_API_KEY_CI_WELTN24', variable: 'BINTRAY_PASS']]) {
                     // provide BINTRAY_{USER,PASS} as of https://github.com/sbt/sbt-bintray/blob/master/notes/0.5.0.markdown
                     env.BINTRAY_USER = "ci-weltn24"
@@ -57,8 +60,13 @@ node('medium') {
                 }
             }
         }
-    } catch (Exception e) {
-        slackSend channel: 'section-tool-2', message: "Build failed: ${env.BUILD_URL}"
-        throw e
+    }
+    post {
+        success {
+            slackSend color: "good", channel: 'section-tool-2', message: ":rocket: Successfully published a new WeltContentApiClient version: ${env.BUILD_URL}"
+        }
+        failure {
+            slackSend color: "danger", channel: 'section-tool-2', message: ":facepalm: Build failed: ${env.BUILD_URL}"
+        }
     }
 }
