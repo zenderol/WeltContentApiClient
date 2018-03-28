@@ -1,9 +1,14 @@
 # Changelog
 
+## 1.4 (2018-03-28)
+
+- Changed signature of _cigger_ to `ApiPressedContentResponse`
+
 ## 1.3 (2018-03-27)
 
 - added `ApiPressedContentResponse`
 - bumped to Play 2.6.12
+
 ## 1.3 (2018-03-20)
 
 - add optional http headers in AbstractService

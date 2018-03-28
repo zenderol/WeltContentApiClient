@@ -28,13 +28,17 @@ pipeline {
             parallel {
                 stage('Scala Style') {
                     steps {
-                        sh './sbt scalastyle'
+                        wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                            sh './sbt scalastyle'
+                        }
                         step([$class: 'CheckStylePublisher', pattern: '**/scalastyle-result.xml'])
                     }
                 }
                 stage('Test') {
                     steps {
-                        sh './sbt clean coverage test'
+                        wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                            sh './sbt clean coverage test'
+                        }
                         junit '**/target/test-reports/*.xml'
                     }
                 }
@@ -44,8 +48,10 @@ pipeline {
         stage('Coverage') {
             when { allOf { branch 'master'; expression { return !params.QUICK_DEPLOY } } }
             steps {
-                sh './sbt coverageReport'
-                sh './sbt coverageAggregate'
+                wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                    sh './sbt coverageReport'
+                    sh './sbt coverageAggregate'
+                }
                 step([$class: 'ScoveragePublisher', reportDir: 'target/scala-2.12/scoverage-report', reportFile: 'scoverage.xml'])
             }
         }

@@ -8,13 +8,13 @@ val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.6.12"
 val PlayJsonVersion = "2.6.9"
-val actualVersion: String = s"1.3.${buildNumber.getOrElse("0-local")}"
+val actualVersion: String = s"1.4.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
 val frontendCompilationSettings = Seq(
   organization := "de.welt",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.5",
   version in ThisBuild := s"${actualVersion}_$PlayVersion${if (isSnapshot) "-SNAPSHOT" else ""}",
 
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
