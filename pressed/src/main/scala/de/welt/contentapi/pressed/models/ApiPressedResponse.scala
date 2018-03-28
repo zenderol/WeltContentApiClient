@@ -8,12 +8,10 @@ import de.welt.contentapi.pressed.models.StatusPhrase.StatusPhrase
   * @param source      the source where this response originated (e.g. digger/s3)
   * @param status      the HTTP status text for this response
   * @param statusCode  the HTTP status code for this response
-  * @param createdDate when was this response created
   */
 abstract class ApiPressedResponse(source: String,
                                   status: StatusPhrase = StatusPhrase.ok,
-                                  statusCode: Int = StatusPhrase.HttpStatusOk,
-                                  createdDate: Instant = Instant.now)
+                                  statusCode: Int = StatusPhrase.HttpStatusOk)
 
 /** Allow responses to be paged (eg author and theme pages, also for section pages) */
 trait ApiPaging {
@@ -44,25 +42,22 @@ case class ApiPressedSectionResponse(section: Option[ApiPressedSection],
                                      status: StatusPhrase = StatusPhrase.ok,
                                      statusCode: Int = StatusPhrase.HttpStatusOk,
                                      createdDate: Instant = Instant.now)
-  extends ApiPressedResponse(source, status, statusCode, createdDate)
+  extends ApiPressedResponse(source, status, statusCode)
 
 
 /**
   * A wrapper around a [[ApiPressedContent]] that adds additional information
   *
-  * @param result optional content response, may be empty in case of errors
+  * @param result content response, should always be present
   */
-case class ApiPressedContentResponse(result: Option[ApiPressedContent],
+case class ApiPressedContentResponse(result: ApiPressedContent,
                                      source: String,
-                                     status: StatusPhrase = StatusPhrase.ok,
-                                     statusCode: Int = StatusPhrase.HttpStatusOk,
-                                     createdDate: Instant = Instant.now,
                                      override val total: Option[Int] = None,
                                      override val pages: Option[Int] = None,
                                      override val pageSize: Option[Int] = None,
                                      override val currentPage: Option[Int] = None,
                                      override val orderBy: Option[String] = None)
-  extends ApiPressedResponse(source, status, statusCode, createdDate) with ApiPaging {
+  extends ApiPressedResponse(source, StatusPhrase.ok, StatusPhrase.HttpStatusOk) with ApiPaging {
 
   pageSize.foreach(i ⇒ require(i > 0, "pageSize must be greater than 0"))
   pages.foreach(i ⇒ require(i > 0, "pages must be greater than 0 (starting at 1)"))

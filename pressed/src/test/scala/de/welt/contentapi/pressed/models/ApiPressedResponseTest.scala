@@ -1,7 +1,5 @@
 package de.welt.contentapi.pressed.models
 
-import java.time.Instant
-
 import de.welt.contentapi.core.models.ApiContent
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsSuccess, Json}
@@ -11,15 +9,10 @@ class ApiPressedResponseTest extends PlaySpec {
   "ApiPressedContentResponse" must {
 
     trait Fixture {
-      val now = Instant.now
       val content = ApiContent("le-url", "le-type")
       val response = ApiPressedContentResponse(
-        result = Some(ApiPressedContent(content)),
-        source = "test",
-        status = StatusPhrase.no_content,
-        statusCode = 123,
-        createdDate = now
-      )
+        result = ApiPressedContent(content),
+        source = "test")
     }
     "Reads" must {
       trait ReadsFixture extends Fixture {
@@ -32,9 +25,6 @@ class ApiPressedResponseTest extends PlaySpec {
              |    }
              |  },
              |  "source":"test",
-             |  "status":"no_content",
-             |  "statusCode":123,
-             |  "createdDate":"${now.toString}",
              |  "total":1000,
              |  "pages":100,
              |  "pageSize":10,
@@ -68,10 +58,7 @@ class ApiPressedResponseTest extends PlaySpec {
              |     "type":"le-type"
              |    }
              |  },
-             |  "source":"test",
-             |  "status":"no_content",
-             |  "statusCode":123,
-             |  "createdDate":"${now.toString}"
+             |  "source":"test"
              |}
           """.stripMargin.replaceAll("[\\s]", "")
       }
@@ -92,9 +79,6 @@ class ApiPressedResponseTest extends PlaySpec {
              |    }
              |  },
              |  "source":"test",
-             |  "status":"no_content",
-             |  "statusCode":123,
-             |  "createdDate":"${now.toString}",
              |  "total":1000,
              |  "pages":100,
              |  "pageSize":10,
