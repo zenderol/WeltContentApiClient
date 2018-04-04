@@ -132,8 +132,25 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
     }
 
     "strip empty elements from the query string" in new TestScopeBasicAuth {
-      new TestService().get(Seq("x"), Seq("spaces" → " \n", "trim" → "   value   "))
-      verify(mockRequest).withQueryStringParameters(("trim", "value"))
+      new TestService().get(
+        urlArguments = Seq("x"),
+        parameters = Seq("spaces" → " \n"))
+      verify(mockRequest).withQueryStringParameters()
+    }
+
+    "trim whitespaces from parameters" in new TestScopeBasicAuth {
+      new TestService().get(
+        urlArguments = Seq("x"),
+        parameters = Seq("trim" → "   value   "))
+      verify(mockRequest).withQueryStringParameters("trim" → "value")
+    }
+
+    // proxy qwant onward search request
+    "allow whitespace in parameter value because request builder will escape it correctly" in new TestScopeBasicAuth {
+      new TestService().get(
+        urlArguments = Seq("x"),
+        parameters = Seq("query" → "Angela Merkel"))
+      verify(mockRequest).withQueryStringParameters("query" → "Angela Merkel")
     }
 
     "will return the expected result" in new TestScopeBasicAuth {
@@ -193,6 +210,7 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 }
 
 object AbstractServiceTest extends MockitoSugar with TestExecutionContext {
+
   trait TestScope {
 
     val mockWsClient: WSClient = mock[WSClient]
@@ -213,4 +231,5 @@ object AbstractServiceTest extends MockitoSugar with TestExecutionContext {
     when(metricsMock.defaultRegistry).thenReturn(new com.codahale.metrics.MetricRegistry())
     when(mockWsClient.url(anyString)).thenReturn(mockRequest)
   }
+
 }

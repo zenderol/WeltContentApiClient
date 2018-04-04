@@ -16,7 +16,7 @@ pipeline {
         stage('Check') {
             when { expression { BRANCH_NAME ==~ /^PR-.*/ } }
             steps {
-                wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                ansiColor('xterm') {
                     sh "./sbt clean test"
                 }
             }
@@ -28,7 +28,7 @@ pipeline {
             parallel {
                 stage('Scala Style') {
                     steps {
-                        wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                        ansiColor('xterm') {
                             sh './sbt scalastyle'
                         }
                         step([$class: 'CheckStylePublisher', pattern: '**/scalastyle-result.xml'])
@@ -36,7 +36,7 @@ pipeline {
                 }
                 stage('Test') {
                     steps {
-                        wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                        ansiColor('xterm') {
                             sh './sbt clean coverage test'
                         }
                         junit '**/target/test-reports/*.xml'
@@ -48,7 +48,7 @@ pipeline {
         stage('Coverage') {
             when { allOf { branch 'master'; expression { return !params.QUICK_DEPLOY } } }
             steps {
-                wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                ansiColor('xterm') {
                     sh './sbt coverageReport'
                     sh './sbt coverageAggregate'
                 }
@@ -62,7 +62,7 @@ pipeline {
             environment { BINTRAY_USER = "ci-weltn24" }
             steps {
                 withCredentials([[$class: 'StringBinding', credentialsId: 'BINTRAY_API_KEY_CI_WELTN24', variable: 'BINTRAY_PASS']]) {
-                    wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                    ansiColor('xterm') {
                         sh './sbt publish'
                     }
                     slackSend channel: 'section-tool-2', message: "Successfully published a new WeltContentApiClient version: ${env.BUILD_URL}"
@@ -71,9 +71,6 @@ pipeline {
         }
     }
     post {
-        success {
-            slackSend color: "good", channel: 'section-tool-2', message: ":rocket: Successfully published a new WeltContentApiClient version: ${env.BUILD_URL}"
-        }
         failure {
             slackSend color: "danger", channel: 'section-tool-2', message: ":facepalm: Build failed: ${env.BUILD_URL}"
         }

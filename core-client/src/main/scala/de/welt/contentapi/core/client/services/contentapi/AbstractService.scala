@@ -102,10 +102,10 @@ abstract class AbstractService[T](ws: WSClient,
 
     val url: String = config.host + config.endpoint.format(urlArguments.map(stripWhiteSpaces).filter(_.nonEmpty): _*)
 
-    val filteredParameters = parameters.map { case (k, v) ⇒ k → stripWhiteSpaces(v) }.filter(_._2.nonEmpty)
+    val nonEmptyParameters = parameters.map { case (k, v) ⇒ k -> v.trim }.filter(_._2.nonEmpty)
 
     val getRequest: WSRequest = ws.url(url)
-      .withQueryStringParameters(filteredParameters: _*)
+      .withQueryStringParameters(nonEmptyParameters: _*)
       .addHttpHeaders(headers: _*)
       .addHttpHeaders(forwardHeaders(forwardedRequestHeaders): _*)
 
