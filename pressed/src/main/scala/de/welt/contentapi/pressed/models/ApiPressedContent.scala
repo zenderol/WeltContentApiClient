@@ -17,6 +17,7 @@ case class ApiPressedContent(content: ApiContent,
   lazy val relatedContent: Seq[ApiPressedContent] = relatedFilteredBy("related")
   lazy val relatedMoreLikeThis: Seq[ApiPressedContent] = relatedFilteredBy("more-like-this")
   lazy val relatedPlaylist: Seq[ApiPressedContent] = relatedFilteredBy("playlist")
+  lazy val relatedAuthorContent: Seq[ApiPressedContent] = relatedFilteredBy("more-from-author")
   lazy val unwrappedEmbeds: Seq[ApiPressedEmbed] = embeds.getOrElse(Nil)
 
   private[this] def relatedFilteredBy(`type`: String): Seq[ApiPressedContent] = unwrappedRelated.filter(_.content.unwrappedRoles.contains(`type`))
