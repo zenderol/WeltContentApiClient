@@ -60,8 +60,9 @@ case class ApiPressedContentResponse(result: ApiPressedContent,
   extends ApiPressedResponse(source, StatusPhrase.ok, StatusPhrase.HttpStatusOk) with ApiPaging {
 
   pageSize.foreach(i ⇒ require(i > 0, "pageSize must be greater than 0"))
-  pages.foreach(i ⇒ require(i > 0, "pages must be greater than 0 (starting at 1)"))
   currentPage.foreach(i ⇒ require(i > 0, "currentPage must be greater than 0 (starting at 1)"))
+  pages.foreach(i ⇒ require(i >= 0, "pages must be ≥ 0 (starting at 0)"))
+  total.foreach(i ⇒ require(i >= 0, "total must be ≥ 0 (starting at 0)"))
 }
 
 object StatusPhrase extends Enumeration {
