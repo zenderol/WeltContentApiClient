@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5 (2018-05-31)
+
+*Changes*
+
+- introduced new `TreeService` as an abstraction to the `RawTreeService` in the front end
+- Migrated the `AuthorService` from _funkotron_ into the capi to allow using it within cigger (why: _author augmenting_)
+- `RawTreeService` will not access s3 when app is started in `Mode.Test`
+- Play Framework version bump to `2.6.15`
+
+*Deprecations*
+
+- Deprecated large parts of `ApiAuthor` in favor of augmenting authors json into the `related` array of the `ApiPressedContent`
+
 ## 1.4 (2018-03-28)
 
 - Changed signature of _cigger_ to `ApiPressedContentResponse`

@@ -42,5 +42,31 @@ class ApiPressedContentTest extends PlaySpec {
 
   }
 
+  "ApiPressedContent" should {
+    import ApiPressedContentRoles._
 
+    val main = ApiContent("main", "main")
+
+    val mlt = ApiPressedContent(ApiContent("main", "mlt", roles = Some(List(MLT.name))))
+    val related = ApiPressedContent(ApiContent("main", "related", roles = Some(List(Related.name))))
+    val playlistRelated = ApiPressedContent(ApiContent("main", "playlist_related", roles = Some(List(Playlist.name, Related.name))))
+
+    val apiPressedContent = ApiPressedContent(ApiContent("main", "main"), related = Some(List(mlt, related, playlistRelated)))
+
+    "return related filtered by role" in {
+      apiPressedContent.relatedByRole(MLT) must contain only mlt
+    }
+
+    "return multiple related if role matches" in {
+      apiPressedContent.relatedByRole(Related) must contain allOf(related, playlistRelated)
+    }
+
+    "allow searching for multiple relations at once" in {
+      apiPressedContent.relatedByRole(Playlist, MLT) must contain allOf(mlt, playlistRelated)
+    }
+
+    "return an empty list when query is empty" in {
+      apiPressedContent.relatedByRole() mustBe empty
+    }
+  }
 }

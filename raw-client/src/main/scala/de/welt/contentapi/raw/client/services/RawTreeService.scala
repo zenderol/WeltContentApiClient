@@ -31,9 +31,6 @@ class RawTreeServiceImpl @Inject()(s3Client: S3Client,
   protected[services] val bucket: String = config.get[String](bucketConfigKey)
   protected[services] val folder: String = config.get[String](folderConfigKey)
 
-  // start cron to update the tree automatically
-  capiContext.actorSystem.scheduler.schedule(1.minute, 1.minute, () ⇒ update())
-
   // always cron-based update Env: Live
   override def root(env: Env): Option[RawChannel] = data.get(env).map(_.channel)
 
@@ -49,7 +46,13 @@ class RawTreeServiceImpl @Inject()(s3Client: S3Client,
     }
   }
   // initially update the tree
-  update()
+  if (Mode.Test != environment.mode) {
+    // start cron to update the tree automatically
+    capiContext.actorSystem.scheduler.schedule(1.minute, 1.minute, () ⇒ update())
+    update()
+  } else {
+    Logger.info("RawTree will not be loaded when started in Mode.Test. If you require section data, please mock it.")
+  }
 
   protected def objectKeyForEnv(env: Env): String = s"$folder/$mode/${env.toString}/config.json"
 

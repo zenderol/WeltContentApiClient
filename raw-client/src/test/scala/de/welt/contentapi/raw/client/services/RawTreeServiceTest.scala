@@ -19,10 +19,8 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
 
 
     sealed trait ConfigurationScope {
-      val environment: Environment = mock[Environment]
       val s3Client: S3Client = mock[S3Client]
 
-      Mockito.when(environment.mode) thenReturn Mode.Prod
       Mockito.when(s3Client.getLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
       Mockito.when(s3Client.getWithLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
     }
@@ -34,7 +32,7 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
         RawTreeServiceImpl.folderConfigKey → expectedFolder,
         RawTreeServiceImpl.modeConfigKey → expectedMode
       )
-      val service = new RawTreeServiceImpl(s3Client, config = config, environment = environment, TestExecutionContext.executionContext)
+      val service = new RawTreeServiceImpl(s3Client, config = config, environment = Environment.simple(mode = Mode.Prod), TestExecutionContext.executionContext)
 
       // when
       service.root(Live)
@@ -49,13 +47,28 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
         RawTreeServiceImpl.bucketConfigKey → expectedBucket,
         RawTreeServiceImpl.folderConfigKey → expectedFolder
       )
-      val service = new RawTreeServiceImpl(s3Client, config = config, environment = environment, TestExecutionContext.executionContext)
+      val service = new RawTreeServiceImpl(s3Client, config = config, environment = Environment.simple(mode = Mode.Prod), TestExecutionContext.executionContext)
 
       // when
       service.root(Live)
 
       // then
       Mockito.verify(s3Client).getLastModified(expectedBucket, s"$expectedFolder/$expectedPlayMode/Live/config.json")
+    }
+
+    "don't access s3 when in Mode.Test" in new ConfigurationScope {
+      // given
+      val config = Configuration(
+        RawTreeServiceImpl.bucketConfigKey → expectedBucket,
+        RawTreeServiceImpl.folderConfigKey → expectedFolder
+      )
+      val service = new RawTreeServiceImpl(s3Client, config = config, environment = Environment.simple(mode = Mode.Test), TestExecutionContext.executionContext)
+
+      // when
+      service.root(Live)
+
+      // then
+      Mockito.verify(s3Client, Mockito.never()).getLastModified(Matchers.anyString(), Matchers.anyString())
     }
 
   }

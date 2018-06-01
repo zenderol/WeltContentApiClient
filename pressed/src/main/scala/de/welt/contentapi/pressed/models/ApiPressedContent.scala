@@ -21,5 +21,20 @@ case class ApiPressedContent(content: ApiContent,
   lazy val unwrappedEmbeds: Seq[ApiPressedEmbed] = embeds.getOrElse(Nil)
 
   private[this] def relatedFilteredBy(`type`: String): Seq[ApiPressedContent] = unwrappedRelated.filter(_.content.unwrappedRoles.contains(`type`))
+
+  def relatedByRole(role: ApiPressedContentRoles.Role*): Seq[ApiPressedContent] =
+    unwrappedRelated.filter(_.content.unwrappedRoles.intersect(role.map(_.name)).nonEmpty)
 }
 
+object ApiPressedContentRoles {
+
+  // @formatter:off
+  sealed trait Role { def name: String }
+  case object Related extends Role { val name = "related" }
+  case object MLT extends Role { val name = "more-like-this" }
+  case object Playlist extends Role { val name = "playlist" }
+  case object MoreFromAuthor extends Role { val name = "more-from-author" }
+  case object Author extends Role { val name = "author" }
+  // @formatter:on
+
+}

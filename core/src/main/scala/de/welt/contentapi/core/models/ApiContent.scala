@@ -19,17 +19,17 @@ case class ApiResponse(content: ApiContent,
 /**
   * This class is returned by the API, when a batch-id-get request is performed
   *
-  * @param results  result of type [[ApiContent]]
+  * @param results result of type [[ApiContent]]
   * @since 0.22
- */
+  */
 case class ApiBatchResult(results: Seq[ApiContent])
 
 /**
   * This class is returned by the API as a Response Wrapper
   *
-  * @param response  Wrapper for [[ApiBatchResult]]
+  * @param response Wrapper for [[ApiBatchResult]]
   * @since 0.22
- */
+  */
 case class ApiBatchResponse(response: ApiBatchResult)
 
 /**
@@ -117,8 +117,11 @@ case class ApiOnward(id: String, roles: Seq[String])
   */
 case class ApiAuthor(id: Option[String] = None,
                      name: Option[String] = None,
+                     @deprecated("Will be removed in future releases. Use related[role='author'] instead", since = "version 1.5")
                      position: Option[String] = None,
+                     @deprecated("Will be removed in future releases. Use related[role='author'] instead", since = "version 1.5")
                      url: Option[String] = None,
+                     @deprecated("Will be removed in future releases. Use related[role='author'] instead", since = "version 1.5")
                      elements: Option[List[ApiElement]] = None) {
   lazy val unwrappedElements: List[ApiElement] = elements.getOrElse(Nil)
 }
