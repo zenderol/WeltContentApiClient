@@ -87,7 +87,6 @@ object ServiceConfiguration {
         credentials ← c.getOptional[Configuration](Credentials)
         username ← credentials.getOptional[String](Username)
         password ← credentials.getOptional[String](Password)
-        password ← credentials.getOptional[String](Password)
       } yield Right((username, password))
     ).orElse(c.getOptional[String](ApiKey).map(Left(_)))
   }

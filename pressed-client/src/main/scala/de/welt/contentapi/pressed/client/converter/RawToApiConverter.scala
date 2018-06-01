@@ -1,12 +1,13 @@
 package de.welt.contentapi.pressed.client.converter
 
-import javax.inject.Inject
-
+import com.google.inject.Singleton
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag}
+import javax.inject.Inject
 
 
+@Singleton
 class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) {
   private val pathForAdTagAction: InheritanceAction[String] = InheritanceAction[String](
     forRoot = _ ⇒ "home", // root has a unique adTag
@@ -64,7 +65,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     * Primarily converts the RawChannelHeader from the current RawChannel if its RawChannelHeader is nonEmpty
     * Alternative is to search for a parent that is a `Master` and use its Header (empty headers may be inherited to children)
     **/
-  private[converter] def calculateHeader(rawChannel: RawChannel): Option[ApiHeaderConfiguration] = {
+  private[converter] def calculateHeader(rawChannel: RawChannel): Option[ApiHeaderConfiguration] =
     rawChannel.config.header.find(_.nonEmpty) // is a valid header defined?
       .orElse(calculateMasterChannel(rawChannel).flatMap(_.config.header)) // or else find a master to inherit its header
       .map { result ⇒
@@ -75,10 +76,9 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
         slogan = result.slogan,
         sloganReference = result.sloganReference.map(ref ⇒ ApiReference(ref.label, ref.path)),
         sectionReferences = result.sectionReferences.map(refs ⇒ refs.map(ref ⇒ ApiReference(ref.label, ref.path))),
-        hidden = Option(result.hidden).filter(_ != false)
+        hidden = Option(result.hidden)
       )
     }
-  }
 
   /**
     * Link to Master Channel in the top of a section page or an article page
@@ -98,8 +98,8 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
   /**
     * Calculate the Master for any given Channel
     * Channels are a `Master` if
-    *   a) the `Master` Option under GodMode in CMCF is checked
-    *   b) the channel is 1st level (== parent is frontpage)
+    * a) the `Master` Option under GodMode in CMCF is checked
+    * b) the channel is 1st level (== parent is frontpage)
     * Master Channel may inherit some of its properties
     * e.g. on /sport/fussball/1.bundesliga/ the Header shows "Fußball" linked to /sport/fussball/ to allow user to click upwards in the tree
     * e.g. on /sport/fussball/1.bundesliga/ the same SubNavigation is shown as on /sport/fussball/ to allow users to click through the page

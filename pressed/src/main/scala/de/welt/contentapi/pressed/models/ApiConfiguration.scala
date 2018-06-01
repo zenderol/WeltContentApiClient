@@ -121,11 +121,10 @@ case class ApiHeaderConfiguration(label: Option[String] = None,
                                   logo: Option[String] = None,
                                   slogan: Option[String] = None,
                                   sectionReferences: Option[Seq[ApiReference]] = None,
-                                  hidden: Option[Boolean] = None,
+                                  hidden: Option[Boolean] = Some(false),
                                   sloganReference: Option[ApiReference] = None,
                                   headerReference: Option[ApiReference] = None) {
   lazy val unwrappedSectionReferences: Seq[ApiReference] = sectionReferences.getOrElse(Nil)
-  lazy val isHidden: Boolean = hidden.getOrElse(false)
 }
 
 /**
