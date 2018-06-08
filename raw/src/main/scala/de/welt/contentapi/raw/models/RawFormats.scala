@@ -16,8 +16,8 @@ object RawFormats {
     Format[RawChannelMetadata](rawChannelMetadataReads, rawChannelMetadataWrites)
   implicit lazy val rawSectionReferenceFormat: Format[RawSectionReference] =
     Format[RawSectionReference](rawSectionReferenceReads, rawSectionReferenceWrites)
-  implicit lazy val rawChannelSponsoringFormat: Format[RawChannelSponsoring] =
-    Format[RawChannelSponsoring](rawChannelSponsoringReads, rawChannelSponsoringWrites)
+  implicit lazy val rawChannelSponsoringFormat: Format[RawSponsoringConfig] =
+    Format[RawSponsoringConfig](rawChannelSponsoringReads, rawChannelSponsoringWrites)
   implicit lazy val rawChannelHeaderFormat: Format[RawChannelHeader] =
     Format[RawChannelHeader](rawChannelHeaderReads, rawChannelHeaderWrites)
   implicit lazy val rawChannelContentConfigurationFormat: Format[RawChannelContentConfiguration] =
@@ -62,10 +62,10 @@ object RawReads {
   implicit lazy val rawChannelMetaRobotsTagReads: Reads[RawChannelMetaRobotsTag] = Json.reads[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataReads: Reads[RawChannelMetadata] = Json.reads[RawChannelMetadata]
   implicit lazy val rawSectionReferenceReads: Reads[RawSectionReference] = Json.reads[RawSectionReference]
-  implicit lazy val rawChannelSponsoringReads: Reads[RawChannelSponsoring] = new Reads[RawChannelSponsoring] {
-    private lazy val defaults: RawChannelSponsoring = RawChannelSponsoring()
-    override def reads(json: JsValue): JsResult[RawChannelSponsoring] = json match {
-      case JsObject(underlying) ⇒ JsSuccess(RawChannelSponsoring(
+  implicit lazy val rawChannelSponsoringReads: Reads[RawSponsoringConfig] = new Reads[RawSponsoringConfig] {
+    private lazy val defaults: RawSponsoringConfig = RawSponsoringConfig()
+    override def reads(json: JsValue): JsResult[RawSponsoringConfig] = json match {
+      case JsObject(underlying) ⇒ JsSuccess(RawSponsoringConfig(
         logo = underlying.get("logo").map(_.as[String]),
         slogan = underlying.get("slogan").map(_.as[String]),
         hidden = underlying.get("hidden").map(_.as[Boolean]).getOrElse(defaults.hidden),
@@ -203,7 +203,7 @@ object RawReads {
           metadata = underlying.get("metadata").map(_.as[RawChannelMetadata]),
           header = underlying.get("header").map(_.as[RawChannelHeader]),
           sponsoring = underlying.get("sponsoring")
-            .map(_.as[RawChannelSponsoring])
+            .map(_.as[RawSponsoringConfig])
             .getOrElse(defaults.sponsoring),
           theme = underlying.get("theme").map(_.as[RawChannelTheme]),
           commercial = underlying.get("commercial").map(_.as[RawChannelCommercial]).getOrElse(defaults.commercial),
@@ -252,7 +252,7 @@ object RawWrites {
   implicit lazy val rawChannelMetaRobotsTagWrites: Writes[RawChannelMetaRobotsTag] = Json.writes[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataWrites: Writes[RawChannelMetadata] = Json.writes[RawChannelMetadata]
   implicit lazy val rawSectionReferenceWrites: Writes[RawSectionReference] = Json.writes[RawSectionReference]
-  implicit lazy val rawChannelSponsoringWrites: Writes[RawChannelSponsoring] = Json.writes[RawChannelSponsoring]
+  implicit lazy val rawChannelSponsoringWrites: Writes[RawSponsoringConfig] = Json.writes[RawSponsoringConfig]
   implicit lazy val rawChannelHeaderWrites: Writes[RawChannelHeader] = Json.writes[RawChannelHeader]
   implicit lazy val rawChannelContentConfigurationWrites: Writes[RawChannelContentConfiguration] = Json.writes[RawChannelContentConfiguration]
   implicit lazy val rawChannelStageConfigurationWrites: Writes[RawChannelStageConfiguration] = Json.writes[RawChannelStageConfiguration]
@@ -290,6 +290,7 @@ object RawWrites {
       (__ \ "layout").writeNullable[String] and
       (__ \ "label").writeNullable[String] and
       (__ \ "logo").writeNullable[String] and
+      (__ \ "sponsoring").writeNullable[RawSponsoringConfig] and
       (__ \ "references").writeNullable[Seq[RawSectionReference]] and
       (__ \ "hideCuratedStageLabel").writeNullable[Boolean]
     ) (unlift(RawChannelStageCurated.unapply))

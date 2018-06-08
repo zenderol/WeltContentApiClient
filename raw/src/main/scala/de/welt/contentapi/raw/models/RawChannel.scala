@@ -138,7 +138,7 @@ case class RawChannel(id: RawChannelId,
     *
     * @param newSponsoring New Sponsoring to inherit
     */
-  def batchInheritRawChannelSponsoringToAllChildren(newSponsoring: RawChannelSponsoring, user: String): Unit =
+  def batchInheritRawChannelSponsoringToAllChildren(newSponsoring: RawSponsoringConfig, user: String): Unit =
     batchInheritGenericToAllChildren({ rawChannel ⇒ rawChannel.config = rawChannel.config.copy(sponsoring = newSponsoring) }, user)
 
   /**
@@ -216,7 +216,7 @@ case class RawChannelId(var path: String,
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
-                                   sponsoring: RawChannelSponsoring = RawChannelSponsoring(),
+                                   sponsoring: RawSponsoringConfig = RawSponsoringConfig(),
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
                                    content: Option[RawChannelContentConfiguration] = None,
@@ -342,7 +342,7 @@ case class RawChannelHeader(label: Option[String] = None,
 }
 
 /**
-  * A channel can be sponsored by a partner or brand with a special logo + slogan. This is mostly part of the
+  * A channel or a stage can be sponsored by a partner or brand with a special logo + slogan. This is mostly part of the
   * page-sub-header.
   *
   * @param logo         only a mapping string for the client. Used for a svg/image logo e.g. 'Commerzbank' or 'Philips'
@@ -352,11 +352,11 @@ case class RawChannelHeader(label: Option[String] = None,
   * @param link         Optional link for the logo.
   * @param brandstation Optional type of Brandstation if the partner is part of brandstation.
   */
-case class RawChannelSponsoring(logo: Option[String] = None,
-                                slogan: Option[String] = None,
-                                hidden: Boolean = false,
-                                link: Option[RawSectionReference] = None,
-                                brandstation: Option[String] = None)
+case class RawSponsoringConfig(logo: Option[String] = None,
+                               slogan: Option[String] = None,
+                               hidden: Boolean = false,
+                               link: Option[RawSectionReference] = None,
+                               brandstation: Option[String] = None)
 
 /**
   * Stored values for CMCF and Janus2. Should not be used by any clients.
@@ -449,6 +449,7 @@ case class RawChannelStageCommercial(override val index: Int,
   * @param layout                optional layout name to be used for the stage, e.g. "classic-ressort" else will be default layout
   * @param label                 optional label to be rendered above the stage, e.g. name of channel
   * @param logo                  optional logo to be rendered next to the label, e.g. `/icon/` stage logos.
+  * @param sponsoring            optional sponsoring consisting of a linked logo and/or slogan
   * @param references            optional Link(s) to external or internal, absolute or relative URLs
   * @param hideCuratedStageLabel don't show the label that curation api returns (allow re-usage of stages)
   */
@@ -462,6 +463,7 @@ case class RawChannelStageCurated(override val index: Int,
                                   layout: Option[String],
                                   label: Option[String],
                                   logo: Option[String],
+                                  sponsoring: Option[RawSponsoringConfig] = None,
                                   references: Option[Seq[RawSectionReference]] = None,
                                   hideCuratedStageLabel: Option[Boolean] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)

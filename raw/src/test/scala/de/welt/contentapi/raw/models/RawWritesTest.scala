@@ -158,7 +158,8 @@ class RawWritesTest extends PlaySpec {
         curatedStageMapping = "hero",
         layout = None,
         label = None,
-        logo = None
+        logo = None,
+        sponsoring = None
       )
 
       val expectedJson: String =
@@ -187,6 +188,7 @@ class RawWritesTest extends PlaySpec {
         layout = Some("curated-layout"),
         label = Some("curated-label"),
         logo = Some("curated-logo"),
+        sponsoring = Some(RawSponsoringConfig(slogan = Some("slogan"))),
         references = Some(Seq(
           RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
         )),

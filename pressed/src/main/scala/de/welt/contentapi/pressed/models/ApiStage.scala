@@ -19,7 +19,8 @@ case class ApiStage(index: Int,
 /**
   * @param layout       Name of the layout for the stage, e.g. 'channel-hero', 'multimedia' or 'hidden'
   * @param label        Label to show above a stage
-  * @param logo         A optional logo for the stage. eg.g `/icon/`
+  * @param logo         An optional logo for the stage. eg.g `/icon/`
+  * @param sponsoring   An optional sponsoring consisting of a linked logo and/or slogan
   * @param references   References to render with href and label, e.g. Sub Ressorts
   * @param commercials  contains the format ids for the Ads
   * @param trackingName is used by Funkotron for tracking clicks on articles in stages (e.g. Webtrekk - important for Editors and BI!)
@@ -28,6 +29,7 @@ case class ApiStage(index: Int,
 case class ApiStageConfiguration(layout: String = "Default",
                                  label: Option[String],
                                  logo: Option[String] = None,
+                                 sponsoring: Option[ApiSponsoringConfiguration] = None,
                                  references: Option[Seq[ApiReference]] = None,
                                  commercials: Option[Seq[String]] = None,
                                  trackingName: Option[String],

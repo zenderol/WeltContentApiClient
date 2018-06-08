@@ -90,7 +90,7 @@ class RawInheritanceTest extends PlaySpec {
 
     "set a RawChannelSponsoring for all children" in new TestScope {
       // Given
-      val newSponsoring = RawChannelSponsoring(
+      val newSponsoring = RawSponsoringConfig(
         logo = Some("EA SPORTS"),
         slogan = Some("zin ze game")
       )
@@ -99,7 +99,7 @@ class RawInheritanceTest extends PlaySpec {
       root.batchInheritRawChannelSponsoringToAllChildren(newSponsoring = newSponsoring, "user")
 
       // Then
-      root.config.sponsoring mustBe RawChannelSponsoring()
+      root.config.sponsoring mustBe RawSponsoringConfig()
       sport.config.sponsoring mustBe newSponsoring
       fussball.config.sponsoring mustBe newSponsoring
       bundesliga.config.sponsoring mustBe newSponsoring

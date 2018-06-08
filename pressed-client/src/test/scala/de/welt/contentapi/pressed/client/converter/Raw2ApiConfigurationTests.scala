@@ -29,7 +29,7 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       headerReference = Some(RawSectionReference(Some("Label"), Some("/link-for-logo-or-label.html"))),
       sloganReference = Some(RawSectionReference(Some(""), Some("/link-for-slogan.html")))
     )
-    val rawChannelSponsoring = RawChannelSponsoring(
+    val rawChannelSponsoring = RawSponsoringConfig(
       logo = Some("logo"),
       slogan = Some("slogan"),
       hidden = true,
