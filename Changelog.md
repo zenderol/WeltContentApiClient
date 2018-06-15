@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7 (2018-06-08)
+
+- added `AdminMenuService` for storing menu data on S3
+- added case classes `RawMenu` and `RawMenuLink`
+
 ## 1.6 (2018-06-04)
 
 - Added optional sponsoring to `ApiStageConfiguration`
