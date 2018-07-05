@@ -62,6 +62,7 @@ case class ApiSearchResponse(page: Int,
   * @param roles    Needed for related content (role: playlist or related) (Frank)
   * @param sections Section paths where the content is published
   * @param tags     Tags of the content. Only the Escenic Tags for this content
+  * @param keywords Keywords of the content. Generated using Machine Learning service from EP Team
   * @param onward   Non resolved relations (related content) (GraphQl)
   */
 case class ApiContent(webUrl: String,
@@ -74,6 +75,7 @@ case class ApiContent(webUrl: String,
                       var roles: Option[List[String]] = None,
                       sections: Option[ApiSectionData] = None,
                       tags: Option[List[ApiTag]] = None,
+                      keywords: Option[List[ApiKeyword]] = None,
                       onward: Option[List[ApiOnward]] = None) {
 
   lazy val unwrappedFields: Map[String, String] = fields.getOrElse(Map.empty[String, String])
@@ -81,6 +83,7 @@ case class ApiContent(webUrl: String,
   lazy val unwrappedElements: List[ApiElement] = elements.getOrElse(Nil)
   lazy val unwrappedRoles: List[String] = roles.getOrElse(Nil)
   lazy val unwrappedTags: List[ApiTag] = tags.getOrElse(Nil)
+  lazy val unwrappedKeywords: List[ApiKeyword] = keywords.getOrElse(Nil)
 
   /**
     * Checks if the `entry` is in `fields`
@@ -198,6 +201,15 @@ case class ApiSectionData(home: Option[String], all: Option[List[String]] = None
   */
 case class ApiTag(id: Option[String], value: Option[String] = None)
 
+/**
+  * Content keywords generated using Machine Learning
+  *
+  * @param id    hyphenated label containing catgeorization of the keyword
+  *              E.g. `organization-vfb-stuttgart`
+  * @param label the real value of the keyword
+  * @param score relevance score
+  */
+case class ApiKeyword(id: Option[String], label: Option[String], score: Option[Double])
 /**
   * A reference is model to render a <a/>. Used for internal (like Sections) or external links.
   *

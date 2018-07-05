@@ -20,6 +20,7 @@ object ApiFormats {
   implicit lazy val apiElementFormat: Format[ApiElement] = Format(apiElementReads, apiElementWrites)
   implicit lazy val apiAuthorFormat: Format[ApiAuthor] = Format(apiAuthorReads, apiAuthorWrites)
   implicit lazy val apiTagFormat: Format[ApiTag] = Format(apiTagReads, apiTagWrites)
+  implicit lazy val apiKeywordFormat: Format[ApiKeyword] = Format(apiKeywordReads, apiKeywordWrites)
   implicit lazy val apiContentFormat: Format[ApiContent] = Format(apiContentReads, apiContentWrites)
   implicit lazy val apiResponseFormat: Format[ApiResponse] = Format(apiResponseReads, apiResponseWrites)
   implicit lazy val apiSearchResponseFormat: Format[ApiSearchResponse] = Format(apiSearchResponseReads, apiSearchResponseWrites)
@@ -36,6 +37,7 @@ object ApiReads {
   implicit lazy val apiElementReads: Reads[ApiElement] = Json.reads[ApiElement]
   implicit lazy val apiAuthorReads: Reads[ApiAuthor] = Json.reads[ApiAuthor]
   implicit lazy val apiTagReads: Reads[ApiTag] = Json.reads[ApiTag]
+  implicit lazy val apiKeywordReads: Reads[ApiKeyword] = Json.reads[ApiKeyword]
   implicit lazy val apiContentReads: Reads[ApiContent] = Json.reads[ApiContent]
   implicit lazy val apiResponseReads: Reads[ApiResponse] = Json.reads[ApiResponse]
   implicit lazy val apiSearchResponseReads: Reads[ApiSearchResponse] = Json.reads[ApiSearchResponse]
@@ -53,6 +55,7 @@ object ApiWrites {
   implicit lazy val apiElementWrites: Writes[ApiElement] = Json.writes[ApiElement]
   implicit lazy val apiAuthorWrites: Writes[ApiAuthor] = Json.writes[ApiAuthor]
   implicit lazy val apiTagWrites: Writes[ApiTag] = Json.writes[ApiTag]
+  implicit lazy val apiKeywordWrites: Writes[ApiKeyword] = Json.writes[ApiKeyword]
   implicit lazy val apiContentWrites: Writes[ApiContent] = Json.writes[ApiContent]
   implicit lazy val apiResponseWrites: Writes[ApiResponse] = Json.writes[ApiResponse]
   implicit lazy val apiSearchResponseWrites: Writes[ApiSearchResponse] = Json.writes[ApiSearchResponse]
