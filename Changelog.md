@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8 (2018-08-02)
+
+- added `RawChannelStageConfiguredId` as a new main stage type
+- this allows single ids to be configured on section pages without the need of Papyrus Curation
+- example usecases: Advertorial Footers, oEmbeds (WM, Podcasts,...)
+
+
 ## 1.7 (2018-06-08)
 
 - added `AdminMenuService` for storing menu data on S3

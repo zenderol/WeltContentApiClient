@@ -1,5 +1,6 @@
 package de.welt.contentapi.raw.models
 
+import de.welt.contentapi.raw.models.RawReads.rawChannelStageConfiguredIdReads
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 
@@ -232,6 +233,52 @@ class RawWritesTest extends PlaySpec {
     }
 
   }
+
+  "RawChannelStageConfiguredId Reads and Writes" must {
+
+      val ConfiguredIdStage = RawChannelStageConfiguredId(
+        index = 0,
+        `type` = RawChannelStage.TypeConfiguredId,
+        hidden = false,
+        trackingName = Some("tracking-name"),
+        link = Some(stageLink),
+        configuredId = "1234567890",
+        label = Some("curated-label"),
+        references = Some(Seq(
+          RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
+        ))
+      )
+
+      val expectedJson: String =
+        s"""|{
+           |  "index" : 0,
+           |  "type" : "${RawChannelStage.TypeConfiguredId}",
+           |  "hidden" : false,
+           |  "trackingName" : "tracking-name",
+           |  "link" : {
+           |    "path" : "https://www.dick-butt.org"
+           |  },
+           |  "configuredId" : "1234567890",
+           |  "label" : "curated-label",
+           |  "references" : [ {
+           |    "label" : "ref-label",
+           |    "path" : "ref-path"
+           |  } ]
+           |}""".stripMargin
+
+
+    "generate valid JSON from default values" in {
+      val json: JsValue = Json.toJson[RawChannelStageConfiguredId](ConfiguredIdStage)(rawChannelStageConfiguredIdWrites)
+
+      Json.prettyPrint(json) mustBe expectedJson
+    }
+
+    "construct the same object from Json" in {
+      Json.parse(expectedJson).validate[RawChannelStageConfiguredId](rawChannelStageConfiguredIdReads).asOpt mustBe Some(ConfiguredIdStage)
+    }
+
+  }
+
   "RawChannelStageTracking Writes" must {
 
     sealed trait MinimalTrackingStage {

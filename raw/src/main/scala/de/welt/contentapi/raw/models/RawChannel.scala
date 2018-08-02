@@ -471,6 +471,24 @@ case class RawChannelStageCurated(override val index: Int,
 }
 
 /**
+  * This stage is a way to curate an escenic id on a section page without needing Papyrus Curation
+  * The intended usage is to place Advertorial Footers or the occasional WM OEmbeds on Section Pages
+  *
+  * @param configuredId An escenic Id to be resolved by the Section Backend
+  */
+case class RawChannelStageConfiguredId(override val index: Int,
+                                  override val `type`: String = RawChannelStage.TypeConfiguredId,
+                                  override val hidden: Boolean = RawChannelStage.HiddenDefault,
+                                  override val trackingName: Option[String],
+                                  override val link: Option[RawSectionReference],
+                                  configuredId: String,
+                                  label: Option[String],
+                                  references: Option[Seq[RawSectionReference]] = None) extends RawChannelStage {
+  lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
+
+}
+
+/**
   * Stage that (currently) represents a Webtrekk Report, e.g. Most-Read
   *
   * @param reportName the name as configured in Webtrekk, should not contain Whitespaces
@@ -505,6 +523,7 @@ object RawChannelStage {
   val TypeCustomModule = "custom-module"
   val TypeCommercial = "commercial"
   val TypeCurated = "curated"
+  val TypeConfiguredId = "configured-id"
   val TypeTracking = "tracking"
   val TypeUnknown = "unknown"
 }

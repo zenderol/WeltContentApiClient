@@ -33,6 +33,8 @@ object RawFormats {
     Format[RawChannelStageIgnored](rawChannelStageIgnoredReads, throw new scala.Error("[DEV-ERROR] You should not write IgnoredStages"))
   implicit lazy val rawChannelStageCuratedFormat: Format[RawChannelStageCurated] =
     Format[RawChannelStageCurated](rawChannelStageCuratedReads, rawChannelStageCuratedWrites)
+  implicit lazy val rawChannelStageConfiguredIdFormat: Format[RawChannelStageConfiguredId] =
+    Format[RawChannelStageConfiguredId](rawChannelStageConfiguredIdReads, rawChannelStageConfiguredIdWrites)
   implicit lazy val rawChannelStageTrackingFormat: Format[RawChannelStageTracking] =
     Format[RawChannelStageTracking](rawChannelStageTrackingReads, rawChannelStageTrackingWrites)
   implicit lazy val rawChannelStageCommercialFormat: Format[RawChannelStageCommercial] =
@@ -165,6 +167,7 @@ object RawReads {
 
   implicit lazy val rawChannelStageCommercialReads: Reads[RawChannelStageCommercial] = Json.reads[RawChannelStageCommercial]
   implicit lazy val rawChannelStageCuratedReads: Reads[RawChannelStageCurated] = Json.reads[RawChannelStageCurated]
+  implicit lazy val rawChannelStageConfiguredIdReads: Reads[RawChannelStageConfiguredId] = Json.reads[RawChannelStageConfiguredId]
   implicit lazy val rawChannelStageTrackingReads: Reads[RawChannelStageTracking] = Json.reads[RawChannelStageTracking]
 
   implicit lazy val rawChannelStageIgnoredReads = new Reads[RawChannelStageIgnored] {
@@ -299,6 +302,17 @@ object RawWrites {
       (__ \ "hideCuratedStageLabel").writeNullable[Boolean]
     ) (unlift(RawChannelStageCurated.unapply))
 
+  implicit lazy val rawChannelStageConfiguredIdWrites: Writes[RawChannelStageConfiguredId] = (
+    (__ \ "index").write[Int] and
+      OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeConfiguredId)))) and
+      (__ \ "hidden").write[Boolean] and
+      (__ \ "trackingName").writeNullable[String] and
+      (__ \ "link").writeNullable[RawSectionReference] and
+      (__ \ "configuredId").write[String] and
+      (__ \ "label").writeNullable[String] and
+      (__ \ "references").writeNullable[Seq[RawSectionReference]]
+    ) (unlift(RawChannelStageConfiguredId.unapply))
+
   implicit lazy val rawChannelStageTrackingWrites: Writes[RawChannelStageTracking] = (
     (__ \ "index").write[Int] and
       OWrites[String](_ ⇒ JsObject(Map("type" → JsString(RawChannelStage.TypeTracking)))) and
@@ -320,6 +334,8 @@ object RawWrites {
         Json.toJson(c)(rawChannelStageCommercialWrites)
       case c: RawChannelStageCurated =>
         Json.toJson(c)(rawChannelStageCuratedWrites)
+      case c: RawChannelStageConfiguredId =>
+        Json.toJson(c)(rawChannelStageConfiguredIdWrites)
       case c: RawChannelStageTracking =>
         Json.toJson(c)(rawChannelStageTrackingWrites)
       case err@_ ⇒ throw new IllegalStateException(s"[DEV-ERROR] Missing case-matching for new RawChannelStage: $err")
