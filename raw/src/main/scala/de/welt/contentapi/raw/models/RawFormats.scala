@@ -193,6 +193,8 @@ object RawReads {
           Json.fromJson[RawChannelStageCommercial](json)
         case RawChannelStage.TypeTracking =>
           Json.fromJson[RawChannelStageTracking](json)
+        case RawChannelStage.TypeConfiguredId =>
+          Json.fromJson[RawChannelStageConfiguredId](json)
         case _ ⇒ Json.fromJson[RawChannelStageIgnored](json)
       }
     }

@@ -268,13 +268,13 @@ class RawWritesTest extends PlaySpec {
 
 
     "generate valid JSON from default values" in {
-      val json: JsValue = Json.toJson[RawChannelStageConfiguredId](ConfiguredIdStage)(rawChannelStageConfiguredIdWrites)
+      val json: JsValue = Json.toJson[RawChannelStageConfiguredId](ConfiguredIdStage)(rawChannelStageWrites)
 
       Json.prettyPrint(json) mustBe expectedJson
     }
 
     "construct the same object from Json" in {
-      Json.parse(expectedJson).validate[RawChannelStageConfiguredId](rawChannelStageConfiguredIdReads).asOpt mustBe Some(ConfiguredIdStage)
+      Json.parse(expectedJson).validate[RawChannelStage](RawReads.rawChannelStageReads).asOpt mustBe Some(ConfiguredIdStage)
     }
 
   }
