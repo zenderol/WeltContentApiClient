@@ -8,7 +8,7 @@ val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.6.15"
 val PlayJsonVersion = "2.6.9"
-val actualVersion: String = s"1.8.${buildNumber.getOrElse("0-local")}"
+val actualVersion: String = s"2.0.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
@@ -160,6 +160,14 @@ val coreClient = project("core-client")
   .dependsOn(withTests(utils)).aggregate(utils)
   .dependsOn(withTests(core)).aggregate(core)
 
+val menu = project("menu")
+  .settings(clientDependencySettings: _*)
+  .settings(
+    name := "welt-content-menu"
+  )
+  .dependsOn(withTests(utils)).aggregate(utils)
+  .dependsOn(withTests(coreClient)).aggregate(coreClient)
+
 val rawClient = project("raw-client")
   .settings(
     name := "welt-content-api-raw-client"
@@ -193,4 +201,4 @@ val main = Project("root", base = file("."))
     publish := {},
     bintrayUnpublish := {}
   )
-  .aggregate(core, coreClient, coreTest, raw, rawClient, rawAdminClient, pressed, pressedClient)
+  .aggregate(core, coreClient, coreTest, menu, raw, rawClient, rawAdminClient, pressed, pressedClient)

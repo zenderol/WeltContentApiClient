@@ -64,8 +64,6 @@ object RawReads {
   implicit lazy val rawChannelMetaRobotsTagReads: Reads[RawChannelMetaRobotsTag] = Json.reads[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataReads: Reads[RawChannelMetadata] = Json.reads[RawChannelMetadata]
   implicit lazy val rawSectionReferenceReads: Reads[RawSectionReference] = Json.reads[RawSectionReference]
-  implicit lazy val rawMenuItemReads: Reads[RawMenuLink] = Json.reads[RawMenuLink]
-  implicit lazy val rawMenuContentReads: Reads[RawMenu] = Json.reads[RawMenu]
   implicit lazy val rawChannelSponsoringReads: Reads[RawSponsoringConfig] = new Reads[RawSponsoringConfig] {
     private lazy val defaults: RawSponsoringConfig = RawSponsoringConfig()
     override def reads(json: JsValue): JsResult[RawSponsoringConfig] = json match {
@@ -259,8 +257,6 @@ object RawWrites {
   implicit lazy val rawChannelMetaRobotsTagWrites: Writes[RawChannelMetaRobotsTag] = Json.writes[RawChannelMetaRobotsTag]
   implicit lazy val rawChannelMetadataWrites: Writes[RawChannelMetadata] = Json.writes[RawChannelMetadata]
   implicit lazy val rawSectionReferenceWrites: Writes[RawSectionReference] = Json.writes[RawSectionReference]
-  implicit lazy val rawMenuItemWrites: Writes[RawMenuLink] = Json.writes[RawMenuLink]
-  implicit lazy val rawMenuContentWrites: Writes[RawMenu] = Json.writes[RawMenu]
   implicit lazy val rawChannelSponsoringWrites: Writes[RawSponsoringConfig] = Json.writes[RawSponsoringConfig]
   implicit lazy val rawChannelHeaderWrites: Writes[RawChannelHeader] = Json.writes[RawChannelHeader]
   implicit lazy val rawChannelContentConfigurationWrites: Writes[RawChannelContentConfiguration] = Json.writes[RawChannelContentConfiguration]

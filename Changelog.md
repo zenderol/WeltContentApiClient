@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0 (2018-08-09)
+
+- added new project called `menu`
+- added `MenuService` for retrieving menu data from S3
+- added case classes `Menu`, `MenuMetadata`, `MenuLink` and `MenuReference`
+
+#### Breaking Changes
+
+- Moved `AdminMenuService` to `menu` project
+- Removed case classes `RawMenu` and `RawMenuLink`
+
 ## 1.8 (2018-08-02)
 
 - added `RawChannelStageConfiguredId` as a new main stage type
