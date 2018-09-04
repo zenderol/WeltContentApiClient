@@ -1,11 +1,13 @@
 package de.welt.contentapi.menu.services
 
 import de.welt.contentapi.core.client.services.s3.S3Client
-import de.welt.contentapi.menu.models.Menu
+import de.welt.contentapi.menu.models.ApiMenu
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.{Configuration, Logger, Mode}
 
-case class S3Config(bucket: String, folder: String, file: String, environment: String)
+case class S3Config(bucket: String, folder: String, file: String, environment: String) {
+  val fullFilePath: String = s"$folder/$environment/$file"
+}
 
 object MenuConfig {
   val bucketConfigKey = "welt.aws.s3.menuData.bucket"
@@ -13,9 +15,9 @@ object MenuConfig {
   val fileConfigKey = "welt.aws.s3.menuData.file"
 }
 
-trait MenuServiceUtils {
+abstract class MenuServiceRepository(private val config: Configuration, private val mode: Mode) {
 
-  def s3Config(config: Configuration, mode: Mode): S3Config = {
+  val s3Config: S3Config = {
     val bucket: String = config.get[String](MenuConfig.bucketConfigKey)
     val folder: String = config.get[String](MenuConfig.folderConfigKey)
     val file: String = config.get[String](MenuConfig.fileConfigKey)
@@ -27,17 +29,13 @@ trait MenuServiceUtils {
     S3Config(bucket, folder, file, environment)
   }
 
-  def s3FilePath(s3Config: S3Config): String = s"${s3Config.folder}/${s3Config.environment}/${s3Config.file}"
-
-  def loadMenu(s3Client: S3Client, s3Config: S3Config): Option[Menu] = {
+  def loadMenu(s3Client: S3Client): Option[ApiMenu] = {
     import de.welt.contentapi.menu.models.MenuFormats._
 
-    val s3Content: Option[String] = s3Client.get(s3Config.bucket, s3FilePath(s3Config))
+    val s3Content: Option[String] = s3Client.get(s3Config.bucket, s3Config.fullFilePath)
 
-    val maybeMenu: Option[Menu] = s3Content.flatMap { s3Content: String ⇒
-      val validationResult = Json.parse(s3Content)
-
-      validationResult.validate[Menu] match {
+    s3Content.flatMap { s3Content: String ⇒
+      Json.parse(s3Content).validate[ApiMenu] match {
         case JsSuccess(menu, _) ⇒
           Logger.debug("S3 Menu Data successfully loaded.")
           Some(menu)
@@ -46,7 +44,5 @@ trait MenuServiceUtils {
           None
       }
     }
-
-    maybeMenu
   }
 }

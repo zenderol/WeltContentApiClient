@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1 (2018-08-29)
+
+All WC/AC models must include a prefix for better identification in code reviews.
+Bring your own models (BYOM) => consume the api + api models but create new models for your application logic / templates.
+
+- renamed case classes: `Menu` -> `ApiMenu`, `MenuMetadata` -> `ApiMenuMetadata` and `MenuLink` -> `ApiMenuLink`
+- removed `MenuReference` (replaced by `ApiReference`)
+- refactoring of `MenuService` and `AdminMenuService`
+
 ## 2.0 (2018-08-09)
 
 - added new project called `menu`

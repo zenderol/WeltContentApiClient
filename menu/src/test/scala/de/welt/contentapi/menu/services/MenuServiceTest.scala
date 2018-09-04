@@ -4,7 +4,7 @@ import java.time.Instant
 
 import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.client.services.s3.S3Client
-import de.welt.contentapi.menu.models.Menu
+import de.welt.contentapi.menu.models.ApiMenu
 import org.mockito.Mockito._
 import org.mockito.{Matchers, Mockito}
 import org.scalatest.mockito.MockitoSugar
@@ -34,7 +34,7 @@ class MenuServiceTest extends PlaySpec with MockitoSugar {
 
       import de.welt.contentapi.menu.models.MenuFormats._
 
-      val menuDataOnS3: Menu = Menu()
+      val menuDataOnS3: ApiMenu = ApiMenu()
       val json: String = Json.toJson(menuDataOnS3).toString
 
       when(s3.get(Matchers.anyString(), Matchers.anyString())) thenReturn Some(json)
