@@ -9,11 +9,10 @@ import de.welt.contentapi.menu.models.ApiMenu
 import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment, Logger, Mode}
 
-import scala.concurrent.duration._
-
 @ImplementedBy(classOf[MenuServiceImpl])
 trait MenuService {
   def get(): ApiMenu
+  def refresh(): Unit = {}
 }
 
 @Singleton
@@ -26,17 +25,18 @@ class MenuServiceImpl @Inject()(config: Configuration,
   private[services] var lastModified: Instant = Instant.MIN
 
   if (Mode.Test != environment.mode) {
-    syncData()
-    capi.actorSystem.scheduler.schedule(10.minutes, 10.minutes, () ⇒ syncData())
+    sync()
   } else {
     Logger.info("Menu Data will not be loaded when started in Mode.Test. Please mock it.")
   }
 
   override def get(): ApiMenu = menu
 
-  private def syncData() = {
+  override def refresh(): Unit = sync()
+
+  private def sync() = {
     val maybeLastMod: Option[Instant] = s3.getLastModified(s3Config.bucket, s3Config.fullFilePath)
-    Logger.info(s"Starting MenuService.syncData(), LastMod=$maybeLastMod")
+    Logger.info(s"Starting MenuService.sync(), LastMod=$maybeLastMod")
 
     for {
       remoteLastModified: Instant ← maybeLastMod
@@ -48,7 +48,7 @@ class MenuServiceImpl @Inject()(config: Configuration,
         menu = freshMenu
         lastModified = remoteLastModified
 
-        Logger.info(s"Finished MenuService.syncData(). LastMod=$lastModified -> $remoteLastModified")
+        Logger.info(s"Finished MenuService.sync(). LastMod=$lastModified -> $remoteLastModified")
       })
     }
   }

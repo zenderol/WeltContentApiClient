@@ -9,25 +9,30 @@ case class S3Config(bucket: String, folder: String, file: String, environment: S
   val fullFilePath: String = s"$folder/$environment/$file"
 }
 
+object S3Config {
+  def apply(config: Configuration, mode: Mode): S3Config = {
+    val bucket: String = config.get[String](MenuConfig.BucketConfigKey)
+    val folder: String = config.get[String](MenuConfig.FolderConfigKey)
+    val file: String = config.get[String](MenuConfig.FileConfigKey)
+    val cfgMode: Option[String] = config.getOptional[String](MenuConfig.ModeConfigKey)
+    val environment: String = mode match {
+      case Mode.Prod ⇒ "prod"
+      case _ ⇒ cfgMode.getOrElse("dev")
+    }
+
+    new S3Config(bucket, folder, file, environment)
+  }
+}
+
 object MenuConfig {
-  val bucketConfigKey = "welt.aws.s3.menuData.bucket"
-  val folderConfigKey = "welt.aws.s3.menuData.folder"
-  val fileConfigKey = "welt.aws.s3.menuData.file"
+  val BucketConfigKey = "welt.aws.s3.menuData.bucket"
+  val FolderConfigKey = "welt.aws.s3.menuData.folder"
+  val FileConfigKey = "welt.aws.s3.menuData.file"
+  val ModeConfigKey = "welt.aws.s3.menuData.mode"
 }
 
 abstract class MenuServiceRepository(private val config: Configuration, private val mode: Mode) {
-
-  val s3Config: S3Config = {
-    val bucket: String = config.get[String](MenuConfig.bucketConfigKey)
-    val folder: String = config.get[String](MenuConfig.folderConfigKey)
-    val file: String = config.get[String](MenuConfig.fileConfigKey)
-    val environment: String = mode match {
-      case Mode.Prod ⇒ "prod"
-      case _ ⇒ "dev"
-    }
-
-    S3Config(bucket, folder, file, environment)
-  }
+  val s3Config: S3Config = S3Config(config, mode)
 
   def loadMenu(s3Client: S3Client): Option[ApiMenu] = {
     import de.welt.contentapi.menu.models.MenuFormats._

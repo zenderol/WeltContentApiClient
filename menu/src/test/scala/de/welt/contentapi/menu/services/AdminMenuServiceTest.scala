@@ -16,9 +16,9 @@ class AdminMenuServiceTest extends PlaySpec with MockitoSugar {
   trait Fixture {
     val s3: S3Client = mock[S3Client]
     val configData = Map(
-      MenuConfig.bucketConfigKey → "bucket",
-      MenuConfig.folderConfigKey → "folder",
-      MenuConfig.fileConfigKey → "file"
+      MenuConfig.BucketConfigKey → "bucket",
+      MenuConfig.FolderConfigKey → "folder",
+      MenuConfig.FileConfigKey → "file"
     )
     val configuration: Configuration = Configuration.from(configData)
     val adminMenuService = new AdminMenuServiceImpl(configuration, Environment.simple(), s3)
@@ -42,8 +42,8 @@ class AdminMenuServiceTest extends PlaySpec with MockitoSugar {
 
       adminMenuService.save(root, "Dick Butt")
 
-      val bucket: String = configData.getOrElse(MenuConfig.bucketConfigKey, "")
-      val file: String = configData.getOrElse(MenuConfig.folderConfigKey, "")
+      val bucket: String = configData.getOrElse(MenuConfig.BucketConfigKey, "")
+      val file: String = configData.getOrElse(MenuConfig.FolderConfigKey, "")
       verify(s3).putPrivate(Matchers.eq(bucket), startsWith(file), anyString(), contains("json"))
     }
 

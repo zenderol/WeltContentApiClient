@@ -17,9 +17,9 @@ class MenuServiceTest extends PlaySpec with MockitoSugar {
   trait Fixture {
     val s3: S3Client = mock[S3Client]
     val configuration = Configuration(
-      MenuConfig.bucketConfigKey → "bucket",
-      MenuConfig.folderConfigKey → "folder",
-      MenuConfig.fileConfigKey → "file"
+      MenuConfig.BucketConfigKey → "bucket",
+      MenuConfig.FolderConfigKey → "folder",
+      MenuConfig.FileConfigKey → "file"
     )
   }
 

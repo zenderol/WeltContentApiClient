@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2 (2018-09-18)
+
+- `MenuService`: removed auto sync cron job. It's now part of the consumer.
+- `MenuService`: add `refresh()` for sync data from S3.
+- `MenuService`: add new `Configuration` value `mode` to override the S3 env folder. This is for testing prod data on localhost.
+
 ## 2.1 (2018-08-29)
 
 All WC/AC models must include a prefix for better identification in code reviews.
