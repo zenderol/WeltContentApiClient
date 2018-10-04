@@ -203,20 +203,24 @@ case class RawChannelId(var path: String,
 }
 
 /**
-  * @param metadata   `<meta>` tag overrides of the channel.
-  * @param header     content header (not the real page header) configuration.
-  * @param sponsoring sponsoring mapping configuration for the channel.
-  * @param theme      the optional theme for the channel. This is a developer configuration.
-  * @param commercial commercial configuration for the channel. Used some override logic.
-  * @param content    content query configuration for the whole channel and all sub-channel (children).
-  * @param brand      flags the channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
-  *                   like Icon ('/icon/') with different UI elements or layouts.
-  * @param master     flags the channel as a 'master' channel. All it's sub-channels (children) get this channel
-  *                   as it's master. E.g. `/wirtschaft/bilanz/` is flagged as a master channel
+  * @param metadata     `<meta>` tag overrides of the channel.
+  * @param header       content header (not the real page header) configuration.
+  * @param sponsoring   sponsoring mapping configuration for the channel.
+  * @param siteBuilding customization of header, footer and channel sponsoring.
+  * @param theme        the optional theme for the channel. This is a developer configuration.
+  * @param commercial   commercial configuration for the channel. Used some override logic.
+  * @param content      content query configuration for the whole channel and all sub-channel (children).
+  * @param brand        flags the channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
+  *                     like Icon ('/icon/') with different UI elements or layouts.
+  * @param master       flags the channel as a 'master' channel. All it's sub-channels (children) get this channel
+  *                     as it's master. E.g. `/wirtschaft/bilanz/` is flagged as a master channel
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
+                                   @deprecated("Use siteBuilding instead", since = "version 2.3")
                                    header: Option[RawChannelHeader] = None,
+                                   @deprecated("Use siteBuilding instead", since = "version 2.3")
                                    sponsoring: RawSponsoringConfig = RawSponsoringConfig(),
+                                   siteBuilding: RawChannelSiteBuilding = RawChannelSiteBuilding(),
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
                                    content: Option[RawChannelContentConfiguration] = None,
@@ -357,6 +361,17 @@ case class RawSponsoringConfig(logo: Option[String] = None,
                                hidden: Boolean = false,
                                link: Option[RawSectionReference] = None,
                                brandstation: Option[String] = None)
+
+/**
+  * Channel Site-Building. Configure Header, Footer and Sponsoring
+  *
+  * @param fields               optional settings/values for the channel i.e. custom footer settings, labels, logos.
+  * @param sub_navigation       optional section references. Example: Link to Mediathek A-Z.
+  * @param elements             configurable media element containing URLs (images) from Escenic.
+  */
+case class RawChannelSiteBuilding(fields: Option[Map[String, String]] = None,
+                                  sub_navigation: Option[Seq[RawSectionReference]] = None,
+                                  elements: Option[Seq[RawElement]] = None)
 
 /**
   * Stored values for CMCF and Janus2. Should not be used by any clients.
@@ -525,5 +540,17 @@ object RawChannelStage {
   val TypeCurated = "curated"
   val TypeConfiguredId = "configured-id"
   val TypeTracking = "tracking"
+  val TypeUnknown = "unknown"
+}
+
+
+object RawChannelElement {
+  val IdDefault = "channel_element"
+  val TypeMood = "mood"
+  val TypeUnknown = "unknown"
+}
+
+object RawChannelAsset {
+  val TypeImage = "image"
   val TypeUnknown = "unknown"
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3 (2018-10-04)
+
+*Changes*
+
+- added `RawChannelSiteBuilding` for configuring channel header, footer and sponsoring.
+
+*Deprecations* 
+
+- Deprecated `RawChannelHeader` and `RawSponsoringConfig`
+
 ## 2.2 (2018-09-18)
 
 - `MenuService`: removed auto sync cron job. It's now part of the consumer.

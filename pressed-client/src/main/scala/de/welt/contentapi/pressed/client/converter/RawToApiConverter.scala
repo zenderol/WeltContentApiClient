@@ -1,7 +1,7 @@
 package de.welt.contentapi.pressed.client.converter
 
 import com.google.inject.Singleton
-import de.welt.contentapi.core.models.ApiReference
+import de.welt.contentapi.core.models.{ApiAsset, ApiElement, ApiReference}
 import de.welt.contentapi.pressed.models._
 import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag}
 import javax.inject.Inject
@@ -50,7 +50,8 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     commercial = Some(apiCommercialConfigurationFromRawChannel(rawChannel)),
     sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
     header = calculateHeader(rawChannel),
-    theme = calculateTheme(rawChannel)
+    theme = calculateTheme(rawChannel),
+    siteBuilding = Some(apiSiteBuildingConfigurationFromRawChannel(rawChannel))
   )
 
   //todo: return Option[] (no hardcoded Some())
@@ -176,6 +177,23 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     )
   }
 
+  private[converter] def apiSiteBuildingConfigurationFromRawChannel(rawChannel: RawChannel): ApiSiteBuildingConfiguration = {
+    ApiSiteBuildingConfiguration(
+      fields = rawChannel.config.siteBuilding.fields,
+      sub_navigation = rawChannel.config.siteBuilding.sub_navigation.map(refs ⇒
+        refs.map(ref ⇒ ApiReference(ref.label, ref.path))
+      ),
+      elements = rawChannel.config.siteBuilding.elements.map(
+        refs ⇒ refs.map(ref ⇒
+          ApiElement(
+            id = ref.id,
+            `type` = ref.`type`,
+            assets = ref.assets.map(refs2 ⇒ refs2.map(ref2 ⇒ ApiAsset(`type` = ref2.`type`, fields = ref2.fields)))
+          )
+        )
+      )
+    )
+  }
 
   private[converter] def apiThemeFromRawChannel(rawChannel: RawChannel): Option[ApiThemeConfiguration] =
     rawChannel.config.theme.map(t ⇒ ApiThemeConfiguration(t.name, t.fields))

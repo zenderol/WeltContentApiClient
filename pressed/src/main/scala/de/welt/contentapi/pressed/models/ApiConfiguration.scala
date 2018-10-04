@@ -1,23 +1,38 @@
 package de.welt.contentapi.pressed.models
 
-import de.welt.contentapi.core.models.ApiReference
+import de.welt.contentapi.core.models.{ApiElement, ApiReference}
 
 /**
   * Configuration for a content or section page. All configs are optional.
   * This means that they can be overwritten (by ConfigMcConfigFace) but not required. All clients must define some kind
   * of fallback or default values.
   *
-  * @param meta       configuration for <meta> tag overrides
-  * @param commercial commercial configuration
-  * @param sponsoring sponsoring is part of the page header. E.g. Formel1
-  * @param header     (content) page header configuration. Not the real page header.
-  * @param theme      theme of the page. This contains only a mapping value.
+  * @param meta         configuration for <meta> tag overrides
+  * @param commercial   commercial configuration
+  * @param sponsoring   sponsoring is part of the page header. E.g. Formel1
+  * @param header       (content) page header configuration. Not the real page header.
+  * @param theme        theme of the page. This contains only a mapping value.
+  * @param siteBuilding customization of header, footer and channel sponsoring
   */
 case class ApiConfiguration(meta: Option[ApiMetaConfiguration] = None,
                             commercial: Option[ApiCommercialConfiguration] = None,
+                            @deprecated("Use siteBuilding instead", since = "version 2.3")
                             sponsoring: Option[ApiSponsoringConfiguration] = None,
+                            @deprecated("Use siteBuilding instead", since = "version 2.3")
                             header: Option[ApiHeaderConfiguration] = None,
-                            theme: Option[ApiThemeConfiguration] = None)
+                            theme: Option[ApiThemeConfiguration] = None,
+                            siteBuilding: Option[ApiSiteBuildingConfiguration] = None)
+
+/**
+  * Channel Site-Building. Configure Header, Footer and Sponsoring
+  *
+  * @param fields         optional settings/values for the channel i.e. custom footer settings, labels, logos.
+  * @param sub_navigation optional section references. Example: Link to Mediathek A-Z.
+  * @param elements       configurable media element containing URLs (images) from Escenic.
+  */
+case class ApiSiteBuildingConfiguration(fields: Option[Map[String, String]] = None,
+                                        sub_navigation: Option[Seq[ApiReference]] = None,
+                                        elements: Option[Seq[ApiElement]] = None)
 
 /**
   * <meta> configuration for content or section pages

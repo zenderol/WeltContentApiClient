@@ -1,5 +1,6 @@
 package de.welt.contentapi.raw.models
 
+import de.welt.contentapi.raw.models
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
@@ -15,6 +16,19 @@ class RawReadsTest extends PlaySpec {
       Json.parse(emptyJson)
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
         .asOpt mustBe Some(RawChannelConfiguration())
+    }
+
+    "ignore unknown properties for downward compatibility" in {
+      val json: String =
+        """{
+          |  "header": {
+          |    "logo": "foo.png"
+          |  },
+          |  "unknown-foo-bar": {}
+          |}""".stripMargin
+      Json.parse(json)
+        .validate[RawChannelConfiguration](rawChannelConfigurationReads)
+        .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
     }
   }
 
@@ -90,6 +104,63 @@ class RawReadsTest extends PlaySpec {
         .asOpt mustBe Some(RawChannelHeader(logo = None, slogan = None, label = None, sectionReferences = None))
     }
 
+  }
+
+  "RawChannelSiteBuildingReads" must {
+
+    "create RawChannelSiteBuilding from empty json by using default constructor values" in {
+      Json.parse(emptyJson)
+        .validate[RawChannelSiteBuilding](rawChannelSiteBuildingReads)
+        .asOpt mustBe Some(RawChannelSiteBuilding())
+    }
+
+    "fill optional fields" in {
+      val json: String =
+        """{
+          |  "fields": {
+          |    "header_slogan": "slogan-test"
+          |  },
+          |  "sub_navigation": [
+          |    {
+          |      "path": "www.welt.de",
+          |      "label": "Click me"
+          |    }
+          |  ],
+          |  "elements": [
+          |    {
+          |      "type": "mood",
+          |      "assets": [
+          |        {
+          |          "type": "image",
+          |          "fields": {
+          |            "ratio": "1.77",
+          |            "url": "www.welt.de"
+          |          }
+          |        }
+          |      ]
+          |    }
+          |  ]
+          |}""".stripMargin
+      Json.parse(json)
+        .validate[RawChannelSiteBuilding](rawChannelSiteBuildingReads)
+        .asOpt mustBe Some(models.RawChannelSiteBuilding(
+        fields = Some(Map("header_slogan" -> "slogan-test")),
+        sub_navigation = Some(Seq(RawSectionReference(label = Some("Click me"), path = Some("www.welt.de")))),
+        elements = Some(Seq(RawElement(id = RawChannelElement.IdDefault, `type` = RawChannelElement.TypeMood, assets = Some(List(RawAsset(`type` = RawChannelAsset.TypeImage, fields = Some(Map("ratio" -> "1.77", "url" -> "www.welt.de"))))))))
+      )
+      )
+    }
+
+    "map Some('') to None" in {
+      val json: String =
+        """{
+          |  "sub_navigation": [],
+          |  "elements": []
+          |}""".stripMargin
+      Json.parse(json)
+        .validate[RawChannelSiteBuilding](rawChannelSiteBuildingReads)
+        .asOpt mustBe Some(RawChannelSiteBuilding(sub_navigation = None, elements = None))
+    }
   }
 
   "RawChannelStage Reads" must {

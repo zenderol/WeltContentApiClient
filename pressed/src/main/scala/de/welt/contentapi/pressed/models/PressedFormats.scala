@@ -19,6 +19,7 @@ object PressedReads {
   implicit lazy val apiThemeConfigurationReads: Reads[ApiThemeConfiguration] = Json.reads[ApiThemeConfiguration]
   implicit lazy val apiHeaderConfigurationReads: Reads[ApiHeaderConfiguration] = Json.reads[ApiHeaderConfiguration]
   implicit lazy val apiBrandingConfigurationReads: Reads[ApiSponsoringConfiguration] = Json.reads[ApiSponsoringConfiguration]
+  implicit lazy val apiSiteBuildingConfigurationReads: Reads[ApiSiteBuildingConfiguration] = Json.reads[ApiSiteBuildingConfiguration]
   implicit lazy val apiMetaRobotsReads: Reads[ApiMetaRobots] = Json.reads[ApiMetaRobots]
   implicit lazy val apiMetaConfigurationReads: Reads[ApiMetaConfiguration] = Json.reads[ApiMetaConfiguration]
   implicit lazy val apiConfigurationReads: Reads[ApiConfiguration] = Json.reads[ApiConfiguration]
@@ -62,6 +63,7 @@ object PressedWrites {
   implicit lazy val apiThemeConfigurationWrites: Writes[ApiThemeConfiguration] = Json.writes[ApiThemeConfiguration]
   implicit lazy val apiHeaderConfigurationWrites: Writes[ApiHeaderConfiguration] = Json.writes[ApiHeaderConfiguration]
   implicit lazy val apiBrandingConfigurationWrites: Writes[ApiSponsoringConfiguration] = Json.writes[ApiSponsoringConfiguration]
+  implicit lazy val apiSiteBuildingConfigurationWrites: Writes[ApiSiteBuildingConfiguration] = Json.writes[ApiSiteBuildingConfiguration]
   implicit lazy val apiMetaRobotsWrites: Writes[ApiMetaRobots] = Json.writes[ApiMetaRobots]
   implicit lazy val apiMetaConfigurationWrites: Writes[ApiMetaConfiguration] = Json.writes[ApiMetaConfiguration]
   implicit lazy val apiConfigurationWrites: Writes[ApiConfiguration] = Json.writes[ApiConfiguration]
@@ -111,6 +113,9 @@ object PressedFormats {
 
   implicit lazy val apiBrandingConfigurationFormat: Format[ApiSponsoringConfiguration] =
     Format(apiBrandingConfigurationReads, apiBrandingConfigurationWrites)
+
+  implicit lazy val apiSiteBuildingConfigurationFormat: Format[ApiSiteBuildingConfiguration] =
+    Format(apiSiteBuildingConfigurationReads, apiSiteBuildingConfigurationWrites)
 
   implicit lazy val apiMetaRobotsFormat: Format[ApiMetaRobots] =
     Format(apiMetaRobotsReads, apiMetaRobotsWrites)
