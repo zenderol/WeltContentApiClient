@@ -32,7 +32,11 @@ case class ApiConfiguration(meta: Option[ApiMetaConfiguration] = None,
   */
 case class ApiSiteBuildingConfiguration(fields: Option[Map[String, String]] = None,
                                         sub_navigation: Option[Seq[ApiReference]] = None,
-                                        elements: Option[Seq[ApiElement]] = None)
+                                        elements: Option[Seq[ApiElement]] = None) {
+  lazy val unwrappedFields: Map[String, String] = fields.getOrElse(Map.empty[String, String])
+  lazy val unwrappedSubNavigation: Seq[ApiReference] = sub_navigation.getOrElse(Nil)
+  lazy val unwrappedElements: Seq[ApiElement] = elements.getOrElse(Nil)
+}
 
 /**
   * <meta> configuration for content or section pages
