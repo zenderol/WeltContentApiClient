@@ -1,17 +1,16 @@
 package de.welt.contentapi.core.client.services.contentapi
 
-import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.CapiExecutionContext
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.models.ApiResponse
+import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.libs.json.{JsLookupResult, JsResult}
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
   * Reusable (Playframework) Service for Content By ID against our API provided by WeltN24/underwood (Frank).
@@ -52,9 +51,10 @@ trait ContentService {
 class ContentServiceImpl @Inject()(ws: WSClient, metrics: Metrics, configuration: Configuration, capi: CapiExecutionContext)
   extends AbstractService[ApiResponse](ws, metrics, configuration, "content", capi) with ContentService {
 
+  import AbstractService.implicitConversions._
   import de.welt.contentapi.core.models.ApiReads._
 
-  override val jsonValidate: JsLookupResult ⇒ JsResult[ApiResponse] = _.validate[ApiResponse]
+  override val validate: WSResponse ⇒ Try[ApiResponse] = _.json.result.validate[ApiResponse]
 
   override def find(id: String, showRelated: Boolean = true)
                    (implicit requestHeaders: RequestHeaders = Seq.empty, executionContext: ExecutionContext): Future[ApiResponse] = {
@@ -64,7 +64,7 @@ class ContentServiceImpl @Inject()(ws: WSClient, metrics: Metrics, configuration
     } else {
       Seq.empty
     }
-    get(urlArguments = Seq(id), parameters = parameters)
+    execute(urlArguments = Seq(id), parameters = parameters)
   }
 }
 

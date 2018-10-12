@@ -28,12 +28,12 @@ class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar with TestEx
     val metricsMock: Metrics = mock[Metrics]
     val mockTimerContext: Context = mock[Context]
 
-    when(mockRequest.withHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
+  when(mockRequest.withHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
     when(mockRequest.withQueryStringParameters(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
     when(mockRequest.addHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
     when(mockRequest.withAuth(anyString, anyString, Matchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
 
-    when(mockRequest.get()).thenReturn(Future {
+    when(mockRequest.execute(anyString())).thenReturn(Future {
       responseMock
     })
 

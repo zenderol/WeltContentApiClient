@@ -2,6 +2,7 @@ package de.welt.contentapi.core.client.services.configuration
 
 import de.welt.contentapi.core.client.services.configuration.Authentication.{ApiKey, Password, Username}
 import play.api.Configuration
+import play.api.http.HttpVerbs
 
 import scala.concurrent.duration._
 
@@ -37,8 +38,9 @@ object Authentication {
 case class ServiceConfiguration(serviceName: String,
                                 host: String,
                                 endpoint: String,
-                                credentials: Either[ApiKey, (Username, Password)],
-                                circuitBreaker: CircuitBreakerSettings)
+                                credentials: Option[Either[ApiKey, (Username, Password)]],
+                                circuitBreaker: CircuitBreakerSettings,
+                                method: String = HttpVerbs.GET)
 
 /**
   * Configure the circuit breaker for a service
@@ -71,6 +73,7 @@ object ServiceConfiguration {
 
   private val Host = "host"
   private val Endpoint = "endpoint"
+  private val Method = "method"
   private val Credentials = "credentials"
   private val Username = "username"
   private val Password = "password"
@@ -88,14 +91,14 @@ object ServiceConfiguration {
         username ← credentials.getOptional[String](Username)
         password ← credentials.getOptional[String](Password)
       } yield Right((username, password))
-    ).orElse(c.getOptional[String](ApiKey).map(Left(_)))
+      ).orElse(c.getOptional[String](ApiKey).map(Left(_)))
   }
 
   private def printServiceConfig(c: Configuration): Set[(String, String)] = c.entrySet.flatMap {
     case (ApiKey, _) ⇒ Set(ApiKey → "***")
-    case (Password, _) ⇒  Set(Password → "***")
+    case (Password, _) ⇒ Set(Password → "***")
     case (Credentials, value: Configuration) ⇒ printServiceConfig(value).map { case (k, v) ⇒ s"credentials.$k" → v }
-    case (key, value) ⇒  Set(key → value.toString)
+    case (key, value) ⇒ Set(key → value.toString)
   }
 
   def apply(serviceName: String, configuration: Configuration): ServiceConfiguration =
@@ -103,8 +106,11 @@ object ServiceConfiguration {
       for {
         host ← config.getOptional[String](Host)
         endpoint ← config.getOptional[String](Endpoint)
-        credentials ← credentialsFromConf(config)
-      } yield ServiceConfiguration(serviceName, host, endpoint, credentials, CircuitBreakerSettings(config))
+      } yield ServiceConfiguration(serviceName, host, endpoint,
+        credentials = credentialsFromConf(config),
+        circuitBreaker = CircuitBreakerSettings(config),
+        method = config.getOptional[String](Method).getOrElse(HttpVerbs.GET)
+      )
     } getOrElse {
       val debug = printServiceConfig(configuration.getOptional[Configuration](serviceName).getOrElse(Configuration()))
       throw configuration.reportError(serviceName, s"Service '$serviceName' was not configured correctly. $debug")

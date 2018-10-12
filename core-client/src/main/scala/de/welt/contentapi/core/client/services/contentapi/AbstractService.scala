@@ -10,8 +10,8 @@ import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorExcept
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.utils.Strings
 import play.api.http.{HeaderNames, Status}
-import play.api.libs.json.{JsError, JsLookupResult, JsResult, JsSuccess}
-import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest, WSResponse}
+import play.api.libs.json.{JsError, JsResult, JsSuccess}
+import play.api.libs.ws.{BodyWritable, WSAuthScheme, WSClient, WSRequest, WSResponse}
 import play.api.mvc.Headers
 import play.api.{Configuration, Logger}
 
@@ -34,13 +34,14 @@ abstract class AbstractService[T](ws: WSClient,
   protected[contentapi] val config: ServiceConfiguration = ServiceConfiguration(s"welt.api.$serviceName", configuration)
 
   /**
-    * This must provide a function that maps a [[JsLookupResult]] to a [[JsResult]].
+    * This must provide a function that maps a [[WSResponse]] to a [[Try]].
     * Overriding this outside this trait is required, since the macro-mechanism that
-    * takes care of the JSON parsing does not work with generic types `T`
+    * takes care of the response parsing does not work with generic types `T`
+    * b/c of different content types such as XML or JSON
     *
-    * @return a [[JsResult]]
+    * @return a [[Try]]
     */
-  def jsonValidate: JsLookupResult => JsResult[T]
+  def validate: WSResponse => Try[T]
 
   protected[contentapi] lazy val breaker: CircuitBreaker = AbstractService.circuitBreaker(capi.actorSystem.scheduler, config, serviceName)
   /**
@@ -90,13 +91,15 @@ abstract class AbstractService[T](ws: WSClient,
     * @param urlArguments            string interpolation arguments for endpoint. e.g. /foo/%s/bar/%s see [[java.lang.String#format}]]
     * @param parameters              URL parameters to be sent with the request
     * @param headers                 optional http headers to be sent to the backend
+    * @param body                    optional http body to be sent (e.g. for PUT and POST requests)
     * @param forwardedRequestHeaders forwarded request headers from the controller e.g. API key
     * @return
     */
-  def get(urlArguments: Seq[String] = Nil,
-          parameters: Seq[(String, String)] = Nil,
-          headers: Seq[(String, String)] = Nil)
-         (implicit forwardedRequestHeaders: RequestHeaders = Seq.empty): Future[T] = {
+  def execute[U: BodyWritable](urlArguments: Seq[String] = Nil,
+                               parameters: Seq[(String, String)] = Nil,
+                               headers: Seq[(String, String)] = Nil,
+                               body: Option[U] = None)
+                              (implicit forwardedRequestHeaders: RequestHeaders = Seq.empty): Future[T] = {
 
     val context = initializeMetricsContext(config.serviceName)
 
@@ -104,23 +107,27 @@ abstract class AbstractService[T](ws: WSClient,
 
     val nonEmptyParameters = parameters.map { case (k, v) ⇒ k -> v.trim }.filter(_._2.nonEmpty)
 
-    val getRequest: WSRequest = ws.url(url)
+    var request: WSRequest = ws.url(url)
       .withQueryStringParameters(nonEmptyParameters: _*)
       .addHttpHeaders(headers: _*)
       .addHttpHeaders(forwardHeaders(forwardedRequestHeaders): _*)
 
-    val preparedRequest = config.credentials match {
-      case Right(basicAuth) ⇒ getRequest.withAuth(username = basicAuth._1, password = basicAuth._2, WSAuthScheme.BASIC)
-      case Left(apiKey) ⇒ getRequest.addHttpHeaders(AbstractService.HeaderApiKey → apiKey)
+    body.foreach(b ⇒ {
+      request = request.withBody(b)
+    })
+
+    request = config.credentials match {
+      case Some(Right(basicAuth)) ⇒ request.withAuth(username = basicAuth._1, password = basicAuth._2, WSAuthScheme.BASIC)
+      case Some(Left(apiKey)) ⇒ request.addHttpHeaders(AbstractService.HeaderApiKey → apiKey)
+      case _ ⇒ request
     }
 
-    Logger.debug(s"HTTP GET to ${preparedRequest.uri}")
+    Logger.debug(s"HTTP ${config.method} to ${request.uri}")
 
-    lazy val block = preparedRequest.get()
-      .map { response ⇒
-        context.stop()
-        processResponse(response, preparedRequest.url)
-      }
+    lazy val block = request.execute(config.method).map { response ⇒
+      context.stop()
+      processResponse(response, request.url)
+    }
 
     if (config.circuitBreaker.enabled) {
       breaker.withCircuitBreaker(block, circuitBreakerFailureFn)
@@ -147,23 +154,24 @@ abstract class AbstractService[T](ws: WSClient,
   }
 
   private def processResponse(response: WSResponse, url: String): T = response.status match {
-    case Status.OK ⇒ parseJson(response.json.result)
+    case Status.OK ⇒ processResult(response)
     case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
     case status if (400 until 500).contains(status) ⇒
       throw HttpClientErrorException(status, response.statusText, url, response.header(HeaderNames.CACHE_CONTROL))
     case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
   }
 
-  private def parseJson(json: JsLookupResult): T = jsonValidate(json) match {
-    case JsSuccess(value, _) => value
-    case err@JsError(_) => throw new IllegalStateException(err.toString)
+  private def processResult(result: WSResponse): T = validate(result) match {
+    case Success(value) => value
+    case Failure(err) => throw new IllegalStateException(err)
   }
 }
 
 object AbstractService {
   val HeaderApiKey = "x-api-key"
 
-  def circuitBreaker(scheduler: Scheduler, config: ServiceConfiguration, serviceName: String)(implicit ec: CapiExecutionContext) = new CircuitBreaker(
+  def circuitBreaker(scheduler: Scheduler, config: ServiceConfiguration, serviceName: String)
+                    (implicit ec: CapiExecutionContext): CircuitBreaker = new CircuitBreaker(
     scheduler,
     maxFailures = config.circuitBreaker.maxFailures,
     callTimeout = config.circuitBreaker.callTimeout,
@@ -172,4 +180,12 @@ object AbstractService {
     .onOpen(Logger.error(s"CircuitBreaker [$serviceName] is now open [this is bad], and will not close for some time"))
     .onClose(Logger.warn(s"CircuitBreaker [$serviceName] is now closed [this is good]"))
     .onHalfOpen(Logger.warn(s"CircuitBreaker [$serviceName] is now half-open [trying to recover]"))
+
+  object implicitConversions {
+    implicit def jsResult2Try[S](js: JsResult[S]): Try[S] = js match {
+      case JsSuccess(value, _) ⇒ Success(value)
+      case JsError(err) ⇒ Failure(new IllegalArgumentException(s"Cannot parse JSON ${err.mkString(",")}"))
+    }
+  }
+
 }

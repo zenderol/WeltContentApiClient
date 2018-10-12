@@ -7,10 +7,10 @@ import de.welt.contentapi.core.client.services.contentapi.AbstractService
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.pressed.models.{ApiPressedContentResponse, PressedReads}
 import play.api.Configuration
-import play.api.libs.json.{JsLookupResult, JsResult}
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.Future
+import scala.util.Try
 
 @ImplementedBy(classOf[CiggerServiceImpl])
 trait CiggerService {
@@ -37,8 +37,10 @@ trait CiggerService {
 class CiggerServiceImpl @Inject()(ws: WSClient, metrics: Metrics, configuration: Configuration, override implicit val capi: CapiExecutionContext)
   extends AbstractService[ApiPressedContentResponse](ws, metrics, configuration, "cigger", capi) with CiggerService {
 
-  override def jsonValidate: JsLookupResult ⇒ JsResult[ApiPressedContentResponse] =
-    _.validate[ApiPressedContentResponse](PressedReads.apiPressedContentResponseReads)
+  import AbstractService.implicitConversions._
+
+  override val validate: WSResponse ⇒ Try[ApiPressedContentResponse] = response ⇒ response.json.result
+    .validate[ApiPressedContentResponse](PressedReads.apiPressedContentResponseReads)
 
   override def byId(id: String,
                     showRelated: Boolean,
@@ -53,6 +55,6 @@ class CiggerServiceImpl @Inject()(ws: WSClient, metrics: Metrics, configuration:
 
     val parameters = (showRelatedParam ++ embedParam ++ pageParam ++ pageSizeParam).toSeq
 
-    get(Seq(id), parameters)
+    execute(Seq(id), parameters)
   }
 }

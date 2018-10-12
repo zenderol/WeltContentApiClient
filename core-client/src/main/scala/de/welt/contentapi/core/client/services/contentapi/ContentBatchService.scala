@@ -1,17 +1,16 @@
 package de.welt.contentapi.core.client.services.contentapi
 
-import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.services.CapiExecutionContext
 import de.welt.contentapi.core.client.services.http.RequestHeaders
 import de.welt.contentapi.core.models.{ApiBatchResponse, ApiBatchResult}
+import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.libs.json.{JsLookupResult, JsResult}
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
   * Reusable (Playframework) Service for batch requesting Content By ID against our API provided by Frank.
@@ -50,14 +49,15 @@ class ContentBatchServiceImpl @Inject()(ws: WSClient, metrics: Metrics, configur
   extends AbstractService[ApiBatchResult](ws, metrics, configuration, "content-batch", capi) with ContentBatchService {
 
   import de.welt.contentapi.core.models.ApiReads._
+  import AbstractService.implicitConversions._
 
-  override val jsonValidate: JsLookupResult ⇒ JsResult[ApiBatchResult] = _.validate[ApiBatchResponse].map(_.response)
+  override val validate: WSResponse ⇒ Try[ApiBatchResult] = _.json.result.validate[ApiBatchResponse].map(_.response)
 
   override def getIds(ids: Seq[String])(implicit requestHeaders: RequestHeaders = Seq.empty): Future[ApiBatchResult] = {
     if (ids.isEmpty) {
       Future.successful(ApiBatchResult(Nil))
     } else {
-      get(urlArguments = Seq(ids.mkString(",")))
+      execute(urlArguments = Seq(ids.mkString(",")))
     }
   }
 }

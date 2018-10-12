@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0 (2018-10-12)
+
+*Changes*
+
+- (breaking) changed signature of the `AbstractSerivce` to:
+  - Allow other `methods` than get by setting the `method: "POST"` in the ServiceConfig
+  - Allow other content types than `JSON` by changing the signature of the `validate` function 
+  (see changes -> `ContentService` for an example implementation)
+  - Made `basic auth credentials`/`Api key` optional: Its now possible to omit credentials 
+
 ## 2.3 (2018-10-04)
 
 *Changes*

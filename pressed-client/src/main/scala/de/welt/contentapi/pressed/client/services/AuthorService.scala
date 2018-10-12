@@ -9,8 +9,8 @@ import de.welt.contentapi.core.models.ApiContent
 import de.welt.contentapi.core.models.ApiReads.apiContentReads
 import de.welt.contentapi.pressed.models.ApiPressedContent
 import de.welt.contentapi.utils.Loggable
-import play.api.{Configuration, Environment, Logger, Mode}
 import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.{Configuration, Environment, Logger, Mode}
 
 import scala.concurrent.duration._
 
@@ -70,7 +70,9 @@ class AuthorServiceImpl @Inject()(s3Client: S3Client,
   if (Mode.Test != environment.mode) {
     fetchAuthorsFromS3()
     // schedule future updates of the authors
-    capi.actorSystem.scheduler.schedule(10.minutes, 10.minutes, () ⇒ fetchAuthorsFromS3())
+    capi.actorSystem.scheduler.schedule(10.minutes, 10.minutes, new Runnable {
+      override def run(): Unit = fetchAuthorsFromS3()
+    })
   } else {
     Logger.info("Authors will not be loaded when started in Mode.Test. If you require author data, please mock it.")
   }

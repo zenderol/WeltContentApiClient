@@ -6,15 +6,15 @@ import scala.util.Properties
 
 val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
-val PlayVersion = "2.6.15"
-val PlayJsonVersion = "2.6.9"
-val actualVersion: String = s"2.3.${buildNumber.getOrElse("0-local")}"
+val PlayVersion = "2.6.20"
+val PlayJsonVersion = "2.6.10"
+val actualVersion: String = s"3.0.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
 val frontendCompilationSettings = Seq(
   organization := "de.welt",
-  scalaVersion := "2.12.6",
+  scalaVersion := "2.12.7",
   version in ThisBuild := s"${actualVersion}_$PlayVersion${if (isSnapshot) "-SNAPSHOT" else ""}",
 
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
