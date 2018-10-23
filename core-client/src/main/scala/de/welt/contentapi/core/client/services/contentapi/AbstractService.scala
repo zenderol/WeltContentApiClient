@@ -154,7 +154,7 @@ abstract class AbstractService[T](ws: WSClient,
   }
 
   private def processResponse(response: WSResponse, url: String): T = response.status match {
-    case Status.OK ⇒ processResult(response)
+    case Status.OK | Status.CREATED ⇒ processResult(response)
     case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
     case status if (400 until 500).contains(status) ⇒
       throw HttpClientErrorException(status, response.statusText, url, response.header(HeaderNames.CACHE_CONTROL))

@@ -189,8 +189,17 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
       verify(mockRequest).execute(method = Matchers.eq("not-validated-method-name"))
     }
 
-    "will return the expected result" in new TestScopeBasicAuth {
+    "will return the expected result for 200 OK responses" in new TestScopeBasicAuth {
       when(responseMock.status).thenReturn(OK)
+      when(responseMock.json).thenReturn(JsString("the result"))
+
+      val result: Future[String] = new TestService().execute(Seq("x"), Seq.empty)
+      val result1 = Await.result(result, 10.second)
+      result1 mustBe "the result"
+    }
+
+    "will return the expected result for 201 CREATED responses" in new TestScopeBasicAuth {
+      when(responseMock.status).thenReturn(CREATED)
       when(responseMock.json).thenReturn(JsString("the result"))
 
       val result: Future[String] = new TestService().execute(Seq("x"), Seq.empty)
