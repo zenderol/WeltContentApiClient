@@ -243,7 +243,7 @@ object RawReads {
           sponsoring = underlying.get("sponsoring")
             .map(_.as[RawSponsoringConfig])
             .getOrElse(defaults.sponsoring),
-          siteBuilding = underlying.get("site_building")
+          siteBuilding = underlying.get("siteBuilding")
               .map(_.as[RawChannelSiteBuilding])
               .getOrElse(defaults.siteBuilding),
           theme = underlying.get("theme").map(_.as[RawChannelTheme]),
