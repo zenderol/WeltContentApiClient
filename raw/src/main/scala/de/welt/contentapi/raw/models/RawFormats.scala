@@ -189,7 +189,8 @@ object RawReads {
           references = underlying.get("references").map(_.as[Seq[RawSectionReference]]),
           overrides = underlying.get("overrides").map(_.as[Map[String, String]]).map(_.filter(EmptyMapValues)),
           trackingName = underlying.get("trackingName").map(_.as[String]),
-          link = underlying.get("link").map(_.as[RawSectionReference])
+          link = underlying.get("link").map(_.as[RawSectionReference]),
+          logo = underlying.get("logo").map(_.as[String]).filter(_.nonEmpty)
         )
       )).getOrElse(jsErrorInvalidData("RawChannelStageCustomModule", json))
       case err@_ ⇒ jsErrorInvalidJson(err)
@@ -311,7 +312,8 @@ object RawWrites {
       (__ \ "link").writeNullable[RawSectionReference] and
       (__ \ "module").write[String] and
       (__ \ "references").writeNullable[Seq[RawSectionReference]] and
-      (__ \ "overrides").writeNullable[Map[String, String]](filteredMapWrites)
+      (__ \ "overrides").writeNullable[Map[String, String]](filteredMapWrites) and
+      (__ \ "logo").writeNullable[String]
     ) (unlift(RawChannelStageCustomModule.unapply))
 
   implicit lazy val rawChannelStageCommercialWrites: Writes[RawChannelStageCommercial] = (

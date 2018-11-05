@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1 (2018-11-05)
+
+### Changes
+- [RAW] added optional field `logo` as part of `RawChannelStageCustomModule`
+
 ## 3.0 (2018-10-12)
 
 *Changes*

@@ -425,6 +425,7 @@ sealed trait RawChannelStage {
   * @param references optional section references. Example: Link to Mediathek A-Z.
   * @param overrides  optional overrides for the Stage, e.g. type, subType, sectionPath
   *                   Currently allowed/mapped values are: `sectionPath`, `limit`, `layout`, `label`
+  * @param logo       optional logo to be rendered next to the label, e.g. gruenderszene.de stage logo.
   */
 case class RawChannelStageCustomModule(override val index: Int,
                                        override val `type`: String = RawChannelStage.TypeCustomModule,
@@ -433,7 +434,8 @@ case class RawChannelStageCustomModule(override val index: Int,
                                        override val link: Option[RawSectionReference],
                                        module: String,
                                        references: Option[Seq[RawSectionReference]] = None,
-                                       overrides: Option[Map[String, String]] = None) extends RawChannelStage {
+                                       overrides: Option[Map[String, String]] = None,
+                                       logo: Option[String] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
   lazy val unwrappedOverrides: Map[String, String] = overrides.getOrElse(Map.empty[String, String])
 }
