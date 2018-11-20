@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2 (2018-11-21)
+
+### Changes
+- [RAW] changed default `RawChannelSiteBuilding` configuration from *empty Optional* to *None*
+- implemented master channel inheritance for `RawChannelSiteBuilding`
+
 ## 3.1 (2018-11-05)
 
 ### Changes

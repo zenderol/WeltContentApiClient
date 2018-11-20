@@ -246,7 +246,7 @@ object RawReads {
             .getOrElse(defaults.sponsoring),
           siteBuilding = underlying.get("siteBuilding")
               .map(_.as[RawChannelSiteBuilding])
-              .getOrElse(defaults.siteBuilding),
+              .filterNot(_.isEmpty),
           theme = underlying.get("theme").map(_.as[RawChannelTheme]),
           commercial = underlying.get("commercial").map(_.as[RawChannelCommercial]).getOrElse(defaults.commercial),
           content = underlying.get("content").map(_.as[RawChannelContentConfiguration]),
