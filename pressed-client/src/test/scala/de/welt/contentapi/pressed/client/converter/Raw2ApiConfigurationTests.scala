@@ -49,11 +49,29 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       disableAdvertisement = true
     )
 
+    val rawChannelSiteBuilding = RawChannelSiteBuilding(
+      fields = Some(Map("key1" -> "value2", "key2" -> "value2")),
+      sub_navigation = Some(Seq(RawSectionReference(Some("Label"), Some("/Path/")))),
+      elements = Some(Seq(
+        RawElement(
+          id = RawChannelElement.IdDefault,
+          `type` = "mood",
+          assets = Some(List(
+            RawAsset(
+              `type` = "image",
+              fields = Some(Map("key1" -> "value2", "key2" -> "value2"))
+            )
+          ))
+        )
+      ))
+    )
+
     val rawChannelConfiguration = RawChannelConfiguration(
       metadata = Some(rawChannelMetadata),
       header = Some(rawChannelHeader),
       sponsoring = rawChannelSponsoring,
       theme = Some(rawChannelTheme),
+      siteBuilding = Some(rawChannelSiteBuilding),
       commercial = rawChannelCommercial,
       brand = true
     )
@@ -63,6 +81,7 @@ class Raw2ApiConfigurationTests extends PlaySpec {
     val rawChannel: RawChannel = emptyWithIdAndConfig(rawChannelId, rawChannelConfiguration)
     val apiChannel: ApiChannel = converter.apiChannelFromRawChannel(rawChannel)
     val apiHeaderConfiguration: ApiHeaderConfiguration = converter.calculateHeader(rawChannel).get
+    val apiSiteBuildingConfiguration: ApiSiteBuildingConfiguration = converter.calculateSiteBuilding(rawChannel).get
     val apiSponsoringConfiguration: ApiSponsoringConfiguration = converter.apiSponsoringConfigurationFromRawChannel(rawChannel)
     val apiCommercialConfiguration: ApiCommercialConfiguration = converter.apiCommercialConfigurationFromRawChannel(rawChannel)
 
@@ -153,6 +172,31 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       apiHeaderReference mustEqual rawHeaderReference
     }
 
+  }
+
+  "RawChannelSiteBuilding to ApiSiteBuildingConfiguration" must {
+
+    "convert `fields`" in new TestScopeConfiguration {
+      apiSiteBuildingConfiguration.fields mustBe rawChannelSiteBuilding.fields
+    }
+
+    "convert `sub_navigation`" in new TestScopeConfiguration {
+      apiSiteBuildingConfiguration
+        .unwrappedSubNavigation
+        .flatMap(r ⇒ r.label ++ r.href) must contain theSameElementsAs rawChannelSiteBuilding
+        .unwrappedSubNavigation
+        .flatMap(r ⇒ r.label ++ r.path)
+    }
+
+    "convert `elements`" in new TestScopeConfiguration {
+      apiSiteBuildingConfiguration
+        .unwrappedElements
+        .flatMap(
+          r ⇒ r.`type` ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.`type`) ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.fields)
+        ) must contain theSameElementsAs rawChannelSiteBuilding
+        .unwrappedElements
+        .flatMap(r ⇒ r.`type` ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.`type`) ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.fields))
+    }
   }
 
   "RawChannelSponsoring to ApiSponsoringConfiguration" must {

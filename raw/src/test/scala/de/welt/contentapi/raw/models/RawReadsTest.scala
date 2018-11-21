@@ -30,6 +30,19 @@ class RawReadsTest extends PlaySpec {
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
         .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
     }
+
+    "ignore known empty properties" in {
+      val json: String =
+        """{
+          |  "header": {
+          |    "logo": "foo.png"
+          |  },
+          |  "siteBuilding": {}
+          |}""".stripMargin
+      Json.parse(json)
+        .validate[RawChannelConfiguration](rawChannelConfigurationReads)
+        .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
+    }
   }
 
   "RawChannelCommercialReads" must {
@@ -146,7 +159,7 @@ class RawReadsTest extends PlaySpec {
         .asOpt mustBe Some(models.RawChannelSiteBuilding(
         fields = Some(Map("header_slogan" -> "slogan-test")),
         sub_navigation = Some(Seq(RawSectionReference(label = Some("Click me"), path = Some("www.welt.de")))),
-        elements = Some(Seq(RawElement(id = RawChannelElement.IdDefault, `type` = RawChannelElement.TypeMood, assets = Some(List(RawAsset(`type` = RawChannelAsset.TypeImage, fields = Some(Map("ratio" -> "1.77", "url" -> "www.welt.de"))))))))
+        elements = Some(Seq(RawElement(id = RawChannelElement.IdDefault, `type` = "mood", assets = Some(List(RawAsset(`type` = "image", fields = Some(Map("ratio" -> "1.77", "url" -> "www.welt.de"))))))))
       )
       )
     }

@@ -51,7 +51,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     sponsoring = Some(apiSponsoringConfigurationFromRawChannel(rawChannel)),
     header = calculateHeader(rawChannel),
     theme = calculateTheme(rawChannel),
-    siteBuilding = Some(apiSiteBuildingConfigurationFromRawChannel(rawChannel))
+    siteBuilding = calculateSiteBuilding(rawChannel)
   )
 
   //todo: return Option[] (no hardcoded Some())
@@ -78,6 +78,31 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
         sloganReference = result.sloganReference.map(ref ⇒ ApiReference(ref.label, ref.path)),
         sectionReferences = result.sectionReferences.map(refs ⇒ refs.map(ref ⇒ ApiReference(ref.label, ref.path))),
         hidden = Option(result.hidden)
+      )
+    }
+
+  /**
+    * Primarily converts the RawChannelSiteBuilding from the current RawChannel if RawChannelSitebuilding is defined
+    * Alternative is to search for a parent that is a `Master` and use its Sitebuilding config (empty sitebuilding may be inherited to children)
+    **/
+  private[converter] def calculateSiteBuilding(rawChannel: RawChannel): Option[ApiSiteBuildingConfiguration] =
+    rawChannel.config.siteBuilding.find(_.isEmpty == false)
+      .orElse(calculateMasterChannel(rawChannel).flatMap(_.config.siteBuilding)) // or else find a master to inherit its header
+      .map { result ⇒
+      ApiSiteBuildingConfiguration(
+        fields = result.fields,
+        sub_navigation = result.sub_navigation.map(refs ⇒
+          refs.map(ref ⇒ ApiReference(ref.label, ref.path))
+        ),
+        elements = result.elements.map(
+          refs ⇒ refs.map(ref ⇒
+            ApiElement(
+              id = ref.id,
+              `type` = ref.`type`,
+              assets = ref.assets.map(refs2 ⇒ refs2.map(ref2 ⇒ ApiAsset(`type` = ref2.`type`, fields = ref2.fields)))
+            )
+          )
+        )
       )
     }
 
@@ -174,24 +199,6 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
       hidden = Some(rawChannel.config.sponsoring.hidden),
       link = rawChannel.config.sponsoring.link.map(ref ⇒ ApiReference(ref.label, ref.path)),
       brandstation = rawChannel.config.sponsoring.brandstation
-    )
-  }
-
-  private[converter] def apiSiteBuildingConfigurationFromRawChannel(rawChannel: RawChannel): ApiSiteBuildingConfiguration = {
-    ApiSiteBuildingConfiguration(
-      fields = rawChannel.config.siteBuilding.fields,
-      sub_navigation = rawChannel.config.siteBuilding.sub_navigation.map(refs ⇒
-        refs.map(ref ⇒ ApiReference(ref.label, ref.path))
-      ),
-      elements = rawChannel.config.siteBuilding.elements.map(
-        refs ⇒ refs.map(ref ⇒
-          ApiElement(
-            id = ref.id,
-            `type` = ref.`type`,
-            assets = ref.assets.map(refs2 ⇒ refs2.map(ref2 ⇒ ApiAsset(`type` = ref2.`type`, fields = ref2.fields)))
-          )
-        )
-      )
     )
   }
 

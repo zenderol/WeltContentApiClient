@@ -220,7 +220,7 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    header: Option[RawChannelHeader] = None,
                                    @deprecated("Use siteBuilding instead", since = "version 2.3")
                                    sponsoring: RawSponsoringConfig = RawSponsoringConfig(),
-                                   siteBuilding: RawChannelSiteBuilding = RawChannelSiteBuilding(),
+                                   siteBuilding: Option[RawChannelSiteBuilding] = None,
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
                                    content: Option[RawChannelContentConfiguration] = None,
@@ -371,7 +371,13 @@ case class RawSponsoringConfig(logo: Option[String] = None,
   */
 case class RawChannelSiteBuilding(fields: Option[Map[String, String]] = None,
                                   sub_navigation: Option[Seq[RawSectionReference]] = None,
-                                  elements: Option[Seq[RawElement]] = None)
+                                  elements: Option[Seq[RawElement]] = None) {
+
+  lazy val unwrappedSubNavigation: Seq[RawSectionReference] = sub_navigation.getOrElse(Nil)
+  lazy val unwrappedElements: Seq[RawElement] = elements.getOrElse(Nil)
+
+  lazy val isEmpty: Boolean = this == RawChannelSiteBuilding()
+}
 
 /**
   * Stored values for CMCF and Janus2. Should not be used by any clients.
@@ -548,11 +554,9 @@ object RawChannelStage {
 
 object RawChannelElement {
   val IdDefault = "channel_element"
-  val TypeMood = "mood"
   val TypeUnknown = "unknown"
 }
 
 object RawChannelAsset {
-  val TypeImage = "image"
   val TypeUnknown = "unknown"
 }
