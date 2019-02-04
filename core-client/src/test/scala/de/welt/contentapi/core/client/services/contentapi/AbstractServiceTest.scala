@@ -6,8 +6,8 @@ import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.client.models.{ApiContentSearch, MainTypeParam}
 import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
 import de.welt.contentapi.core.client.services.http.RequestHeaders
-import org.mockito.Matchers
-import org.mockito.Matchers.anyString
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -166,7 +166,7 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
         urlArguments = Seq("x"),
         body = Some("Howdy fellas")
       )
-      verify(mockRequest).withBody(Matchers.eq("Howdy fellas"))(Matchers.any())
+      verify(mockRequest).withBody(ArgumentMatchers.eq("Howdy fellas"))(ArgumentMatchers.any())
     }
 
     "configured method will be used" in new AbstractServiceTest.TestScope {
@@ -186,7 +186,7 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
       new TestService().execute()
 
-      verify(mockRequest).execute(method = Matchers.eq("not-validated-method-name"))
+      verify(mockRequest).execute(method = ArgumentMatchers.eq("not-validated-method-name"))
     }
 
     "will return the expected result for 200 OK responses" in new TestScopeBasicAuth {
@@ -264,11 +264,11 @@ object AbstractServiceTest extends MockitoSugar with TestExecutionContext {
     val metricsMock: Metrics = mock[Metrics]
     val mockTimerContext: Context = mock[Context]
 
-    when(mockRequest.withHttpHeaders(Matchers.anyVararg())).thenReturn(mockRequest)
-    when(mockRequest.addHttpHeaders(Matchers.anyVararg())).thenReturn(mockRequest)
-    when(mockRequest.withQueryStringParameters(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
-    when(mockRequest.withAuth(anyString, anyString, Matchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
-    when(mockRequest.withBody(anyString)(Matchers.any())).thenReturn(mockRequest)
+    when(mockRequest.withHttpHeaders(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.addHttpHeaders(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.withQueryStringParameters(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.withAuth(anyString, anyString, ArgumentMatchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
+    when(mockRequest.withBody(anyString)(ArgumentMatchers.any())).thenReturn(mockRequest)
 
     when(mockRequest.execute(anyString())).thenReturn(Future {
       responseMock

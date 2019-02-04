@@ -5,7 +5,7 @@ import de.welt.contentapi.pressed.models.{ApiChannel, ApiConfiguration}
 import de.welt.contentapi.raw.client.services.RawTreeService
 import de.welt.contentapi.raw.models.{RawChannel, RawChannelId}
 import de.welt.contentapi.utils.Env.{Env, Live}
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Matchers, Mockito}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 
@@ -20,7 +20,7 @@ class TreeServiceTest extends PlaySpec with MockitoSugar {
     "pass data for existing sections" in {
       val channel = RawChannel(RawChannelId("/", "root", 0))
 
-      Mockito.when(rts.root(Matchers.any[Env])).thenReturn(Some(channel))
+      Mockito.when(rts.root(ArgumentMatchers.any[Env])).thenReturn(Some(channel))
       val apiConfig = ApiConfiguration()
       Mockito.when(converter.apiConfigurationFromRawChannel(channel)).thenReturn(apiConfig)
       val apiChannel = ApiChannel()

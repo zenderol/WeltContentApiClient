@@ -6,15 +6,15 @@ import scala.util.Properties
 
 val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
-val PlayVersion = "2.6.21"
-val PlayJsonVersion = "2.6.13"
-val actualVersion: String = s"3.2.${buildNumber.getOrElse("0-local")}"
+val PlayVersion = "2.7.0"
+val PlayJsonVersion = "2.7.0"
+val actualVersion: String = s"3.3.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
 val frontendCompilationSettings = Seq(
   organization := "de.welt",
-  scalaVersion := "2.12.7",
+  scalaVersion := "2.12.8",
   version in ThisBuild := s"${actualVersion}_$PlayVersion${if (isSnapshot) "-SNAPSHOT" else ""}",
 
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -47,8 +47,8 @@ val coreDependencySettings = Seq(
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play-json" % PlayJsonVersion % Provided,
 
-    "org.mockito" % "mockito-core" % "1.10.19" % Test,
-    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % Test
+    "org.mockito" % "mockito-core" % "2.24.0" % Test,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test
   )
 )
 val clientDependencySettings = Seq(
@@ -57,16 +57,16 @@ val clientDependencySettings = Seq(
     "com.typesafe.play" %% "play-guice" % PlayVersion % Provided,
     "com.typesafe.play" %% "play-ws" % PlayVersion % Provided,
     "com.typesafe.play" %% "play-cache" % PlayVersion % Provided,
-    "com.typesafe" % "config" % "1.3.1" % Provided,
+    "com.typesafe" % "config" % "1.3.3" % Provided,
 
     "ch.qos.logback" % "logback-classic" % "1.2.3" % Provided,
 
-    "com.amazonaws" % "aws-java-sdk-core" % "1.11.235",
-    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.235",
-    "com.kenshoo" %% "metrics-play" % "2.6.6_0.6.2",
+    "com.amazonaws" % "aws-java-sdk-core" % "1.11.490",
+    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.490",
+    "com.kenshoo" %% "metrics-play" % "2.6.19_0.7.0",
 
-    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
-    "org.mockito" % "mockito-core" % "1.10.19" % Test
+    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
+    "org.mockito" % "mockito-core" % "2.24.0" % Test
   )
 )
 
@@ -120,7 +120,7 @@ def project(id: String) = Project(id, base = file(id))
 val utils = project("utils")
   .settings(
     name := "welt-content-api-utils",
-    libraryDependencies += "com.google.guava" % "guava" % "22.0",
+    libraryDependencies += "com.google.guava" % "guava" % "27.0-jre",
     libraryDependencies += "com.typesafe.play" %% "play" % PlayVersion % Provided
   )
   .settings(coreDependencySettings: _*)

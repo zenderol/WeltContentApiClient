@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.3 (2019-02-04)
+
+### Changes
+- Updated to Playframework 2.7.0
+
 ## 3.2 (2018-11-21)
 
 ### Changes

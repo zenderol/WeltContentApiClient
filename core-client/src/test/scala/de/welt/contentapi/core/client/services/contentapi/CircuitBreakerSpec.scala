@@ -4,8 +4,7 @@ import akka.pattern.CircuitBreakerOpenException
 import com.codahale.metrics.Timer.Context
 import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.client.services.exceptions.{HttpClientErrorException, HttpRedirectException, HttpServerErrorException}
-import org.mockito.Matchers
-import org.mockito.Matchers.anyString
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar

@@ -31,7 +31,7 @@ object PressedReads {
     } yield JsSuccess(
       ApiPressedContent(
         content = content,
-        related = underlying.get("related").map(_.as[Seq[ApiPressedContent]]),
+        related = underlying.get("related").map(_.as[Seq[ApiPressedContent]](Reads.seq(apiPressedContentReads))),
         channel = underlying.get("channel").map(_.as[ApiChannel]),
         configuration = underlying.get("configuration").map(_.as[ApiConfiguration]),
         embeds = underlying.get("embeds").map(_.as[Seq[ApiPressedEmbed]])

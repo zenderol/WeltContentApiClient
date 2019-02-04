@@ -3,7 +3,7 @@ package de.welt.contentapi.raw.client.services
 import de.welt.contentapi.TestExecutionContext
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.utils.Env.Live
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.{Configuration, Environment, Mode}
@@ -21,8 +21,8 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
     sealed trait ConfigurationScope {
       val s3Client: S3Client = mock[S3Client]
 
-      Mockito.when(s3Client.getLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
-      Mockito.when(s3Client.getWithLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
+      Mockito.when(s3Client.getLastModified(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn None
+      Mockito.when(s3Client.getWithLastModified(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn None
     }
 
     "use 'mode' from config file" in new ConfigurationScope {
@@ -68,7 +68,7 @@ class RawTreeServiceTest extends PlaySpec with MockitoSugar {
       service.root(Live)
 
       // then
-      Mockito.verify(s3Client, Mockito.never()).getLastModified(Matchers.anyString(), Matchers.anyString())
+      Mockito.verify(s3Client, Mockito.never()).getLastModified(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
     }
 
   }

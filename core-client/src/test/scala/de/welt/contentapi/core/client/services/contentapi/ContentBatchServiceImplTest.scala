@@ -4,8 +4,8 @@ import com.codahale.metrics.Timer.Context
 import com.kenshoo.play.metrics.Metrics
 import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.models.{ApiBatchResponse, ApiBatchResult, ApiContent}
-import org.mockito.Matchers
-import org.mockito.Matchers.anyString
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -28,10 +28,10 @@ class ContentBatchServiceImplTest extends PlaySpec with MockitoSugar with TestEx
     val metricsMock: Metrics = mock[Metrics]
     val mockTimerContext: Context = mock[Context]
 
-  when(mockRequest.withHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
-    when(mockRequest.withQueryStringParameters(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
-    when(mockRequest.addHttpHeaders(Matchers.anyVararg[(String, String)])).thenReturn(mockRequest)
-    when(mockRequest.withAuth(anyString, anyString, Matchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
+    when(mockRequest.withHttpHeaders(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.withQueryStringParameters(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.addHttpHeaders(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.withAuth(anyString, anyString, ArgumentMatchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
 
     when(mockRequest.execute(anyString())).thenReturn(Future {
       responseMock

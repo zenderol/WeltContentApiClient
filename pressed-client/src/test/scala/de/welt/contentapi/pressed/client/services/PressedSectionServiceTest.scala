@@ -12,9 +12,9 @@ import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection, ApiPres
 import de.welt.contentapi.utils.Env
 import de.welt.contentapi.utils.Env.{Live, Preview}
 import org.apache.http.HttpStatus
-import org.mockito.Matchers.{any, anyString}
+import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
-import org.mockito.{Matchers ⇒ MockitoMatchers}
+import org.mockito.{ArgumentMatchers ⇒ MockitoMatchers}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.words.MustVerb
 import org.scalatest.{FlatSpec, Matchers}

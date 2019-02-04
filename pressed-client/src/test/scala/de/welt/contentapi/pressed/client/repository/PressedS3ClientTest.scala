@@ -5,7 +5,7 @@ import java.time.Instant
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.pressed.models.{ApiChannel, ApiPressedSection, ApiPressedSectionResponse}
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.mock.MockitoSugar

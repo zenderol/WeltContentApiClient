@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.util.Timeout
 import com.kenshoo.play.metrics.Metrics
+import de.welt.contentapi.TestExecutionContext
 import de.welt.contentapi.core.client.services.contentapi.ContentService
 import de.welt.contentapi.core.models.{ApiContent, ApiResponse, ApiSectionData}
 import de.welt.contentapi.pressed.client.converter.{InheritanceCalculator, RawToApiConverter}
@@ -11,7 +12,7 @@ import de.welt.contentapi.pressed.models.ApiPressedContent
 import de.welt.contentapi.raw.client.services.RawTreeService
 import de.welt.testing.TestHelper.raw.channel._
 import de.welt.testing.TestHelper.raw.configuration._
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar
@@ -91,7 +92,7 @@ class PressedContentServiceTest extends PlaySpec with MockitoSugar {
     val apiPressedContent: ApiPressedContent = Await.result(eventualPressedContent, Timeout(30L, TimeUnit.SECONDS).duration)
   }
 
-  implicit lazy val executionContext: ExecutionContext = play.api.libs.concurrent.Execution.Implicits.defaultContext
+  implicit lazy val executionContext: ExecutionContext = TestExecutionContext.executionContext
 
   // Setup
   val contentService: ContentService = mock[ContentService]

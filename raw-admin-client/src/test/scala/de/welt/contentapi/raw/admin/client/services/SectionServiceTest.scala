@@ -8,7 +8,7 @@ import de.welt.contentapi.raw.admin.client.models.SdpSectionData
 import de.welt.contentapi.raw.client.services.RawTreeServiceImpl
 import de.welt.contentapi.utils.Env.{Live, Preview}
 import org.mockito.Mockito.when
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.{Configuration, Environment}
@@ -29,8 +29,8 @@ class SectionServiceTest extends PlaySpec with MockitoSugar {
     )
 
     val s3 = mock[S3Client]
-    when(s3.getLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
-    when(s3.getWithLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn None
+    when(s3.getLastModified(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn None
+    when(s3.getWithLastModified(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn None
 
     val legacyServiceMock = mock[SdpSectionDataService]
     when(legacyServiceMock.getSectionData) thenReturn root
@@ -68,9 +68,9 @@ class SectionServiceTest extends PlaySpec with MockitoSugar {
 
       service.root(Preview)
 
-//      Mockito.verify(emptyS3ResponseMock, times(2)).get(Matchers.eq(bucket), Matchers.anyString())
-      Mockito.verify(s3).putPrivate(Matchers.eq(bucket), Matchers.contains(Live.toString), Matchers.anyString(), Matchers.eq("application/json"))
-      Mockito.verify(s3).putPrivate(Matchers.eq(bucket), Matchers.contains(Preview.toString), Matchers.anyString(), Matchers.eq("application/json"))
+      //      Mockito.verify(emptyS3ResponseMock, times(2)).get(ArgumentMatchers.eq(bucket), ArgumentMatchers.anyString())
+      Mockito.verify(s3).putPrivate(ArgumentMatchers.eq(bucket), ArgumentMatchers.contains(Live.toString), ArgumentMatchers.anyString(), ArgumentMatchers.eq("application/json"))
+      Mockito.verify(s3).putPrivate(ArgumentMatchers.eq(bucket), ArgumentMatchers.contains(Preview.toString), ArgumentMatchers.anyString(), ArgumentMatchers.eq("application/json"))
 
     }
   }

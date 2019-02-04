@@ -6,7 +6,7 @@ import de.welt.contentapi.core.client.TestExecutionContext
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.menu.models.ApiMenu
 import org.mockito.Mockito._
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
@@ -37,8 +37,8 @@ class MenuServiceTest extends PlaySpec with MockitoSugar {
       val menuDataOnS3: ApiMenu = ApiMenu()
       val json: String = Json.toJson(menuDataOnS3).toString
 
-      when(s3.get(Matchers.anyString(), Matchers.anyString())) thenReturn Some(json)
-      when(s3.getLastModified(Matchers.anyString(), Matchers.anyString())) thenReturn Some(Instant.now)
+      when(s3.get(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn Some(json)
+      when(s3.getLastModified(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn Some(Instant.now)
 
       val menuService = new MenuServiceImpl(
         configuration,

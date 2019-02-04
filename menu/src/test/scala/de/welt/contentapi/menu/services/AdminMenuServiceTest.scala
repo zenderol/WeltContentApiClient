@@ -3,8 +3,7 @@ package de.welt.contentapi.menu.services
 import de.welt.contentapi.core.client.services.s3.S3Client
 import de.welt.contentapi.core.models.ApiReference
 import de.welt.contentapi.menu.models.{ApiMenu, ApiMenuLink}
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -44,7 +43,7 @@ class AdminMenuServiceTest extends PlaySpec with MockitoSugar {
 
       val bucket: String = configData.getOrElse(MenuConfig.BucketConfigKey, "")
       val file: String = configData.getOrElse(MenuConfig.FolderConfigKey, "")
-      verify(s3).putPrivate(Matchers.eq(bucket), startsWith(file), anyString(), contains("json"))
+      verify(s3).putPrivate(ArgumentMatchers.eq(bucket), ArgumentMatchers.startsWith(file), ArgumentMatchers.anyString(), ArgumentMatchers.contains("json"))
     }
 
     "throw an error when saved menu is empty. Preventing clearing the menu by accident." in new Fixture {
@@ -61,7 +60,7 @@ class AdminMenuServiceTest extends PlaySpec with MockitoSugar {
 
       val menuDataOnS3: ApiMenu = ApiMenu()
       private val json = Json.toJson(menuDataOnS3).toString
-      when(s3.get(Matchers.anyString(), Matchers.anyString())) thenReturn Some(json)
+      when(s3.get(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn Some(json)
 
       val menuData: ApiMenu = adminMenuService.get()
 
@@ -69,7 +68,7 @@ class AdminMenuServiceTest extends PlaySpec with MockitoSugar {
     }
 
     "throw an error when getting no json from S3. In case of invalid / corrupt data or invalid S3 configuration." in new Fixture {
-      when(s3.get(Matchers.anyString(), Matchers.anyString())) thenReturn None
+      when(s3.get(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())) thenReturn None
 
       assertThrows[IllegalStateException] {
         adminMenuService.get()
