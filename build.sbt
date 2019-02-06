@@ -63,7 +63,7 @@ val clientDependencySettings = Seq(
 
     "com.amazonaws" % "aws-java-sdk-core" % "1.11.490",
     "com.amazonaws" % "aws-java-sdk-s3" % "1.11.490",
-    "com.kenshoo" %% "metrics-play" % "2.6.19_0.7.0",
+    "de.welt" %% "metrics-play" % "2.7.0_5",
 
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
     "org.mockito" % "mockito-core" % "2.24.0" % Test
