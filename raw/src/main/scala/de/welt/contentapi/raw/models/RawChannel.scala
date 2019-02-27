@@ -1,6 +1,7 @@
 package de.welt.contentapi.raw.models
 
 import java.time.Instant
+import java.util.function.Predicate
 
 import scala.annotation.tailrec
 
@@ -63,6 +64,17 @@ case class RawChannel(id: RawChannelId,
     } else {
       children.flatMap { ch ⇒ ch.findByEscenicId(escenicId) }.headOption
     }
+  }
+
+  /**
+    * Recursive function which returns all channels, that match the Predicate
+    *
+    * @param p the Predicate[RawChannel] to test for
+    * @return all matching Channels
+    */
+  final def findByPredicate(p: Predicate[RawChannel]): Seq[RawChannel] = {
+    val maybeMatch: Seq[RawChannel] = if (p.test(this)) Seq(this) else Seq.empty
+    maybeMatch ++ children.flatMap { ch: RawChannel ⇒ ch.findByPredicate(p) }
   }
 
   @tailrec
@@ -419,6 +431,8 @@ sealed trait RawChannelStage {
   def trackingName: Option[String]
 
   def link: Option[RawSectionReference]
+
+  def hasType(typ: String): Boolean = typ == `type`
 }
 
 /**
@@ -490,6 +504,8 @@ case class RawChannelStageCurated(override val index: Int,
                                   references: Option[Seq[RawSectionReference]] = None,
                                   hideCuratedStageLabel: Option[Boolean] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
+
+  def hasValues(section: String, stage: String) = this.curatedSectionMapping == section && this.curatedStageMapping == stage
 
 }
 

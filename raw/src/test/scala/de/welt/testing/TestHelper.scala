@@ -1,6 +1,6 @@
 package de.welt.testing
 
-import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelConfiguration, RawChannelId, RawChannelMetadata, RawChannelTheme, RawMetadata}
+import de.welt.contentapi.raw.models._
 
 object TestHelper {
 
@@ -12,6 +12,9 @@ object TestHelper {
 
       def emptyWithIdAndConfig(id: Long, config: RawChannelConfiguration) =
         RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), config = config)
+
+      def emptyWithIdAndStageConfig(id: Long, config: RawChannelStageConfiguration) =
+        RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), stageConfiguration = Some(config))
 
       def emptyWithIdAndMetadata(id: Long, metadata: RawMetadata) =
         RawChannel(RawChannelId(path = s"/$id/", escenicId = id, label = id.toString), metadata = metadata)
@@ -56,6 +59,11 @@ object TestHelper {
       )
     }
 
+    object stageConfiguration {
+      def withStage(stage: RawChannelStage) = RawChannelStageConfiguration(
+        stages = Some(Seq(stage))
+      )
+    }
   }
 
 }

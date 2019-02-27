@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.4 (2019-02-26)
+- Added API to find channels that have a particular stage configured from god mode
+
 ## 3.3 (2019-02-04)
 
 ### Changes
