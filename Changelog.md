@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0 (2019-03-01)
+
+- Merged the `client` libs with the `core` libs reducing the lib and module count to `core`, `pressed` and `raw`
+- removed the menu stuff since it is mainly used in cmcf
+- Rewrote the `configuration` to use the _AWS Simple Systems Manager_ instead of Play's config mgmt
+- Removed the `Env` (Live,Preview) since it has not been used anywhere 
+
 ## 3.4 (2019-02-26)
 - Added API to find channels that have a particular stage configured from god mode
 

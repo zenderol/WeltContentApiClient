@@ -14,7 +14,7 @@ pipeline {
         }
 
         stage('Check') {
-            when { expression { BRANCH_NAME ==~ /^PR-.*/ } }
+            when { changeRequest() }
             steps {
                 ansiColor('xterm') {
                     sh "./sbt clean test"
@@ -23,7 +23,7 @@ pipeline {
         }
 
         stage('Parallel') {
-            when { allOf { branch 'master'; expression { return !params.QUICK_DEPLOY } } }
+            when { allOf { anyOf { branch 'master'; branch 'ssm'}; expression { return !params.QUICK_DEPLOY } } }
             failFast true
             parallel {
                 stage('Scala Style') {
@@ -46,7 +46,7 @@ pipeline {
         }
 
         stage('Coverage') {
-            when { allOf { branch 'master'; expression { return !params.QUICK_DEPLOY } } }
+            when { allOf { anyOf { branch 'master'; branch 'ssm'}; expression { return !params.QUICK_DEPLOY } } }
             steps {
                 ansiColor('xterm') {
                     sh './sbt coverageReport'
@@ -57,7 +57,7 @@ pipeline {
         }
 
         stage('Publish') {
-            when { branch 'master' }
+            when { anyOf { branch 'master'; branch 'ssm'} }
             // provide BINTRAY_{USER,PASS} as of https://github.com/sbt/sbt-bintray/blob/master/notes/0.5.0.markdown
             environment { BINTRAY_USER = "ci-weltn24" }
             steps {

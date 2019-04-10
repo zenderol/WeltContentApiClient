@@ -8,13 +8,14 @@ val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.7.0"
 val PlayJsonVersion = "2.7.0"
-val actualVersion: String = s"3.4.${buildNumber.getOrElse("0-local")}"
+val actualVersion: String = s"4.0.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
 val frontendCompilationSettings = Seq(
   organization := "de.welt",
   scalaVersion := "2.12.8",
+  crossScalaVersions := Seq("2.12.8", "2.13.0-M5"),
   version in ThisBuild := s"${actualVersion}_$PlayVersion${if (isSnapshot) "-SNAPSHOT" else ""}",
 
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -24,13 +25,13 @@ val frontendCompilationSettings = Seq(
   fork in Test := true,
   javaOptions in Test += "-Xmx2048M",
   javaOptions in Test += "-Dconfig.resource=application.test.conf",
-  javaOptions in Test += "-XX:+UseConcMarkSweepGC",
   javaOptions in Test += "-XX:ReservedCodeCacheSize=128m",
   javaOptions in Test += "-XX:MaxMetaspaceSize=512m",
   javaOptions in Test += "-Duser.timezone=Europe/Berlin",
+  javaOptions in Test += "-Dconfig.resource=application.test.conf",
   baseDirectory in Test := file("."),
   // disable scaladoc
-  sources in (Compile, doc) := Seq()
+  sources in(Compile, doc) := Seq()
 )
 
 val frontendDependencyManagementSettings = Seq(
@@ -61,9 +62,12 @@ val clientDependencySettings = Seq(
 
     "ch.qos.logback" % "logback-classic" % "1.2.3" % Provided,
 
-    "com.amazonaws" % "aws-java-sdk-core" % "1.11.490",
-    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.490",
-    "de.welt" %% "metrics-play" % "2.7.0_5",
+    "com.amazonaws" % "aws-java-sdk-core" % "1.11.500",
+    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.500",
+    "com.amazonaws" % "aws-java-sdk-ssm" % "1.11.500",
+    "com.amazonaws" % "aws-java-sdk-sts" % "1.11.500",
+    "de.welt" %% "metrics-play" % "2.7.0_6",
+    //    "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
 
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
     "org.mockito" % "mockito-core" % "2.24.0" % Test
@@ -73,8 +77,8 @@ val clientDependencySettings = Seq(
 val bintraySettings = Seq(
   pomExtra :=
     <scm>
-      <url>git@github.com:WeltN24/{name.value}.git</url>
-      <connection>scm:git:git@github.com:WeltN24/{name.value}.git</connection>
+      <url>git@github.com:spring-media/rbbt-WeltContentApiClient.git</url>
+      <connection>scm:git:git@github.com:spring-media/rbbt-WeltContentApiClient.git</connection>
     </scm>
       <developers>
         <developer>
@@ -116,20 +120,12 @@ def project(id: String) = Project(id, base = file(id))
   .settings(codeStyleSettings: _*)
 
 
-// only in "welt-content-api-client"
-val utils = project("utils")
-  .settings(
-    name := "welt-content-api-utils",
-    libraryDependencies += "com.google.guava" % "guava" % "27.0-jre",
-    libraryDependencies += "com.typesafe.play" %% "play" % PlayVersion % Provided
-  )
-  .settings(coreDependencySettings: _*)
-
 val core = project("core")
   .settings(
     name := "welt-content-api-core"
   )
   .settings(coreDependencySettings: _*)
+  .settings(clientDependencySettings: _*)
 
 val coreTest = project("core_test")
   .settings(
@@ -142,7 +138,6 @@ val raw = project("raw")
   .settings(
     name := "welt-content-api-raw"
   )
-  .dependsOn(withTests(utils)).aggregate(utils)
   .dependsOn(withTests(core)).aggregate(core)
 
 val pressed = project("pressed")
@@ -150,47 +145,9 @@ val pressed = project("pressed")
     name := "welt-content-api-pressed"
   )
   .settings(coreDependencySettings: _*)
+  .settings(clientDependencySettings: _*)
   .dependsOn(withTests(core)).aggregate(core)
-
-val coreClient = project("core-client")
-  .settings(
-    name := "welt-content-api-core-client"
-  )
-  .settings(clientDependencySettings: _*)
-  .dependsOn(withTests(utils)).aggregate(utils)
-  .dependsOn(withTests(core)).aggregate(core)
-
-val menu = project("menu")
-  .settings(clientDependencySettings: _*)
-  .settings(
-    name := "welt-content-menu"
-  )
-  .dependsOn(withTests(utils)).aggregate(utils)
-  .dependsOn(withTests(coreClient)).aggregate(coreClient)
-
-val rawClient = project("raw-client")
-  .settings(
-    name := "welt-content-api-raw-client"
-  )
-  .settings(clientDependencySettings: _*)
-  .dependsOn(withTests(coreClient)).aggregate(coreClient)
   .dependsOn(withTests(raw)).aggregate(raw)
-
-val rawAdminClient = project("raw-admin-client")
-  .settings(
-    name := "welt-content-api-raw-admin-client"
-  )
-  .settings(clientDependencySettings: _*)
-  .dependsOn(withTests(rawClient)).aggregate(rawClient)
-
-val pressedClient = project("pressed-client")
-  .settings(
-    name := "welt-content-api-pressed-client"
-  )
-  .settings(clientDependencySettings: _*)
-  .dependsOn(withTests(coreClient)).aggregate(coreClient)
-  .dependsOn(withTests(pressed)).aggregate(pressed)
-  .dependsOn(withTests(rawClient)).aggregate(rawClient)
 
 val main = Project("root", base = file("."))
   .settings(
@@ -201,4 +158,7 @@ val main = Project("root", base = file("."))
     publish := {},
     bintrayUnpublish := {}
   )
-  .aggregate(core, coreClient, coreTest, menu, raw, rawClient, rawAdminClient, pressed, pressedClient)
+  .aggregate(core,
+    coreTest,
+    raw,
+    pressed)

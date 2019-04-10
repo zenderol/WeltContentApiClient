@@ -39,3 +39,68 @@ You will need a [bintray](https://bintray.com/) account. Log in through sbt:
 Then you can publish new releases with:
 
 	./sbt publish
+	
+Service Authentication
+----------------------
+
+![IAM](static/img/wcapi_auth.png)
+
+- when using the _wcapi_ on your machine (_funkotron_) it is required to:
+    - Have a valid AWS account, including `credentials` (`access key` and `secret access key` -> ask your admin).
+    The easiest way is to [install the AWS CLI][aws_cli] and then execute `aws configure`.
+    - Have the `frontend` profile configured as follows:
+
+~/.aws/config
+```
+[profile frontend]
+region = eu-west-1
+role_arn = arn:aws:iam::933782373565:role/dev_restricted_access
+source_profile = default
+```
+
+~/.aws/credentials
+```
+[default]
+aws_access_key_id = XXX
+aws_secret_access_key = XXX
+```
+
+- the _AWS services_ (e.g. S3, SSM and all the future services) are required to use the `Credentials` provided by the _wcapi_
+
+```scala
+import com.amazonaws.auth.AWSCredentialsProvider
+import de.welt.contentapi.core.client.services.configuration.ApiConfiguration
+import scala.util.Try
+
+val credentials: Try[AWSCredentialsProvider] = ApiConfiguration.aws.credentials
+```
+
+- Configurations are automatically loaded from SSM
+- local overrides can be provided by writing a file to `~/.welt/frontend-overrides.conf`, e.g.:
+
+```hocon
+s3 {
+  raw_tree {
+    bucket: "not-the-prod-bucket"
+    file: "/not/the/prod/file.json"
+  }
+}
+```
+
+- client projects should generate a standardized `version.conf`, please add this to your `build.sbt`:
+
+```sbt
+resourceGenerators in Compile += Def.task {
+  val file = (resourceDirectory in Compile).value / "version.conf"
+  IO.write(file,
+    s"""build_info {
+       |    version  = "${version.value}"
+       |    revision = "${git.gitHeadCommit.value.getOrElse("cannot_detect_git_revision")}"
+       |    module   = "${packageName.value}"
+       |    date     = "${if (version.value.contains("local")) "prevent reload loops in local dev" else java.time.Instant.now()}"
+       |}""".stripMargin)
+  Seq(file)
+}.taskValue
+```
+
+[aws_cli]: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
