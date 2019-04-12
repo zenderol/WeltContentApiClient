@@ -26,7 +26,7 @@ sealed trait PressedS3Client {
 @Singleton
 class PressedS3ClientImpl @Inject()(s3Client: S3Client) extends PressedS3Client with Loggable {
 
-  private val bucket = ApiConfiguration.aws.s3.raw.file
+  private val bucket = ApiConfiguration.aws.s3.raw.bucket
   private val file = ApiConfiguration.aws.s3.raw.file
 
   override def find(path: String): Option[(ApiPressedSectionResponse, Instant)] = {
