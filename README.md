@@ -34,12 +34,12 @@ Deploying from local
 --------------------
 You will need a [bintray](https://bintray.com/) account. Log in through sbt:
 
-	./activator bintrayChangeCredentials
+    ./activator bintrayChangeCredentials
 
 Then you can publish new releases with:
 
-	./sbt publish
-	
+    ./sbt publish
+
 Service Authentication
 ----------------------
 
@@ -76,9 +76,36 @@ val credentials: Try[AWSCredentialsProvider] = ApiConfiguration.aws.credentials
 ```
 
 - Configurations are automatically loaded from SSM
-- local overrides can be provided by writing a file to `~/.welt/frontend-overrides.conf`, e.g.:
+- You should set the local mode to `dev` in the `application.conf` like:
+
+```hacon
+content_api {
+    mode: "dev"
+    # this is usually overriden in the ecs task-definition.json
+    mode = ${?MODE}
+}
+```
+
+- local overrides can be provided by writing a file to `~/.welt/${module}/frontend-overrides.conf`, e.g.:
 
 ```hocon
+api {
+  cigger {
+    host: ""
+    endpoint: ""
+    method: ""
+    basic_username: ""
+    basic_password: ""
+    api_key: ""
+    circuit_breaker {
+      enabled: false
+      max_failures: 5
+      call_timeout: 5
+      reset_timeout: 10
+      exponential_backoff: 2
+    }
+  }
+}
 s3 {
   raw_tree {
     bucket: "not-the-prod-bucket"

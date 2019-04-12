@@ -1,5 +1,33 @@
 # Changelog
 
+## 4.1 (2019-04-11)
+
+- changed config for `CapiExecutionContext`
+
+```hacon
+// before
+contexts.capi {
+    fork-join-executor {
+        parallelism-factor = 25
+        parallelism-min = 25
+        parallelism-max = 100
+    }
+}
+// after
+content_api {
+    akka {
+        fork-join-executor {
+            parallelism-factor = 25
+            parallelism-min = 25
+            parallelism-max = 100
+        }
+    }
+}
+```
+
+- change path for `frontend-overrides.conf` (incl. app name)
+- allowed `prod` and `development` as a valid stage/mode name
+
 ## 4.0 (2019-03-01)
 
 - Merged the `client` libs with the `core` libs reducing the lib and module count to `core`, `pressed` and `raw`

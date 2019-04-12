@@ -54,10 +54,10 @@ object Environment extends Loggable {
     }
   }.map(_._1)
 
-  val stage: Mode = envFromConfigFile(System.getProperties.asScala.toMap) match {
-    case "production" ⇒ Production
+  val stage: Mode = envFromConfigFile(sys.env) match {
+    case "prod" | "production" ⇒ Production
     case "staging" ⇒ Staging
-    case "dev" ⇒ Development
+    case "dev" | "development" ⇒ Development
     case _ ⇒ Test
   }
 

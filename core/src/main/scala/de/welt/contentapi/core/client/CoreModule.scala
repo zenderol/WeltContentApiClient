@@ -19,7 +19,7 @@ class CoreModule extends AbstractModule with Loggable {
 
   @Provides
   @Singleton
-  def capiContext(actorSystem: ActorSystem): CapiExecutionContext = CapiExecutionContext(actorSystem, "contexts.capi")
+  def capiContext(actorSystem: ActorSystem): CapiExecutionContext = CapiExecutionContext(actorSystem, "content_api.akka")
 
   @Provides
   @Singleton

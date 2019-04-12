@@ -50,7 +50,7 @@ class ApiConfiguration extends Loggable {
 
   lazy val configuration: Config = {
     if (Environment.stage.isTest) {
-      val testConfigResource = Environment.extract(System.getProperties.asScala.toMap, "config.resource")
+      val testConfigResource = Environment.extract(sys.env, "config.resource")
         .getOrElse("application.test.conf")
       log.debug(s"Loading test configuration from $testConfigResource")
       val config = configFromResource(testConfigResource)
@@ -59,12 +59,17 @@ class ApiConfiguration extends Loggable {
     } else {
 
       val sw = Stopwatch.createStarted()
+      val userPrivatePath = s"${System.getProperty("user.home")}/.welt/${app.toLowerCase}/frontend-overrides.conf"
 
       log.debug("Started loading Configuration.")
-      val userPrivate = configFromFile(s"${System.getProperty("user.home")}/.welt/frontend-overrides.conf")
+      val userPrivate = configFromFile(userPrivatePath)
       val frontendConfig = configFromParameterStore("/frontend/")
       val frontendStageConfig = configFromParameterStore(s"/frontend/${stage.toString.toLowerCase()}/")
       val frontendAppConfig = configFromParameterStore(s"/frontend/${stage.toString.toLowerCase()}/${app.toLowerCase}/")
+
+      if (!userPrivate.isEmpty) {
+        printWarning(userPrivatePath)
+      }
 
       val config = Try(userPrivate
         .withFallback(frontendAppConfig)
@@ -97,6 +102,18 @@ class ApiConfiguration extends Loggable {
   private def reportError(message: String, th: Throwable): Nothing = {
     log.error(message, th)
     throw th
+  }
+
+  private def printWarning(userPrivatePath: String): Unit = {
+    val warning = s"* There are some overrides in '$userPrivatePath' active. *"
+    log.warn(
+      s"""
+         |
+         |${"*" * warning.length}
+         |$warning
+         |${"*" * warning.length}
+         |""".stripMargin
+    )
   }
 
   object aws {
