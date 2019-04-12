@@ -54,7 +54,7 @@ object Environment extends Loggable {
     }
   }.map(_._1)
 
-  val stage: Mode = envFromConfigFile(sys.env) match {
+  val stage: Mode = envFromConfigFile(sys.props.toMap) match {
     case "prod" | "production" ⇒ Production
     case "staging" ⇒ Staging
     case "dev" | "development" ⇒ Development

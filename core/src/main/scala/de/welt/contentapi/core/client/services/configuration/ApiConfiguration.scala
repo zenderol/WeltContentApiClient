@@ -50,11 +50,11 @@ class ApiConfiguration extends Loggable {
 
   lazy val configuration: Config = {
     if (Environment.stage.isTest) {
-      val testConfigResource = Environment.extract(sys.env, "config.resource")
+      val testConfigResource = Environment.extract(sys.props.toMap, "config.resource")
         .getOrElse("application.test.conf")
       log.debug(s"Loading test configuration from $testConfigResource")
       val config = configFromResource(testConfigResource)
-      log.debug(ApiConfiguration.configuration.root().render(ConfigRenderOptions.concise()))
+      log.debug(config.root().render(ConfigRenderOptions.concise()))
       config
     } else {
 
