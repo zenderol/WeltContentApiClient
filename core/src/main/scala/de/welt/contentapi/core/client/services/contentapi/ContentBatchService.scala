@@ -46,6 +46,6 @@ extends AbstractService[ApiBatchResult](ws, metrics, capi) with ContentBatchServ
     }
   }
 
-  override val config: ServiceConfiguration = ServiceConfiguration("content-batch")
+  override val config: ServiceConfiguration = ServiceConfiguration("content_batch")
 }
 
