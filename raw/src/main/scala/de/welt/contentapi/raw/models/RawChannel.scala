@@ -388,7 +388,12 @@ case class RawChannelSiteBuilding(fields: Option[Map[String, String]] = None,
   lazy val unwrappedSubNavigation: Seq[RawSectionReference] = sub_navigation.getOrElse(Nil)
   lazy val unwrappedElements: Seq[RawElement] = elements.getOrElse(Nil)
 
-  lazy val isEmpty: Boolean = this == RawChannelSiteBuilding()
+  /**
+    * Channel Sitebuilding is empty when:
+    *  - it has never been configured (default constructor)
+    *  - it was already configured and deleted (consisting only of empty fields map)
+    */
+  lazy val isEmpty: Boolean = this == RawChannelSiteBuilding() || this == RawChannelSiteBuilding(fields = Some(Map.empty[String, String]))
 }
 
 /**

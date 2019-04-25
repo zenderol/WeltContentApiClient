@@ -43,6 +43,19 @@ class RawReadsTest extends PlaySpec {
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
         .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
     }
+
+    "ignore known empty properties with empty values" in {
+      val json: String =
+        """{
+          |  "header": {
+          |    "logo": "foo.png"
+          |  },
+          |  "siteBuilding": {"fields": {}}
+          |}""".stripMargin
+      Json.parse(json)
+        .validate[RawChannelConfiguration](rawChannelConfigurationReads)
+        .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
+    }
   }
 
   "RawChannelCommercialReads" must {
