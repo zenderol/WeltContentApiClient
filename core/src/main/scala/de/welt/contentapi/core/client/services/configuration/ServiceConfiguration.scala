@@ -12,6 +12,10 @@ sealed trait Credentials
 
 case class BasicAuth(username: BasicUsername, password: BasicPassword) extends Credentials
 
+object BasicAuth {
+  def apply(username: String, password: String): BasicAuth = new BasicAuth(BasicUsername(username), BasicPassword(password))
+}
+
 case class BasicUsername(v: String)
 
 case class BasicPassword(v: String) {
@@ -39,9 +43,6 @@ case class ServiceConfiguration(serviceName: String,
 
 /**
   * Configure the circuit breaker for a service
-  * Example Config:
-  *
-  * @param delegate Optional config, defaults to ```circuitBreaker disabled```, if none present.
   */
 case class CircuitBreakerSettings(enabled: Boolean = CircuitBreakerSettings.Enabled,
                                   maxFailures: Int = CircuitBreakerSettings.MaxFailures,

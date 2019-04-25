@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.2 (2019-04-25)
+
+- play 2.7.1
+- using `com.kenshoo.metrics-play` instead of fork `de.welt.metrics-play`
+- catching `IllegalArgumentException` when register `circuit_breaker` metric (only logging now)
+- more version bumps
+- clean up code
+
 ## 4.1 (2019-04-11)
 
 - changed config for `CapiExecutionContext`

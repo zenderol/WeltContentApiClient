@@ -58,9 +58,14 @@ abstract class AbstractService[T](ws: WSClient,
   capi.actorSystem.scheduler.scheduleOnce(5.seconds, () ⇒ {
     if (config.circuitBreaker.enabled) {
       // datadog gauges must be numeric
-      metrics.defaultRegistry.register(s"service.${config.serviceName}.circuit_breaker", new Gauge[Int]() {
-        override def getValue: Int = breakerState()
-      })
+      val metricsName = s"service.${config.serviceName}.circuit_breaker"
+      try {
+        metrics.defaultRegistry.register(metricsName, new Gauge[Int]() {
+          override def getValue: Int = breakerState()
+        })
+      } catch {
+        case _: IllegalArgumentException ⇒ log.error("A metric named " + metricsName + " already exists")
+      }
       log.info(s"Circuit Breaker enabled for ${config.serviceName}")
     } else {
       log.info(s"Circuit Breaker NOT enabled for ${config.serviceName}")

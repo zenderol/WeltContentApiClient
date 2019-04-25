@@ -6,9 +6,10 @@ import scala.util.Properties
 
 val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
-val PlayVersion = "2.7.0"
-val PlayJsonVersion = "2.7.0"
-val actualVersion: String = s"4.1.${buildNumber.getOrElse("0-local")}"
+val PlayVersion = "2.7.1"
+val PlayJsonVersion = "2.7.2"
+val AWSVersion = "1.11.539"
+val actualVersion: String = s"4.2.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
@@ -48,8 +49,8 @@ val coreDependencySettings = Seq(
   libraryDependencies ++= Seq(
     "com.typesafe.play" %% "play-json" % PlayJsonVersion % Provided,
 
-    "org.mockito" % "mockito-core" % "2.24.0" % Test,
-    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test
+    "org.mockito" % "mockito-core" % "2.27.0" % Test,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.2" % Test
   )
 )
 val clientDependencySettings = Seq(
@@ -58,19 +59,19 @@ val clientDependencySettings = Seq(
     "com.typesafe.play" %% "play-guice" % PlayVersion % Provided,
     "com.typesafe.play" %% "play-ws" % PlayVersion % Provided,
     "com.typesafe.play" %% "play-cache" % PlayVersion % Provided,
-    "com.typesafe" % "config" % "1.3.3" % Provided,
+    "com.typesafe" % "config" % "1.3.4" % Provided,
 
     "ch.qos.logback" % "logback-classic" % "1.2.3" % Provided,
 
-    "com.amazonaws" % "aws-java-sdk-core" % "1.11.500",
-    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.500",
-    "com.amazonaws" % "aws-java-sdk-ssm" % "1.11.500",
-    "com.amazonaws" % "aws-java-sdk-sts" % "1.11.500",
-    "de.welt" %% "metrics-play" % "2.7.0_6",
-    //    "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
+    "com.amazonaws" % "aws-java-sdk-core" % AWSVersion,
+    "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion,
+    "com.amazonaws" % "aws-java-sdk-ssm" % AWSVersion,
+    "com.amazonaws" % "aws-java-sdk-sts" % AWSVersion,
+    "com.kenshoo" %% "metrics-play" % "2.7.0_0.8.0",
+//    "de.welt" %% "metrics-play" % "2.7.0_6",
 
-    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
-    "org.mockito" % "mockito-core" % "2.24.0" % Test
+    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.2" % Test,
+    "org.mockito" % "mockito-core" % "2.27.0" % Test
   )
 )
 

@@ -39,7 +39,7 @@ class ApiConfiguration extends Loggable {
     log.debug(s"[SSM] Loading config. path='$path'.")
     val configMap = params.map {
       // remove the path prefix from ssm
-      case (key, value) ⇒ key.replaceFirst(path, "") -> value
+      case (key, value) ⇒ key.replaceFirst(path, "") → value
     }
     ConfigFactory.parseMap(configMap.asJava, s"SSM param store @$path").resolve()
   }
@@ -68,7 +68,7 @@ class ApiConfiguration extends Loggable {
       val frontendAppConfig = configFromParameterStore(s"/frontend/${stage.toString.toLowerCase()}/${app.toLowerCase}/")
 
       if (!userPrivate.isEmpty) {
-        printWarning(userPrivatePath)
+        printWarning(s"There are some overrides in '$userPrivatePath' active.")
       }
 
       val config = Try(userPrivate
@@ -104,8 +104,8 @@ class ApiConfiguration extends Loggable {
     throw th
   }
 
-  private def printWarning(userPrivatePath: String): Unit = {
-    val warning = s"* There are some overrides in '$userPrivatePath' active. *"
+  private def printWarning(message: String): Unit = {
+    val warning = s"* $message *"
     log.warn(
       s"""
          |
@@ -170,7 +170,7 @@ class ApiConfiguration extends Loggable {
         log.debug("Returning Provider")
         Success(provider)
       } catch {
-        case ex: AmazonClientException =>
+        case ex: AmazonClientException ⇒
           log.error(ex.getMessage, ex)
           throw ex
       }
