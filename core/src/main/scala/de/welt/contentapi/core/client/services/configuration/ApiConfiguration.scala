@@ -185,6 +185,11 @@ class ApiConfiguration extends Loggable {
         lazy val file: String = configuration.getString("s3.raw_tree.file")
       }
 
+      object pressed {
+        lazy val bucket: String = configuration.getString("s3.pressed.bucket")
+        lazy val file: String = configuration.getString("s3.pressed.file")
+      }
+
       object author {
         lazy val bucket: String = configuration.getString("s3.author.bucket")
         lazy val file: String = configuration.getString("s3.author.file")
