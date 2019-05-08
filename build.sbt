@@ -6,9 +6,8 @@ import scala.util.Properties
 
 val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
-val PlayVersion = "2.7.1"
-val PlayJsonVersion = "2.7.2"
-val AWSVersion = "1.11.539"
+val PlayVersion = "2.7.2"
+val AWSVersion = "1.11.548"
 val actualVersion: String = s"4.2.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
@@ -47,8 +46,6 @@ val frontendDependencyManagementSettings = Seq(
 
 val coreDependencySettings = Seq(
   libraryDependencies ++= Seq(
-    "com.typesafe.play" %% "play-json" % PlayJsonVersion % Provided,
-
     "org.mockito" % "mockito-core" % "2.27.0" % Test,
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.2" % Test
   )
