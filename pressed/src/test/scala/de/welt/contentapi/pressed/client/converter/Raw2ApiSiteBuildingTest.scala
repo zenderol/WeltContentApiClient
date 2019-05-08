@@ -38,7 +38,10 @@ class Raw2ApiSiteBuildingTest extends PlaySpec {
     val node1000 = emptyWithId(1000)
     node1000.config = RawChannelConfiguration(siteBuilding = Some(RawChannelSiteBuilding()))
 
-    val node100 = emptyWithIdAndChildren(100, Seq(node1000))
+    val node1000WithDeletedSitebuildingConf = emptyWithId(1000)
+    node1000WithDeletedSitebuildingConf.config = RawChannelConfiguration(siteBuilding = Some(RawChannelSiteBuilding(fields = Some(Map.empty[String, String]))))
+
+    val node100 = emptyWithIdAndChildren(100, Seq(node1000, node1000WithDeletedSitebuildingConf))
 
     val node10 = emptyWithIdAndChildren(10, Seq(node100))
     node10.config = RawChannelConfiguration(siteBuilding = Some(RawChannelSiteBuilding(
@@ -136,6 +139,10 @@ class Raw2ApiSiteBuildingTest extends PlaySpec {
 
     "be chosen if values are equal to constructor defaults (empty site building configuration)" in new SiteBuildingTreeScope {
       converter.calculateSiteBuilding(node1000) mustBe converter.calculateSiteBuilding(node10)
+    }
+
+    "be chosen if values are empty (deleted site building configuration)" in new SiteBuildingTreeScope {
+      converter.calculateSiteBuilding(node1000WithDeletedSitebuildingConf) mustBe converter.calculateSiteBuilding(node10)
     }
   }
 
