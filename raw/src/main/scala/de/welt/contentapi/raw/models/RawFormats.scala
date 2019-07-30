@@ -54,6 +54,8 @@ object RawFormats {
     Format[RawMetadata](rawMetadataReads, rawMetadataWrites)
   implicit lazy val rawChannelConfigurationFormat: Format[RawChannelConfiguration] =
     Format[RawChannelConfiguration](rawChannelConfigurationReads, rawChannelConfigurationWrites)
+implicit lazy val rawRawArticlePromotionFormat: Format[RawArticlePromotion] =
+    Format[RawArticlePromotion](rawRawArticlePromotionReads, rawArticlePromotionWrites)
 }
 
 object RawReads {
@@ -234,6 +236,8 @@ object RawReads {
   implicit lazy val rawChannelThemeReads: Reads[RawChannelTheme] = Json.reads[RawChannelTheme]
 
   implicit lazy val rawMetadataReads: Reads[RawMetadata] = Json.reads[RawMetadata]
+  implicit lazy val rawRawArticlePromotionReads: Reads[RawArticlePromotion] = Json.reads[RawArticlePromotion]
+
   implicit lazy val rawChannelConfigurationReads: Reads[RawChannelConfiguration] = new Reads[RawChannelConfiguration] {
     private lazy val defaults: RawChannelConfiguration = RawChannelConfiguration()
     override def reads(json: JsValue): JsResult[RawChannelConfiguration] = json match {
@@ -384,6 +388,7 @@ object RawWrites {
   implicit lazy val rawChannelThemeWrites: Writes[RawChannelTheme] = Json.writes[RawChannelTheme]
   implicit lazy val rawMetadataWrites: Writes[RawMetadata] = Json.writes[RawMetadata]
   implicit lazy val rawChannelConfigurationWrites: Writes[RawChannelConfiguration] = Json.writes[RawChannelConfiguration]
+  implicit lazy val rawArticlePromotionWrites: Writes[RawArticlePromotion] = Json.writes[RawArticlePromotion]
 }
 
 object FullRawChannelWrites {

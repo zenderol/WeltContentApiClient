@@ -81,7 +81,7 @@ case class ApiContent(webUrl: String,
   lazy val unwrappedFields: Map[String, String] = fields.getOrElse(Map.empty[String, String])
   lazy val unwrappedAuthors: List[ApiAuthor] = authors.getOrElse(Nil)
   lazy val unwrappedElements: List[ApiElement] = elements.getOrElse(Nil)
-  lazy val unwrappedRoles: List[String] = roles.getOrElse(Nil)
+  def unwrappedRoles: List[String] = roles.getOrElse(Nil)
   lazy val unwrappedTags: List[ApiTag] = tags.getOrElse(Nil)
   lazy val unwrappedKeywords: List[ApiKeyword] = keywords.getOrElse(Nil)
 
@@ -138,8 +138,8 @@ case class ApiAuthor(id: Option[String] = None,
 case class ApiElement(id: String,
                       `type`: String,
                       assets: Option[List[ApiAsset]],
-                      relations: Option[List[String]] = None) {
-  lazy val unwrappedRelations: List[String] = relations.getOrElse(Nil)
+                      var relations: Option[List[String]] = None) {
+  def unwrappedRelations: List[String] = relations.getOrElse(Nil)
   lazy val unwrappedAssets: List[ApiAsset] = assets.getOrElse(Nil)
   lazy val metadataAsset: Option[ApiAsset] = unwrappedAssets.find(_.`type` == "metadata")
 }
@@ -152,10 +152,10 @@ case class ApiElement(id: String,
   * @param index    The index for multiple assets like a gallery
   */
 case class ApiAsset(`type`: String,
-                    fields: Option[Map[String, String]] = None,
+                    var fields: Option[Map[String, String]] = None,
                     metadata: Option[ApiMetadata] = None,
                     index: Option[Int] = None) {
-  lazy val unwrappedFields: Map[String, String] = fields.getOrElse(Map.empty[String, String])
+  def unwrappedFields: Map[String, String] = fields.getOrElse(Map.empty[String, String])
   lazy val unwrappedMetadata: Map[String, String] = metadata.map(_.asMap).getOrElse(Map.empty[String, String])
 }
 

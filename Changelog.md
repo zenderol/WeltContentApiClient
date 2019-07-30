@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3 (2019-07-30)
+- add new field to `RawChannelConfiguration`: `articlePromotions: Option[Seq[RawArticlePromotion]]`
+- make some Api fields mutable to be able to modify them in Cigger to migrate Content to Inline Elements for inline promotions
+
 ## 4.2 (2019-04-25)
 
 - play 2.7.1

@@ -215,17 +215,18 @@ case class RawChannelId(var path: String,
 }
 
 /**
-  * @param metadata     `<meta>` tag overrides of the channel.
-  * @param header       content header (not the real page header) configuration.
-  * @param sponsoring   sponsoring mapping configuration for the channel.
-  * @param siteBuilding customization of header, footer and channel sponsoring.
-  * @param theme        the optional theme for the channel. This is a developer configuration.
-  * @param commercial   commercial configuration for the channel. Used some override logic.
-  * @param content      content query configuration for the whole channel and all sub-channel (children).
-  * @param brand        flags the channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
-  *                     like Icon ('/icon/') with different UI elements or layouts.
-  * @param master       flags the channel as a 'master' channel. All it's sub-channels (children) get this channel
-  *                     as it's master. E.g. `/wirtschaft/bilanz/` is flagged as a master channel
+  * @param metadata          `<meta>` tag overrides of the channel.
+  * @param header            content header (not the real page header) configuration.
+  * @param sponsoring        sponsoring mapping configuration for the channel.
+  * @param siteBuilding      customization of header, footer and channel sponsoring.
+  * @param theme             the optional theme for the channel. This is a developer configuration.
+  * @param commercial        commercial configuration for the channel. Used some override logic.
+  * @param articlePromotions escenic articles that should be put as inline elements, configured in CMCF
+  * @param content           content query configuration for the whole channel and all sub-channel (children).
+  * @param brand             flags the channel and all sub-channels (children) as a 'brand'. A brand is a "Sub-Marke"
+  *                          like Icon ('/icon/') with different UI elements or layouts.
+  * @param master            flags the channel as a 'master' channel. All it's sub-channels (children) get this channel
+  *                          as it's master. E.g. `/wirtschaft/bilanz/` is flagged as a master channel
   */
 case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    @deprecated("Use siteBuilding instead", since = "version 2.3")
@@ -236,8 +237,11 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
                                    theme: Option[RawChannelTheme] = None,
                                    commercial: RawChannelCommercial = RawChannelCommercial(),
                                    content: Option[RawChannelContentConfiguration] = None,
+                                   articlePromotions: Option[Seq[RawArticlePromotion]] = None,
                                    brand: Boolean = false,
                                    master: Boolean = false)
+
+case class RawArticlePromotion(contentId: String, `type`: String)
 
 /**
   * The (ASMI) ad tag is a string with the root section and type of the page (section or content page).

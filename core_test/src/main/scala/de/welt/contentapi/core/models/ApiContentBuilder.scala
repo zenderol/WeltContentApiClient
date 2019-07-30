@@ -25,8 +25,18 @@ class ApiContentBuilder {
     this
   }
 
+  def withElements(e: Option[List[ApiElement]]): ApiContentBuilder = {
+    apiContent = apiContent.copy(elements = e)
+    this
+  }
+
   def withSectionData(e: ApiSectionData): ApiContentBuilder = {
     apiContent = apiContent.copy(sections = Some(e))
+    this
+  }
+
+  def withFields(f: Map[String, String]): ApiContentBuilder = {
+    apiContent = apiContent.copy(fields = Some(f))
     this
   }
 
