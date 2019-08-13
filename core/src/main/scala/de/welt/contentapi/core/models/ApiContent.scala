@@ -138,7 +138,7 @@ case class ApiAuthor(id: Option[String] = None,
 case class ApiElement(id: String,
                       `type`: String,
                       assets: Option[List[ApiAsset]],
-                      var relations: Option[List[String]] = None) {
+                      relations: Option[List[String]] = None) {
   def unwrappedRelations: List[String] = relations.getOrElse(Nil)
   lazy val unwrappedAssets: List[ApiAsset] = assets.getOrElse(Nil)
   lazy val metadataAsset: Option[ApiAsset] = unwrappedAssets.find(_.`type` == "metadata")
@@ -152,7 +152,7 @@ case class ApiElement(id: String,
   * @param index    The index for multiple assets like a gallery
   */
 case class ApiAsset(`type`: String,
-                    var fields: Option[Map[String, String]] = None,
+                    fields: Option[Map[String, String]] = None,
                     metadata: Option[ApiMetadata] = None,
                     index: Option[Int] = None) {
   def unwrappedFields: Map[String, String] = fields.getOrElse(Map.empty[String, String])
