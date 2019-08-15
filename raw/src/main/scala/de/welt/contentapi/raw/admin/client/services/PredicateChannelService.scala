@@ -13,6 +13,7 @@ trait PredicateChannelService {
   def findChannelsWithWebtrekkReport(report: String): Seq[RawChannel]
   def findChannelsWithCuration(section: String, stage: String): Seq[RawChannel]
   def findChannelsWithConfiguredId(id: String): Seq[RawChannel]
+  def findChannelsWithCommercial(commercial: String): Seq[RawChannel]
 }
 
 case class PredicateChannelServiceImpl @Inject()(rts: RawTreeService) extends PredicateChannelService with Loggable {
@@ -22,6 +23,8 @@ case class PredicateChannelServiceImpl @Inject()(rts: RawTreeService) extends Pr
   def findChannelsWithCuration(section: String, stage: String): Seq[RawChannel] = findByPredicate(hasCuratedStageWithValues(section, stage))
 
   def findChannelsWithConfiguredId(id: String): Seq[RawChannel] = findByPredicate(hasConfiguredId(id))
+
+  def findChannelsWithCommercial(commercial: String): Seq[RawChannel] = findByPredicate(hasCommercialStage(commercial))
 
   private def findByPredicate(p: Predicate[RawChannel]): Seq[RawChannel] = rts.root
     .map(_.findByPredicate(p))
@@ -37,7 +40,6 @@ case class PredicateChannelServiceImpl @Inject()(rts: RawTreeService) extends Pr
         .find(s => s.hasType(RawChannelStage.TypeCurated) && s.asInstanceOf[RawChannelStageCurated].hasValues(sec, stg))
     }.nonEmpty
 
-
   private def hasConfiguredId(id: String): Predicate[RawChannel] = _.stageConfiguration
     .flatMap { stageConfig: RawChannelStageConfiguration =>
       stageConfig.stages
@@ -45,6 +47,12 @@ case class PredicateChannelServiceImpl @Inject()(rts: RawTreeService) extends Pr
         .find(s => s.hasType(RawChannelStage.TypeConfiguredId) && s.asInstanceOf[RawChannelStageConfiguredId].configuredId == id)
     }.nonEmpty
 
+  private def hasCommercialStage(commercial: String): Predicate[RawChannel] = _.stageConfiguration
+    .flatMap { stageConfig: RawChannelStageConfiguration =>
+      stageConfig.stages
+        .getOrElse(Nil)
+        .find(s => s.hasType(RawChannelStage.TypeCommercial) && s.asInstanceOf[RawChannelStageCommercial].format == commercial)
+    }.nonEmpty
 
   private def hasWebtrekkStage(report: String): Predicate[RawChannel] = _.stageConfiguration
     .flatMap { stageConfig: RawChannelStageConfiguration =>

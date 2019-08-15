@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.4 (2019-08-13)
+- Added API method to find channels that have a particular commercial stage
+
 ## 4.3 (2019-07-30)
 - add new field to `RawChannelConfiguration`: `articlePromotions: Option[Seq[RawArticlePromotion]]`
 - make some Api fields mutable to be able to modify them in Cigger to migrate Content to Inline Elements for inline promotions
