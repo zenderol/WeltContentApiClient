@@ -63,7 +63,7 @@ pipeline {
             steps {
                 withCredentials([[$class: 'StringBinding', credentialsId: 'BINTRAY_API_KEY_CI_WELTN24', variable: 'BINTRAY_PASS']]) {
                     ansiColor('xterm') {
-                        sh './sbt publish'
+                        sh './sbt +publish'
                     }
                     slackSend channel: 'section-tool-2', message: "Successfully published a new WeltContentApiClient version: ${env.BUILD_URL}"
                 }
