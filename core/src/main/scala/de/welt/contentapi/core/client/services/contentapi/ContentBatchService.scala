@@ -31,7 +31,7 @@ trait ContentBatchService {
 class ContentBatchServiceImpl @Inject()(ws: WSClient,
                                         metrics: Metrics,
                                         capi: CapiExecutionContext)
-extends AbstractService[ApiBatchResult](ws, metrics, capi) with ContentBatchService {
+extends AbstractService[ApiBatchResult](ws, metrics, ServiceConfiguration("content_batch"), capi) with ContentBatchService {
 
   import de.welt.contentapi.core.models.ApiReads._
   import AbstractService.implicitConversions._
@@ -46,6 +46,5 @@ extends AbstractService[ApiBatchResult](ws, metrics, capi) with ContentBatchServ
     }
   }
 
-  override val config: ServiceConfiguration = ServiceConfiguration("content_batch")
 }
 

@@ -56,14 +56,12 @@ sealed trait ContentSearchService {
 class ContentSearchServiceImpl @Inject()(ws: WSClient,
                                          metrics: Metrics,
                                          override implicit val capi: CapiExecutionContext)
-  extends AbstractService[ApiSearchResponse](ws, metrics, capi) with ContentSearchService {
+  extends AbstractService[ApiSearchResponse](ws, metrics, ServiceConfiguration("search"), capi) with ContentSearchService {
 
   import AbstractService.implicitConversions._
   import de.welt.contentapi.core.models.ApiReads.apiSearchResponseReads
 
   override val validate: WSResponse ⇒ Try[ApiSearchResponse] = response ⇒ (response.json.result \ "response").validate[ApiSearchResponse]
-
-  override val config: ServiceConfiguration = ServiceConfiguration("search")
 
   override def search(apiContentSearch: ApiContentSearch)
                      (implicit requestHeaders: RequestHeaders = Seq.empty): Future[ApiSearchResponse] = {

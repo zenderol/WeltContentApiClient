@@ -27,7 +27,7 @@ class CircuitBreakerSpec extends PlaySpec with MockitoSugar with TestExecutionCo
 
       trait BreakerEnabled extends AbstractServiceTest.TestScope {
 
-        class TestService extends AbstractService[String](mockWsClient, metricsMock, executionContext) {
+        class TestService extends AbstractService[String](mockWsClient, metricsMock, CircuitBreakerSpec.breakerEnabled, executionContext) {
 
           import AbstractService.implicitConversions._
 
@@ -35,7 +35,6 @@ class CircuitBreakerSpec extends PlaySpec with MockitoSugar with TestExecutionCo
 
           override protected def initializeMetricsContext(name: String): Context = mockTimerContext
 
-          override val config: ServiceConfiguration = CircuitBreakerSpec.breakerEnabled
         }
 
       }
@@ -157,7 +156,7 @@ class CircuitBreakerSpec extends PlaySpec with MockitoSugar with TestExecutionCo
 
       trait BreakerDisabled extends AbstractServiceTest.TestScope {
 
-        class TestService extends AbstractService[String](mockWsClient, metricsMock, executionContext) {
+        class TestService extends AbstractService[String](mockWsClient, metricsMock, CircuitBreakerSpec.breakerDisabled, executionContext) {
 
           import AbstractService.implicitConversions._
 
@@ -165,7 +164,6 @@ class CircuitBreakerSpec extends PlaySpec with MockitoSugar with TestExecutionCo
 
           override protected def initializeMetricsContext(name: String): Context = mockTimerContext
 
-          override val config: ServiceConfiguration = CircuitBreakerSpec.breakerDisabled
         }
 
       }

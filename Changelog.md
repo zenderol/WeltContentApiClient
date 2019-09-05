@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.5 (2019-08-15)
+- changed the way configs are passed to the `AbstractService` to prevent lazy/null exceptions 
+- Play 2.7.3
+- Scala 2.12.9 and Scala 2.13.0
+
 ## 4.4 (2019-08-13)
 - Added API method to find channels that have a particular commercial stage
 

@@ -37,14 +37,12 @@ trait CiggerService {
 class CiggerServiceImpl @Inject()(ws: WSClient,
                                   metrics: Metrics,
                                   capi: CapiExecutionContext)
-  extends AbstractService[ApiPressedContentResponse](ws, metrics, capi) with CiggerService {
+  extends AbstractService[ApiPressedContentResponse](ws, metrics, ServiceConfiguration("cigger"), capi) with CiggerService {
 
   import AbstractService.implicitConversions._
 
   override val validate: WSResponse ⇒ Try[ApiPressedContentResponse] = response ⇒ response.json.result
     .validate[ApiPressedContentResponse](PressedReads.apiPressedContentResponseReads)
-
-  override val config: ServiceConfiguration = ServiceConfiguration("cigger")
 
   override def byId(id: String,
                     showRelated: Boolean,

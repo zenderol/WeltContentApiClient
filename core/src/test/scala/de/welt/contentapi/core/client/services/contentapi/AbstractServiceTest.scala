@@ -25,7 +25,7 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
   trait TestScopeBasicAuth extends AbstractServiceTest.TestScope {
 
-    class TestService extends AbstractService[String](mockWsClient, metricsMock, executionContext) {
+    class TestService extends AbstractService[String](mockWsClient, metricsMock, TestServiceWithBasicAuth, executionContext) {
 
       import AbstractService.implicitConversions._
 
@@ -33,14 +33,13 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
       override protected def initializeMetricsContext(name: String): Context = mockTimerContext
 
-      override val config: ServiceConfiguration = TestServiceWithBasicAuth
     }
 
   }
 
   trait TestScopeApiKey extends AbstractServiceTest.TestScope {
 
-    class TestService extends AbstractService[String](mockWsClient, metricsMock, executionContext) {
+    class TestService extends AbstractService[String](mockWsClient, metricsMock, TestServiceWithApiKey, executionContext) {
 
       import AbstractService.implicitConversions._
 
@@ -48,7 +47,6 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
       override protected def initializeMetricsContext(name: String): Context = mockTimerContext
 
-      override val config: ServiceConfiguration = TestServiceWithApiKey
     }
 
   }
@@ -172,7 +170,7 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
     "configured method will be used" in new AbstractServiceTest.TestScope {
 
-      class TestService extends AbstractService[String](mockWsClient, metricsMock, executionContext) {
+      class TestService extends AbstractService[String](mockWsClient, metricsMock, TestServiceWithApiKey.copy(method = "not-validated-method-name"), executionContext) {
 
         import AbstractService.implicitConversions._
 
@@ -180,7 +178,6 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
 
         override protected def initializeMetricsContext(name: String): Context = mockTimerContext
 
-        override val config: ServiceConfiguration = TestServiceWithApiKey.copy(method = "not-validated-method-name")
       }
 
       new TestService().execute(urlArguments = Seq("x"))
@@ -268,6 +265,7 @@ object AbstractServiceTest extends MockitoSugar with TestExecutionContext {
     when(mockRequest.withQueryStringParameters(ArgumentMatchers.any())).thenReturn(mockRequest)
     when(mockRequest.withAuth(anyString, anyString, ArgumentMatchers.eq(WSAuthScheme.BASIC))).thenReturn(mockRequest)
     when(mockRequest.withBody(anyString)(ArgumentMatchers.any())).thenReturn(mockRequest)
+    when(mockRequest.withRequestTimeout(ArgumentMatchers.any())).thenReturn(mockRequest)
 
     when(mockRequest.execute(anyString())).thenReturn(Future {
       responseMock

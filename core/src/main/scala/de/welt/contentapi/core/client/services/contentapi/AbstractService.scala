@@ -12,24 +12,23 @@ import de.welt.contentapi.utils.{Loggable, Strings}
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsError, JsResult, JsSuccess}
 import play.api.libs.ws.{BodyWritable, WSAuthScheme, WSClient, WSRequest, WSResponse}
-import play.api.mvc.Headers
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 abstract class AbstractService[T](ws: WSClient,
                                   metrics: Metrics,
+                                  _config: ServiceConfiguration,
                                   implicit val capi: CapiExecutionContext)
-  extends Strings with Loggable {
+  extends Strings with Loggable with HeaderNames with Status {
 
   /**
-    * This must provide a [[ServiceConfiguration]]. It will be used to
+    * This provides a [[ServiceConfiguration]]. It will be used to
     * configure the REST request.
     *
     * @return a [[ServiceConfiguration]]
     */
-  def config: ServiceConfiguration
+  def config: ServiceConfiguration = this._config
 
   /**
     * This must provide a function that maps a [[WSResponse]] to a [[Try]].
@@ -55,22 +54,14 @@ abstract class AbstractService[T](ws: WSClient,
   /**
     * report the breaker state as a gauge to metrics, only if breaker is enabled
     */
-  capi.actorSystem.scheduler.scheduleOnce(5.seconds, () ⇒ {
-    if (config.circuitBreaker.enabled) {
-      // datadog gauges must be numeric
-      val metricsName = s"service.${config.serviceName}.circuit_breaker"
-      try {
-        metrics.defaultRegistry.register(metricsName, new Gauge[Int]() {
-          override def getValue: Int = breakerState()
-        })
-      } catch {
-        case _: IllegalArgumentException ⇒ log.error("A metric named " + metricsName + " already exists")
-      }
-      log.info(s"Circuit Breaker enabled for ${config.serviceName}")
-    } else {
-      log.info(s"Circuit Breaker NOT enabled for ${config.serviceName}")
-    }
-  })
+  if (config.circuitBreaker.enabled) {
+    metrics.defaultRegistry.register(s"service.${config.serviceName}.circuit_breaker", new Gauge[Int]() {
+      override def getValue: Int = breakerState()
+    })
+    log.info(s"Circuit Breaker enabled for ${config.serviceName}")
+  } else {
+    log.info(s"Circuit Breaker NOT enabled for ${config.serviceName}")
+  }
 
   /**
     * this circuit breaker's current state
@@ -116,6 +107,11 @@ abstract class AbstractService[T](ws: WSClient,
       .withQueryStringParameters(nonEmptyParameters: _*)
       .addHttpHeaders(headers: _*)
       .addHttpHeaders(forwardHeaders(forwardedRequestHeaders): _*)
+
+    // circuit breaker's timeout may be different from the default ws-timeout
+    if (config.circuitBreaker.enabled) {
+      request = request.withRequestTimeout(config.circuitBreaker.callTimeout)
+    }
 
     body.foreach(b ⇒ {
       request = request.withBody(b)

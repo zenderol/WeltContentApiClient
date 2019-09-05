@@ -192,10 +192,10 @@ class Raw2ApiConfigurationTests extends PlaySpec {
       apiSiteBuildingConfiguration
         .unwrappedElements
         .flatMap(
-          r ⇒ r.`type` ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.`type`) ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.fields)
+          r ⇒ r.`type` + r.unwrappedAssets.flatMap(r2 ⇒ r2.`type`) + r.unwrappedAssets.flatMap(r2 ⇒ r2.fields)
         ) must contain theSameElementsAs rawChannelSiteBuilding
         .unwrappedElements
-        .flatMap(r ⇒ r.`type` ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.`type`) ++ r.unwrappedAssets.flatMap(r2 ⇒ r2.fields))
+        .flatMap(r ⇒ r.`type` + r.unwrappedAssets.flatMap(r2 ⇒ r2.`type`) + r.unwrappedAssets.flatMap(r2 ⇒ r2.fields))
     }
   }
 

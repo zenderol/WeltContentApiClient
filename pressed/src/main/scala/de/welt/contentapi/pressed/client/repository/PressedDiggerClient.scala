@@ -29,13 +29,11 @@ sealed trait PressedDiggerClient {
 class PressedDiggerClientImpl @Inject()(ws: WSClient,
                                         metrics: Metrics,
                                         capi: CapiExecutionContext)
-  extends AbstractService[ApiPressedSectionResponse](ws, metrics, capi) with PressedDiggerClient {
+  extends AbstractService[ApiPressedSectionResponse](ws, metrics, ServiceConfiguration("digger"), capi) with PressedDiggerClient {
 
   import AbstractService.implicitConversions._
 
   override val validate: WSResponse ⇒ Try[ApiPressedSectionResponse] = response ⇒ response.json.result.validate[ApiPressedSectionResponse]
-
-  override val config: ServiceConfiguration = ServiceConfiguration("digger")
 
   override protected[client] def findByPath(path: String)
                                            (implicit requestHeaders: RequestHeaders = Seq.empty): Future[ApiPressedSectionResponse] = {
