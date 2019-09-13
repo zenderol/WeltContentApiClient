@@ -17,7 +17,7 @@ pipeline {
             when { changeRequest() }
             steps {
                 ansiColor('xterm') {
-                    sh "./sbt clean test"
+                    sh "./sbt clean +test"
                 }
             }
         }

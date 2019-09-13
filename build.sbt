@@ -7,15 +7,15 @@ import scala.util.Properties
 val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.7.3"
-val AWSVersion = "1.11.548"
+val AWSVersion = "1.11.631"
 val actualVersion: String = s"4.5.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
 val frontendCompilationSettings = Seq(
   organization := "de.welt",
-  scalaVersion := "2.12.9",
-  crossScalaVersions := Seq("2.12.9", "2.13.0"),
+  scalaVersion := "2.12.10",
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.0"),
   version in ThisBuild := s"${actualVersion}_$PlayVersion${if (isSnapshot) "-SNAPSHOT" else ""}",
 
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -37,16 +37,15 @@ val frontendCompilationSettings = Seq(
 val frontendDependencyManagementSettings = Seq(
   resolvers := Seq(
     Resolver.mavenLocal,
-    Resolver.jcenterRepo,
-    Resolver.bintrayRepo("welt", "metrics-play")
+    Resolver.jcenterRepo
   ),
   // https://www.typesafe.com/blog/improved-dependency-management-with-sbt-0137
   updateOptions := updateOptions.value.withCachedResolution(true)
 )
-
+val vMockito = "3.0.0"
 val coreDependencySettings = Seq(
   libraryDependencies ++= Seq(
-    "org.mockito" % "mockito-core" % "2.27.0" % Test,
+    "org.mockito" % "mockito-core" % vMockito % Test,
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test
   )
 )
@@ -64,10 +63,10 @@ val clientDependencySettings = Seq(
     "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion,
     "com.amazonaws" % "aws-java-sdk-ssm" % AWSVersion,
     "com.amazonaws" % "aws-java-sdk-sts" % AWSVersion,
-    "de.welt" %% "metrics-play" % "2.7.3_7",
+    "com.kenshoo" %% "metrics-play" % "2.7.3_0.8.1",
 
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test,
-    "org.mockito" % "mockito-core" % "2.27.0" % Test
+    "org.mockito" % "mockito-core" % vMockito % Test
   )
 )
 
