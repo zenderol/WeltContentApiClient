@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.6 (2019-09-18)
+
+### Changes
+- [RAW] added optional field `description` as part of `RawChannelStageConfiguredId`
+
 ## 4.5 (2019-08-15)
 - changed the way configs are passed to the `AbstractService` to prevent lazy/null exceptions 
 - Play 2.7.3

@@ -1,6 +1,5 @@
 package de.welt.contentapi.raw.models
 
-import de.welt.contentapi.raw.models.RawReads.rawChannelStageConfiguredIdReads
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 
@@ -244,6 +243,7 @@ class RawWritesTest extends PlaySpec {
         link = Some(stageLink),
         configuredId = "1234567890",
         label = Some("curated-label"),
+        description = Some("curated-description"),
         references = Some(Seq(
           RawSectionReference(label = Some("ref-label"), path = Some("ref-path"))
         ))
@@ -260,6 +260,7 @@ class RawWritesTest extends PlaySpec {
            |  },
            |  "configuredId" : "1234567890",
            |  "label" : "curated-label",
+           |  "description" : "curated-description",
            |  "references" : [ {
            |    "label" : "ref-label",
            |    "path" : "ref-path"

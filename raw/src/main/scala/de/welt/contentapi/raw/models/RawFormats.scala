@@ -354,6 +354,7 @@ object RawWrites {
       (__ \ "link").writeNullable[RawSectionReference] and
       (__ \ "configuredId").write[String] and
       (__ \ "label").writeNullable[String] and
+      (__ \ "description").writeNullable[String] and
       (__ \ "references").writeNullable[Seq[RawSectionReference]]
     ) (unlift(RawChannelStageConfiguredId.unapply))
 

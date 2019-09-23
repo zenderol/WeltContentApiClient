@@ -54,7 +54,8 @@ class PredicateChannelServiceImplTest extends PlaySpec {
       trackingName = None,
       link = None,
       configuredId = "1234567890",
-      label = None
+      label = None,
+      description = None
     )
 
     fakeRawChannel(stageConfig)

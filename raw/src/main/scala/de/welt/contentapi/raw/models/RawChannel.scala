@@ -523,6 +523,9 @@ case class RawChannelStageCurated(override val index: Int,
   * The intended usage is to place Advertorial Footers or the occasional WM OEmbeds on Section Pages
   *
   * @param configuredId An escenic Id to be resolved by the Section Backend
+  * @param label optional label to be rendered above the stage, e.g. name of channel
+  * @param description optional description which is used only in CMCF to visualize the meaning behind the ID
+  * @param references optional link(s) to external or internal, absolute or relative URLs
   */
 case class RawChannelStageConfiguredId(override val index: Int,
                                   override val `type`: String = RawChannelStage.TypeConfiguredId,
@@ -531,6 +534,7 @@ case class RawChannelStageConfiguredId(override val index: Int,
                                   override val link: Option[RawSectionReference],
                                   configuredId: String,
                                   label: Option[String],
+                                  description: Option[String],
                                   references: Option[Seq[RawSectionReference]] = None) extends RawChannelStage {
   lazy val unwrappedReferences: Seq[RawSectionReference] = references.getOrElse(Nil)
 
