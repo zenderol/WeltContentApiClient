@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.7 (2019-09-23)
+
+### Changes
+- [RAW] added JSON serializer `allChildrenWrites` as part of `PartialRawChannelWrites`
+
 ## 4.6 (2019-09-18)
 
 ### Changes

@@ -437,6 +437,16 @@ object PartialRawChannelWrites {
       (__ \ "hasChildren").write[Boolean]
     ) (unlift(RawChannel.unapply))
 
+  implicit lazy val allChildrenWrites: Writes[RawChannel] = new Writes[RawChannel] {
+    override def writes(channel: RawChannel): JsValue = {
+      JsObject(Map(
+        "id" → Json.toJson(channel.id),
+        "hasChildren" → JsBoolean(channel.hasChildren),
+        "children" → Json.toJson(channel.children)(Writes.seq[RawChannel](allChildrenWrites))
+      ))
+    }
+  }
+
   implicit lazy val writeChannelAsNull: Writes[RawChannel] = new Writes[RawChannel] {
     override def writes(o: RawChannel): JsValue = JsNull
   }

@@ -8,7 +8,7 @@ val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.7.3"
 val AWSVersion = "1.11.631"
-val actualVersion: String = s"4.6.${buildNumber.getOrElse("0-local")}"
+val actualVersion: String = s"4.7.${buildNumber.getOrElse("0-local")}"
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
