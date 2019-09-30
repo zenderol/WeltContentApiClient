@@ -22,6 +22,7 @@ case class ApiPressedContent(content: ApiContent,
   lazy val relatedMoreLikeThis: Seq[ApiPressedContent] = relatedFilteredBy(MLT)
   lazy val relatedPlaylist: Seq[ApiPressedContent] = relatedFilteredBy(Playlist)
   lazy val relatedAuthorContent: Seq[ApiPressedContent] = relatedFilteredBy(Author)
+  lazy val relatedMoreFromAuthor: Seq[ApiPressedContent] = relatedFilteredBy(MoreFromAuthor)
   lazy val relatedPromotions: Seq[ApiPressedContent] = relatedFilteredBy(Promotion)
   lazy val unwrappedEmbeds: Seq[ApiPressedEmbed] = embeds.getOrElse(Nil)
 
