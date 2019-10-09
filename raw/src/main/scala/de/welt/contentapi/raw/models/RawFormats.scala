@@ -3,6 +3,8 @@ package de.welt.contentapi.raw.models
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import scala.collection.{immutable, mutable}
+
 object RawFormats {
 
   import RawReads._
@@ -240,17 +242,19 @@ object RawReads {
 
   implicit lazy val rawChannelConfigurationReads: Reads[RawChannelConfiguration] = new Reads[RawChannelConfiguration] {
     private lazy val defaults: RawChannelConfiguration = RawChannelConfiguration()
+
     override def reads(json: JsValue): JsResult[RawChannelConfiguration] = json match {
       case JsObject(underlying) ⇒
+        val maybeChannelHeader = underlying.get("header").map(_.as[RawChannelHeader])
+        val maybeSponsoringConfig = underlying.get("sponsoring").map(_.as[RawSponsoringConfig])
+        val maybeSiteBuilding = underlying.get("siteBuilding").map(_.as[RawChannelSiteBuilding]).filterNot(_.isEmpty)
+
         JsSuccess(RawChannelConfiguration(
           metadata = underlying.get("metadata").map(_.as[RawChannelMetadata]),
-          header = underlying.get("header").map(_.as[RawChannelHeader]),
-          sponsoring = underlying.get("sponsoring")
-            .map(_.as[RawSponsoringConfig])
+          header = maybeChannelHeader,
+          sponsoring = maybeSponsoringConfig
             .getOrElse(defaults.sponsoring),
-          siteBuilding = underlying.get("siteBuilding")
-              .map(_.as[RawChannelSiteBuilding])
-              .filterNot(_.isEmpty),
+          siteBuilding = maybeSiteBuilding,
           theme = underlying.get("theme").map(_.as[RawChannelTheme]),
           commercial = underlying.get("commercial").map(_.as[RawChannelCommercial]).getOrElse(defaults.commercial),
           content = underlying.get("content").map(_.as[RawChannelContentConfiguration]),
@@ -261,6 +265,7 @@ object RawReads {
       case err@_ ⇒ jsErrorInvalidJson(err)
     }
   }
+  val MigrationHintFieldName = "__migrated"
 
   implicit lazy val rawChannelReads: Reads[RawChannel] = new Reads[RawChannel] {
     override def reads(json: JsValue): JsResult[RawChannel] = json match {

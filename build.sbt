@@ -8,14 +8,32 @@ val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.7.3"
 val AWSVersion = "1.11.631"
-val actualVersion: String = s"4.7.${buildNumber.getOrElse("0-local")}"
+val actualVersion: String = s"5.0.${buildNumber.getOrElse("0-local")}"
+
+val javaVersion: Int = sys.props("java.specification.version") match {
+  case "1.8" => 8
+  case v if v.forall(_.isDigit) => v.toInt
+  case v if !v.forall(_.isDigit) => v.take(2).toInt
+  case v@_ => throw new IllegalStateException(s"Cannot detect java version for java.specification.version=$v")
+}
+val javaVersionError: String = {
+  val error = s"* Java 11 is required for this project. Found $javaVersion. *"
+  s"""
+     |${"*" * error.length}
+     |${error}
+     |${"*" * error.length}""".stripMargin
+}
+initialize := {
+  val _ = initialize.value
+  assert(Set(11).contains(javaVersion), javaVersionError)
+}
 
 def withTests(project: Project) = project % "test->test;compile->compile"
 
 val frontendCompilationSettings = Seq(
   organization := "de.welt",
   scalaVersion := "2.12.10",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.0"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.1"),
   version in ThisBuild := s"${actualVersion}_$PlayVersion${if (isSnapshot) "-SNAPSHOT" else ""}",
 
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),

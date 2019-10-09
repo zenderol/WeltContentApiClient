@@ -37,9 +37,9 @@ class ApiConfiguration extends Loggable {
   private def configFromParameterStore(path: String): Config = {
     val params = parameterStore.getPath(path)
     log.debug(s"[SSM] Loading config. path='$path'.")
-    val configMap = params.map {
+    val configMap: Map[String, String] = params.map {
       // remove the path prefix from ssm
-      case (key, value) ⇒ key.replaceFirst(path, "") → value
+      case (key: String, value: String) ⇒ key.replaceFirst(path, "") → value
     }
     ConfigFactory.parseMap(configMap.asJava, s"SSM param store @$path").resolve()
   }
@@ -123,7 +123,7 @@ class ApiConfiguration extends Loggable {
       log.info(s"Trying to read file ${file.getName} for AWS credentials.")
       Try(
         BasicProfileConfigLoader.INSTANCE.loadProfiles(file).getProfiles.asScala.map {
-          case (k, v) ⇒ k.replaceFirst("^profile ", "") → v
+          case (k: String, v: BasicProfile) => k.replaceFirst("^profile ", "") -> v
         }).recover {
         case th: Throwable ⇒
           log.info(s"Could not load ${file.getName}", th)

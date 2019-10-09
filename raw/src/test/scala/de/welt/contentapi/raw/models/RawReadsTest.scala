@@ -28,7 +28,8 @@ class RawReadsTest extends PlaySpec {
           |}""".stripMargin
       Json.parse(json)
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
-        .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
+        .asOpt
+        .flatMap(_.header) mustBe Some(RawChannelHeader(logo = Some("foo.png")))
     }
 
     "ignore known empty properties" in {
@@ -41,7 +42,8 @@ class RawReadsTest extends PlaySpec {
           |}""".stripMargin
       Json.parse(json)
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
-        .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
+        .asOpt
+        .flatMap(_.header) mustBe Some(RawChannelHeader(logo = Some("foo.png")))
     }
 
     "ignore known empty properties with empty values" in {
@@ -54,7 +56,8 @@ class RawReadsTest extends PlaySpec {
           |}""".stripMargin
       Json.parse(json)
         .validate[RawChannelConfiguration](rawChannelConfigurationReads)
-        .asOpt mustBe Some(RawChannelConfiguration(header = Some(RawChannelHeader(logo = Some("foo.png")))))
+        .asOpt
+        .flatMap(_.header) mustBe Some(RawChannelHeader(logo = Some("foo.png")))
     }
   }
 

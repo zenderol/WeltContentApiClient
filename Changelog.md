@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0 (2019-10-08)
+
+### Changes
+- [RAW] RawReads migrate old Header and Sponsoring to Sitebuilding
+- [API] RawToApiConverter now does intelligent inheritance within all the Sitebuilding fields
+
 ## 4.7 (2019-09-23)
 
 ### Changes

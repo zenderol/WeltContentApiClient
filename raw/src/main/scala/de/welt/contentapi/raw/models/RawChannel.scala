@@ -389,15 +389,36 @@ case class RawChannelSiteBuilding(fields: Option[Map[String, String]] = None,
                                   sub_navigation: Option[Seq[RawSectionReference]] = None,
                                   elements: Option[Seq[RawElement]] = None) {
 
-  lazy val unwrappedSubNavigation: Seq[RawSectionReference] = sub_navigation.getOrElse(Nil)
-  lazy val unwrappedElements: Seq[RawElement] = elements.getOrElse(Nil)
+  def unwrappedSubNavigation: Seq[RawSectionReference] = sub_navigation.getOrElse(Nil)
+  def unwrappedElements: Seq[RawElement] = elements.getOrElse(Nil)
+  def unwrappedFields: Map[String, String] = nonEmptyFields.getOrElse(Map.empty)
 
-  /**
-    * Channel Sitebuilding is empty when:
-    *  - it has never been configured (default constructor)
-    *  - it was already configured and deleted (consisting only of empty fields map)
-    */
-  lazy val isEmpty: Boolean = this == RawChannelSiteBuilding() || this == RawChannelSiteBuilding(fields = Some(Map.empty[String, String]))
+  def nonEmptyFields: Option[Map[String, String]] = fields.map(x => x.filterNot(v => v._2.isBlank).filterNot(v => v._1 == RawReads.MigrationHintFieldName))
+
+  def isEmpty: Boolean = this == RawChannelSiteBuilding() || this == RawChannelSiteBuilding(fields = Some(Map.empty[String, String]))
+
+  // needed for inheritance, see Raw2Api Converter merge logic
+  def headerFields: Map[String, String] = fieldsWithPrefix("header_")
+  def sponsoringFields: Map[String, String] = fieldsWithPrefix("sponsoring_")
+  def partnerFields: Map[String, String] = fieldsWithPrefix("partner_")
+  def footerFields: Map[String, String] = fieldsWithPrefix("footer_")
+  def generalFields: Map[String, String] = fieldsWithPrefix("general_")
+
+  // `header_hidden` comes from CMCF internal state, where hidden can only be `true` of `false`, but will never be undefined or missing
+  def emptyHeader: Boolean = headerFields == Map("header_hidden" -> "false") || headerFields.isEmpty
+  def emptySponsoring: Boolean = sponsoringFields == Map("sponsoring_hidden" -> "false") || sponsoringFields.isEmpty
+  def emptyPartner: Boolean = partnerFields == Map("partner_header_hidden" -> "false") || partnerFields.isEmpty
+  def emptyFooter: Boolean = footerFields == Map("footer_hidden" -> "false") || footerFields.isEmpty
+  def emptyGeneral: Boolean = generalFields.isEmpty
+  def emptySubNavi: Boolean = unwrappedSubNavigation.isEmpty
+  def emptyElements: Boolean = unwrappedElements.isEmpty
+
+  private def fieldsWithPrefix(prefix: String) = {
+    this.unwrappedFields.filter(v => v._1.startsWith(prefix))
+  }
+
+  // if anything is empty, look for Master, that may inherit some values
+  def isMasterInheritanceEligible: Boolean = emptyHeader || emptySponsoring || emptySubNavi || emptyElements || emptyFooter || emptyPartner || emptyGeneral
 }
 
 /**

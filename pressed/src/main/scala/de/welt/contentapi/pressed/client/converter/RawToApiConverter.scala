@@ -3,7 +3,7 @@ package de.welt.contentapi.pressed.client.converter
 import com.google.inject.Singleton
 import de.welt.contentapi.core.models.{ApiAsset, ApiElement, ApiReference}
 import de.welt.contentapi.pressed.models._
-import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag}
+import de.welt.contentapi.raw.models.{RawChannel, RawChannelCommercial, RawChannelMetaRobotsTag, RawChannelSiteBuilding}
 import javax.inject.Inject
 
 
@@ -66,6 +66,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     * Primarily converts the RawChannelHeader from the current RawChannel if its RawChannelHeader is nonEmpty
     * Alternative is to search for a parent that is a `Master` and use its Header (empty headers may be inherited to children)
     **/
+  @deprecated(message = "not needed anymore as soon as migration to sitebuilding is done", since = "5.0")
   private[converter] def calculateHeader(rawChannel: RawChannel): Option[ApiHeaderConfiguration] =
     rawChannel.config.header.find(_.nonEmpty) // is a valid header defined?
       .orElse(calculateMasterChannel(rawChannel).flatMap(_.config.header)) // or else find a master to inherit its header
@@ -85,26 +86,70 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     * Primarily converts the RawChannelSiteBuilding from the current RawChannel if RawChannelSitebuilding is defined
     * Alternative is to search for a parent that is a `Master` and use its Sitebuilding config (empty sitebuilding may be inherited to children)
     **/
-  private[converter] def calculateSiteBuilding(rawChannel: RawChannel): Option[ApiSiteBuildingConfiguration] =
-    rawChannel.config.siteBuilding.find(_.isEmpty == false)
-      .orElse(calculateMasterChannel(rawChannel).flatMap(_.config.siteBuilding)) // or else find a master to inherit its header
+  private[converter] def calculateSiteBuilding(rawChannel: RawChannel): Option[ApiSiteBuildingConfiguration] = {
+    var maybeSitebuilding = rawChannel.config.siteBuilding.find(sb => !sb.isEmpty)
+    if (maybeSitebuilding.exists(_.isMasterInheritanceEligible)) {
+      // get master
+      val masterSitebuilding = calculateMasterChannel(rawChannel).flatMap(_.config.siteBuilding).getOrElse(RawChannelSiteBuilding())
+      // resolve Option
+      val channelSitebuilding = maybeSitebuilding.getOrElse(RawChannelSiteBuilding())
+      // override fields from master
+      maybeSitebuilding = Some(mergeSitebuildings(channelSitebuilding, masterSitebuilding))
+    }
+      maybeSitebuilding
       .map { result ⇒
-      ApiSiteBuildingConfiguration(
-        fields = result.fields,
-        sub_navigation = result.sub_navigation.map(refs ⇒
-          refs.map(ref ⇒ ApiReference(ref.label, ref.path))
-        ),
-        elements = result.elements.map(
-          refs ⇒ refs.map(ref ⇒
-            ApiElement(
-              id = ref.id,
-              `type` = ref.`type`,
-              assets = ref.assets.map(refs2 ⇒ refs2.map(ref2 ⇒ ApiAsset(`type` = ref2.`type`, fields = ref2.fields)))
+        ApiSiteBuildingConfiguration(
+          fields = result.nonEmptyFields,
+          sub_navigation = result.sub_navigation.map(refs ⇒
+            refs.map(ref ⇒ ApiReference(ref.label, ref.path))
+          ),
+          elements = result.elements.map(
+            refs ⇒ refs.map(ref ⇒
+              ApiElement(
+                id = ref.id,
+                `type` = ref.`type`,
+                assets = ref.assets.map(refs2 ⇒ refs2.map(ref2 ⇒ ApiAsset(`type` = ref2.`type`, fields = ref2.fields)))
+              )
             )
           )
         )
-      )
+      }
+  }
+
+  private[converter] def mergeSitebuildings(channelSitebuilding: RawChannelSiteBuilding, masterSitebuilding: RawChannelSiteBuilding): RawChannelSiteBuilding = {
+    var mutableSitebuilding = channelSitebuilding
+
+    // use `header_` fields from Master, if channel defines none itself
+    if (channelSitebuilding.emptyHeader) {
+      mutableSitebuilding = mutableSitebuilding.copy(fields = Some(mutableSitebuilding.unwrappedFields ++ masterSitebuilding.headerFields))
     }
+    // use `sponsoring_` fields from Master, if channel defines none itself
+    if (channelSitebuilding.emptySponsoring) {
+      mutableSitebuilding = mutableSitebuilding.copy(fields = Some(mutableSitebuilding.unwrappedFields ++ masterSitebuilding.sponsoringFields))
+    }
+    // use Elements from Master, if channel defines none itself
+    if (channelSitebuilding.unwrappedElements.isEmpty && masterSitebuilding.unwrappedElements.nonEmpty) {
+      mutableSitebuilding = mutableSitebuilding.copy(elements = masterSitebuilding.elements)
+    }
+    // use SubNavigation from Master, if channel defines none itself
+    if (channelSitebuilding.unwrappedSubNavigation.isEmpty && masterSitebuilding.unwrappedSubNavigation.nonEmpty) {
+      mutableSitebuilding = mutableSitebuilding.copy(sub_navigation = masterSitebuilding.sub_navigation)
+    }
+    // use `partner_` fields from Master, if channel defines none itself
+    if (channelSitebuilding.emptyPartner) {
+      mutableSitebuilding = mutableSitebuilding.copy(fields = Some(mutableSitebuilding.unwrappedFields ++ masterSitebuilding.partnerFields))
+    }
+    // use `footer_` fields from Master, if channel defines none itself
+    if (channelSitebuilding.emptyFooter) {
+      mutableSitebuilding = mutableSitebuilding.copy(fields = Some(mutableSitebuilding.unwrappedFields ++ masterSitebuilding.footerFields))
+    }
+    // use `general_` fields from Master, if channel defines none itself
+    if (channelSitebuilding.emptyGeneral) {
+      mutableSitebuilding = mutableSitebuilding.copy(fields = Some(mutableSitebuilding.unwrappedFields ++ masterSitebuilding.generalFields))
+    }
+
+    mutableSitebuilding
+  }
 
   /**
     * Link to Master Channel in the top of a section page or an article page
@@ -191,6 +236,7 @@ class RawToApiConverter @Inject()(inheritanceCalculator: InheritanceCalculator) 
     )
   }
 
+  @deprecated(message = "not needed anymore as soon as migration to sitebuilding is done", since = "5.0")
   private[converter] def apiSponsoringConfigurationFromRawChannel(rawChannel: RawChannel): ApiSponsoringConfiguration = {
     ApiSponsoringConfiguration(
       name = rawChannel.config.sponsoring.logo,

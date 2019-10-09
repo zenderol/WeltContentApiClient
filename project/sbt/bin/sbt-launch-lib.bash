@@ -228,9 +228,6 @@ run() {
   set -- "${residual_args[@]}"
   argumentCount=$#
 
-  # TODO - java check should be configurable...
-  checkJava "1.6"
-
   # Java 9 support
   copyRt
 
