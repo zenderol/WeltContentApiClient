@@ -36,7 +36,8 @@ class ApiContentSearchTest extends PlaySpec {
         tag = TagParam(List(tag1, tag2)),
         pageSize = PageSizeParam(maxResultSize),
         page = PageParam(page),
-        id = IdParam(id)
+        id = IdParam(id),
+        themePageId = ThemePageIdParam("109266998")
       )
 
       val expectedListOfParams: Seq[(String, String)] = List(
@@ -49,7 +50,8 @@ class ApiContentSearchTest extends PlaySpec {
         ("tag", "person-574114|thing-574111"),
         ("pageSize", "10"),
         ("page", "1"),
-        ("id", "-157673104,-157078453")
+        ("id", "-157673104,-157078453"),
+        ("themepage" → "109266998")
       )
 
       query.getAllParamsUnwrapped mustBe expectedListOfParams

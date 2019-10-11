@@ -19,15 +19,16 @@ case class ApiContentSearch(`type`: MainTypeParam = MainTypeParam(),
                             page: PageParam = PageParam(),
                             pageSize: PageSizeParam = PageSizeParam(),
                             fromDate: FromDateParam = FromDateParam(),
-                            id: IdParam = IdParam()
+                            id: IdParam = IdParam(),
+                            themePageId: ThemePageIdParam = ThemePageIdParam()
                            ) {
-  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, tag, pageSize, page, fromDate, id)
+  protected[models] def allParams = Seq(`type`, subType, section, homeSection, sectionExcludes, flag, tag, pageSize, page, fromDate, id, themePageId)
 
   /**
     * Returns tuples of params ant their respective values {{{type -> news}}}.
     * If it is a list parameter, the values are joined according to the defined operator (`,` or `|)`: {{{sectionHome -> section1,section2}}}
     *
-    * @return parameters as tuple to be used directly with [[play.api.libs.ws.WSRequest.withQueryString()]]
+    * @return parameters as tuple to be used directly with [[play.api.libs.ws.WSRequest.withQueryStringParameters()]]
     */
   def getAllParamsUnwrapped: Seq[(String, String)] = allParams.flatMap(_.asTuple)
 }
@@ -92,7 +93,7 @@ private case class PrimitiveParam[T]() {
     case _: Instant ⇒ None
 
     case unknown@_ ⇒
-      Logger.warn(s"Unknown value type: ${unknown.getClass.toString}")
+      Logger(getClass.getName.stripSuffix("$")).warn(s"Unknown value type: ${unknown.getClass.toString}")
       None
   }
 }
@@ -171,6 +172,10 @@ case class PageParam(override val value: Int = Int.MinValue) extends ValueParam[
 
 case class FromDateParam(override val value: Instant = Instant.MIN) extends ValueParam[Instant](value) {
   override val name: String = "fromDate"
+}
+
+case class ThemePageIdParam(override val value: String = "") extends ValueParam[String](value) {
+  override val name: String = "themepage"
 }
 
 case class IdParam(override val value: List[String] = Nil) extends ListParam[String](value) {
