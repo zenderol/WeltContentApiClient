@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.1 (2019-10-23)
+
+### Changes
+- [CORE] Transform 401 to 502 in AbstractService to preserve Akamai and Varnish cache in case of misconfiguration
+
 ## 5.0 (2019-10-08)
 
 ### Changes

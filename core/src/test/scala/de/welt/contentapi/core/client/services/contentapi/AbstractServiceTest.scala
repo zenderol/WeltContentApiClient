@@ -246,6 +246,16 @@ class AbstractServiceTest extends PlaySpec with MockitoSugar with Status with Te
       verify(mockTimerContext).stop()
     }
 
+    "transform a downstream 401 to a 511 to preserve varnish and akamai cache" in new TestScopeBasicAuth {
+      when(responseMock.status).thenReturn(UNAUTHORIZED)
+      when(responseMock.json).thenReturn(JsString(""))
+
+      val result: Future[String] = new TestService().execute(Seq("x"))
+
+      val exp = the [HttpServerErrorException] thrownBy Await.result(result, 10.second)
+      exp.statusCode mustBe NETWORK_AUTHENTICATION_REQUIRED
+    }
+
   }
 
 }

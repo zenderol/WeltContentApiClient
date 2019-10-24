@@ -8,7 +8,7 @@ val buildNumber = Properties.envOrNone("BUILD_NUMBER")
 val isSnapshot = buildNumber.isEmpty
 val PlayVersion = "2.7.3"
 val AWSVersion = "1.11.631"
-val actualVersion: String = s"5.0.${buildNumber.getOrElse("0-local")}"
+val actualVersion: String = s"5.1.${buildNumber.getOrElse("0-local")}"
 
 val javaVersion: Int = sys.props("java.specification.version") match {
   case "1.8" => 8

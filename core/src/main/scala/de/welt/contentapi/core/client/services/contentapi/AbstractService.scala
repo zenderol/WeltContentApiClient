@@ -154,9 +154,10 @@ abstract class AbstractService[T](ws: WSClient,
     metrics.defaultRegistry.timer(MetricRegistry.name(s"service.$name", "requestTimer")).time()
   }
 
-  private def processResponse(response: WSResponse, url: String): T = response.status match {
+  private[contentapi] def processResponse(response: WSResponse, url: String): T = response.status match {
     case Status.OK | Status.CREATED ⇒ processResult(response)
     case status if (300 until 400).contains(status) ⇒ throw HttpRedirectException(url, response.statusText)
+    case Status.UNAUTHORIZED  ⇒ throw HttpServerErrorException(Status.NETWORK_AUTHENTICATION_REQUIRED, response.statusText, url)
     case status if (400 until 500).contains(status) ⇒
       throw HttpClientErrorException(status, response.statusText, url, response.header(HeaderNames.CACHE_CONTROL))
     case status ⇒ throw HttpServerErrorException(status, response.statusText, url)
