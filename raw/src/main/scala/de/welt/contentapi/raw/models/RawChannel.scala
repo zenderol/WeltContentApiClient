@@ -244,11 +244,10 @@ case class RawChannelConfiguration(metadata: Option[RawChannelMetadata] = None,
 /**
   * Reference to another content which has to be promoted inside the article
   *
-  * @param adIndicator Specifies whether an ad indication label should be displayed when the promotion is shown
   * @param contentId   CMS ID of the promoted content
   * @param `type`      Specifies the allowed content type of the promotion
   */
-case class RawArticlePromotion(adIndicator: Boolean, contentId: String, `type`: String)
+case class RawArticlePromotion(contentId: String, `type`: String)
 
 /**
   * The (ASMI) ad tag is a string with the root section and type of the page (section or content page).

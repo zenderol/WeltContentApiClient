@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.3 (2019-10-30)
+
+### Changes
+- [RAW] removed mandatory field `adIndicator` as part of `RawArticlePromotion`
+
 ## 5.2 (2019-10-25)
 
 ### Changes
